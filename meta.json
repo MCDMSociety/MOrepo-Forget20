@@ -1,0 +1,24 @@
+{
+   "contributionName": "Forget20",
+   "maintainer" : "Lars Relund <junk@relund.dk>",
+   "instanceGroups": [
+      {
+         "subfolder": "AP",
+         "class": "Assignment",
+         "objectives": 2,
+         "tags": [ "ap", "assignmentProblem", "bi-AP"],
+         "format": [ "raw" ],
+         "desc": "Instances for the bi-objective assignment problem.",
+         "creator" : "Nicolas Forget <nforget@econ.au.dk>"
+      },
+      {
+         "subfolder": "MMAP",
+         "class": "Assignment",
+         "objectives": 2,
+         "tags": [ "bi-MMAP", "MMAP", "multi-modal" ],
+         "format": [ "raw" ],
+         "desc": "Instances for the bi-objective multi-modal assignment problem.",
+         "creator" : "Nicolas Forget <nforget@econ.au.dk>"
+      }
+   ]
+}
