@@ -57,6 +57,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
+  cache = TRUE, autodep = TRUE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
@@ -166,6 +167,61 @@ knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 
 All the problems are in minimization here, i.e. if an objective function $z(x)$ is actually in maximisation, we will minimise $-z(x)$ instead. Only binary variables are considered here.
 
+
+
+# Instances
+
+[An explanation of instances and instance names (as in the ReadMe file)]
+
+List of test instances.
+
+[Go to instance example](instance.html, cache=FALSE)
+
+```{r instance table, echo=FALSE}
+dat <- read_csv("../convert/data/stat.csv")
+#dat <- filter(dat)
+
+sh <- distinct(dat,instance,.keep_all = TRUE)
+select(sh, instance, pb, n, p, coef,rangemin,rangemax)
+```
+
+Several methods for generating the coefficient of the objective functions are tested here. This is given by the column coef.
+
+* random : the coefficient are generated randomly in the inerval [a,b]
+* spheredown : the coefficient are generated on the non-dominated part of a sphere in minimisation in the interval [a,b]
+* sphereup : the coefficient are generated on the non-dominated part of a sphere in maximisation in the interval [a,b]
+* 2box : the coefficients are generated randomly in two small boxes of R^3
+
+
+
+# Input and output statistics
+
+A set of statistics are stored for each instance and algorithm run.
+
+## Input statistics
+
+For each instance we have statistics:
+  
+  - Problem class (PC): 
+  - $n$: Number of variables.
+  - $p$: Number of objectives.
+  - `rangeC`: The range the objective coefficients are generated within.
+  - `rangeO[i]`: The range of objective $i$ found by setting the variables to the worst/best value. 
+  - `coef`: 
+  - `ratioND`: 
+  - ???
+
+
+## Output statistics
+
+For each algorithm run we have statistics:
+
+  - `cpu`: Cpu time.
+  - ... [Add all output statistics]
+
+
+
+
 # Research questions
 
 The first purpose of this study is to learn how some components of the branch and bound influences the behaviour of the algorithm it terms of *computational time* (expressed in seconds everywhere) and in term of *number of nodes explored* (i.e. how much nodes are developed in the branch and bound tree before the algorithm ends).
@@ -217,7 +273,7 @@ finalize3D()
 
 * sphere down : the coefficients are generated on the lower part of a sphere (see next picture). Note that the sphere is adjusted such that the coefficients are in the range $[a,b]$, i.e. the sphere is not necessarily included in $[a,b]^p$.
 
-```{r, webgl = TRUE, echo = FALSE}
+```{r, webgl = TRUE, echo = FALSE, cache=FALSE}
 
 cent <- c(1000,1000,1000)
 r <- 750
@@ -235,7 +291,7 @@ finalize3D()
 
 * sphere up : the coefficients are generated on the upper part of a sphere (see next picture). Note that the sphere is adjusted such that the coefficients are in the range $[a,b]$, i.e. the sphere is not necessarily included in $[a,b]^p$.
 
-```{r, webgl = TRUE, echo = FALSE}
+```{r, webgl = TRUE, echo = FALSE, cache=FALSE}
 
 cent <- c(1000,1000,1000)
 r <- 750
@@ -253,7 +309,7 @@ finalize3D()
 
 * 2box : the coefficients are generated randomly but in two specific parts of $[a,b]^p$ (see next picture).
 
-```{r, webgl = TRUE, echo = FALSE}
+```{r, webgl = TRUE, echo = FALSE, cache=FALSE}
 
 range <- matrix(c(1,1000, 1,1000, 1,1000), ncol = 2, byrow = TRUE )
 ini3D(argsPlot3d = list(box = TRUE, axes = TRUE))
@@ -263,27 +319,7 @@ finalize3D()
 ```
 
 
-# Instances
 
-List of test instances.
-
-[Go to instance example](instance.html)
-
-```{r instance table, echo=FALSE}
-dat <- read_csv("../convert/data/stat.csv")
-#dat <- filter(dat)
-
-sh <- distinct(dat,instance,.keep_all = TRUE)
-select(sh, instance, pb, n, p, coef,rangemin,rangemax)
-    
-```
-
-Several methods for generating the coefficient of the objective functions are tested here. This is given by the column coef.
-
-* random : the coefficient are generated randomly in the inerval [a,b]
-* spheredown : the coefficient are generated on the non-dominated part of a sphere in minimisation in the interval [a,b]
-* sphereup : the coefficient are generated on the non-dominated part of a sphere in maximisation in the interval [a,b]
-* 2box : the coefficients are generated randomly in two small boxes of R^3
 
 # Preliminary tests CPU time
 
