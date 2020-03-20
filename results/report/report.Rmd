@@ -48,10 +48,14 @@ loadPackages <- function(packages) {
 }
 loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown","ggplot2"))
 
+library(knitr)
+library(rgl)
+options(rgl.useNULL=TRUE)
+options(rgl.printRglwidget=FALSE)
+rgl::setupKnitr()
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "",
   warning=FALSE, message=FALSE, include = TRUE, 
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
