@@ -265,7 +265,7 @@ List of test instances.
 [Go to instance example](instance.html)
 
 ```{r instance table, echo=FALSE}
-dat <- read_csv("data/stat.csv")
+dat <- read_csv("../convert/data/stat.csv")
 #dat <- filter(dat)
 
 sh <- distinct(dat,instance,.keep_all = TRUE)
