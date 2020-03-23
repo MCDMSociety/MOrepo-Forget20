@@ -18,15 +18,17 @@ All instance files are given in raw format.
 All problems are given in the following format:
 
 
-<n> <m> <p> <non-zero a> <non-zero c>
 
-<objective type...>
+n m p non-zero_a non-zero_c
 
-<matrix of objective coefficients>
+objective_types
 
-<matrix of constraint coefficients>
+matrix_of_objective_coefficients
 
-<matrix of right-hand sides>
+matrix_of_constraint_coefficients
+
+matrix_of_right-hand_sides
+
 
 
 where:
@@ -34,20 +36,20 @@ where:
 - n is the number of variables
 - m is the number of constrains
 - p is the number of objectives
-- non-zero a is the number of non-zero coefficients in the matrix of the constraint coefficients
-- non-zero c is the number of non-zero coefficients in the matrix of the objective coefficients
-- objective type is the nature of the objectives to be optimized. An identifier should be added for each objective, and it should be done in the same order as in the objective coefficients matrix. Four types are supported so far:
+- non-zero_a is the number of non-zero coefficients in the matrix of the constraint coefficients
+- non-zero_c is the number of non-zero coefficients in the matrix of the objective coefficients
+- objective_types is the nature of the objectives to be optimized. An identifier should be added for each objective, and it should be done in the same order as in the objective coefficients matrix. Four types are supported so far:
 	* maxsum: maximise a sum objective function
 	* minsum: minimise a sum objective function
 	* maxmin: maximise a min objective function
 	* minmax: minimise a max objective function
-- matrix of objective coefficients is a p x n matrix defining the coefficients of the objective functions
-- matrix of constraint coefficients is a m x n matrix defining the coefficients of the constraints
-- matrix of rand-hand sides is a m x 2 matrix defining the right-hand side of the constraints. For each constraint, two numbers are required:
+- matrix_of_objective_coefficients is a p x n matrix defining the coefficients of the objective functions
+- matrix_of_constraint_coefficients is a m x n matrix defining the coefficients of the constraints
+- matrix_of_rand-hand_sides is a m x 2 matrix defining the right-hand side of the constraints. For each constraint, two numbers are required:
 	* The first number is an identifier that is used to define the sign of the constraint. Three identifiers can be used:
-		. 0 for >= constraints
-		. 1 for <= constraints
-		. 2 for = constraints
+		- 0 for >= constraints
+		- 1 for <= constraints
+		- 2 for = constraints
 	* The second number is the actual value of the right-hand side of the constraint
 	
 
