@@ -131,6 +131,16 @@ knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
       datcoef %>% ggplot( aes(x=YN , y=ratioNDcoef, colour=n)) + geom_point() +     ggtitle("Relation between the number of non-dominated coefficients and |YN|")
     }
     
+    # Plot |YN| & CPU time
+    
+    gen_plot_YN_cpu <- function(dat,pbb,nodemeth,varmeth,obmeth){
+      
+      datcoef <- filter(dat,solved==1,pb==pbb,nodesel==nodemeth,varsel==varmeth,OB==obmeth)
+      #datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
+
+      datcoef %>% ggplot( aes(x=YN , y=tpstotal, colour=n)) + geom_point() +     ggtitle("Relation between |YN| and the cpu time")
+    }
+    
     # Plot complexity per range
     
     gen_plot_range <- function(dat,pbb,coeff){
@@ -1503,9 +1513,12 @@ In this section, relations between |YN| and various characteristics of the coeff
 
 The relation between |YN| (x-axis), the proportion of non-dominated objective function coefficients (y-axis) and the number of variables (color-axis) is shown in the next plot.
 
+In the plot coming after, the relation between the size of the non-dominated set and the CPU time required to find it with the best configuration previously found is shown.
+
 ```{r,echo=FALSE}
 pbb = "KP"
 gen_plot_correl_coef(dat,pbb)
+gen_plot_YN_cpu(dat,pbb,"breadth","mof","None")
 ```
 
 The next plots study the impact of the range of the range of the objective function coefficient on |YN|. This is done separately for each coefficient generation methods.
@@ -1532,9 +1545,12 @@ for (i in 1:3) {
 
 The relation between |YN| (x-axis), the proportion of non-dominated objective function coefficients (y-axis) and the number of variables (color-axis) is shown in the next plot.
 
+In the plot coming after, the relation between the size of the non-dominated set and the CPU time required to find it with the best configuration previously found is shown.
+
 ```{r,echo=FALSE}
 pbb = "AS"
 gen_plot_correl_coef(dat,pbb)
+gen_plot_YN_cpu(dat,pbb,"breadth","mfavg","None")
 ```
 
 The next plots study the impact of the range of the range of the objective function coefficient on |YN|. This is done separately for each coefficient generation methods.
@@ -1561,9 +1577,12 @@ for (i in 1:3) {
 
 The relation between |YN| (x-axis), the proportion of non-dominated objective function coefficients (y-axis) and the number of variables (color-axis) is shown in the next plot.
 
+In the plot coming after, the relation between the size of the non-dominated set and the CPU time required to find it with the best configuration previously found is shown.
+
 ```{r,echo=FALSE}
 pbb = "FLe"
 gen_plot_correl_coef(dat,pbb)
+gen_plot_YN_cpu(dat,pbb,"breadth","mof","None")
 ```
 
 The next plots study the impact of the range of the range of the objective function coefficient on |YN|. This is done separately for each coefficient generation methods.
@@ -1591,9 +1610,12 @@ for (i in 1:3) {
 
 The relation between |YN| (x-axis), the proportion of non-dominated objective function coefficients (y-axis) and the number of variables (color-axis) is shown in the next plot.
 
+In the plot coming after, the relation between the size of the non-dominated set and the CPU time required to find it with the best configuration previously found is shown.
+
 ```{r,echo=FALSE}
 pbb = "FLh"
 gen_plot_correl_coef(dat,pbb)
+gen_plot_YN_cpu(dat,pbb,"breadth","mfavg","None")
 ```
 
 The next plots study the impact of the range of the range of the objective function coefficient on |YN|. This is done separately for each coefficient generation methods.
