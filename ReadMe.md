@@ -6,7 +6,7 @@ Problem classes considered are Knapsack (KP), Assignment (AP), Facility Location
 
 ## Test instances
 
-Instances are named `Forget20_[problem class]_n<n>.raw` where `n` is the size of the problem. The paper considers
+[TO BE MODIFIED] Instances are named `Forget20_[problem class]_n<n>.raw` where `n` is the size of the problem. The paper considers
 instances of size 5-50; however, the instance set also contains 5 instances of size 60-100. Costs
 are generated random in [0,30].
 
@@ -15,12 +15,41 @@ All instance files are given in raw format.
 
 ### Raw format description 
 
-All problems are given in a matrix format ...
+All problems are given in the following format:
 
 
-asffasddfsa
+<n> <m> <p> <non-zero a> <non-zero c>
+
+<objective type...>
+
+<matrix of objective coefficients>
+
+<matrix of constraint coefficients>
+
+<matrix of right-hand sides>
 
 
+where:
+
+- n is the number of variables
+- m is the number of constrains
+- p is the number of objectives
+- non-zero a is the number of non-zero coefficients in the matrix of the constraint coefficients
+- non-zero c is the number of non-zero coefficients in the matrix of the objective coefficients
+- objective type is the nature of the objectives to be optimized. An identifier should be added for each objective, and it should be done in the same order as in the objective coefficients matrix. Four types are supported so far:
+	* maxsum: maximise a sum objective function
+	* minsum: minimise a sum objective function
+	* maxmin: maximise a min objective function
+	* minmax: minimise a max objective function
+- matrix of objective coefficients is a p x n matrix defining the coefficients of the objective functions
+- matrix of constraint coefficients is a m x n matrix defining the coefficients of the constraints
+- matrix of rand-hand sides is a m x 2 matrix defining the right-hand side of the constraints. For each constraint, two numbers are required:
+	* The first number is an identifier that is used to define the sign of the constraint. Three identifiers can be used:
+		. 0 for >= constraints
+		. 1 for <= constraints
+		. 2 for = constraints
+	* The second number is the actual value of the right-hand side of the constraint
+	
 
 ## Results
 
