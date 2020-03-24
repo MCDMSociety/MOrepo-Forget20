@@ -7,11 +7,18 @@ and IP (general problems with a mixture of constraints and binary variables). [O
 
 ## Test instances
 
-[TO BE MODIFIED] Instances are named `Forget20_[problem class]_[n].raw` where 
+Instances are named `Forget20_[problem class]_[n]_[p]_[range of costs]_[cost generation method]_[constaint id]_[id].raw` where 
 
    - `problem class` is either KP (knapsack problem), AP (assignment problem), FLP (facility
-   location problem) or IP (integer problem with binary variables).
+      location problem) or IP (integer problem with binary variables).
    - `n` is the size of the problem. 
+   - `p`is the number of objectives.
+   - `range of costs`: Objective coefficient range e.g. 1-1000.
+   - `cost generation method`: Either random, spheredown, sphereup or 2box. For further details see 
+      the documentation function `genSample` in the R package 
+      [gMOIP](https://CRAN.R-project.org/package=gMOIP).
+   - `costaint id`: Same id if constraints are the same.
+   - `id`: Instance id running within the constraint id.
    
 The paper considers instances of size 5-50; however, the instance set also contains 5
 instances of size 60-100. Costs are generated random in [0,30].
