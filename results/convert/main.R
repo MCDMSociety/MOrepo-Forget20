@@ -10,13 +10,18 @@
 #'
 #'
 
-
-
 ## Note set working dir to source file location
 # remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
 library(MOrepoTools)
 library(gMOIP)
 library(tidyverse)
+
+instances <- list.files("../../instances/raw/", recursive = T) %>%
+   str_remove(".*/") %>% str_remove(".raw")
+
+
+
+
 dat <- read_csv("data/stat.csv")
 
 idx <- c(2001 , 2002 , 2003 , 2004 , 2009 , 2010 , 2011 , 2012 , 3441 , 3442 , 3443 , 3444 , 3449 , 3450 , 3451 , 3452 , 6321 , 6322 , 6323 , 6324 , 6329 , 6330 , 6331 , 6332 , 7041 , 7042 , 7043 , 7044 , 7049 , 7050 , 7051 , 7052)
