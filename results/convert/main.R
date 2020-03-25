@@ -1,6 +1,18 @@
-## Tools for converting result output to the right format
-## Note set working dir to source file location
+#' ---
+#' title: "Script for converting result output to the right json format"
+#' author: ""
+#' ---
 
+#' This script is used to convert the program output to json result files (one for each instance).
+#' All the program output is stored in the `data` subfolder
+#'
+#' [Add a short desc of what the output files contain (don't have to be to detailed)]
+#'
+#'
+
+
+
+## Note set working dir to source file location
 # remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
 library(MOrepoTools)
 library(gMOIP)
@@ -55,3 +67,4 @@ resFiles <- list.files(recursive = T)
 # }
 
 
+#' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html
