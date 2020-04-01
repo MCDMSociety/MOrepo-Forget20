@@ -210,27 +210,104 @@ A set of statistics are stored for each instance and algorithm run.
 
 ## Input statistics
 
-For each instance we have statistics:
-  
-  - Problem class (PC): 
-  - $n$: Number of variables.
-  - $p$: Number of objectives.
-  - `rangeC`: The range the objective coefficients are generated within.
-  - `rangeO[i]`: The range of objective $i$ found by setting the variables to the worst/best value. 
-  - `coef`: 
-  - `ratioND`: 
-  - ???
+For each instance we have the following statistics:
 
+  - Problem class (PC):
+    * KP = Knapsack Problem
+    * AP = Assignment Problem
+    * UFLP = Uncapacited Facility Location Problem
+  - $n$: number of variables.
+  - $p$: number of objectives.
+  - `rangeC`: the range the objective coefficients are generated within
+  - `coef`: the method used for the generation of the objective coefficients (see section Research questions). We have:
+    * random = random coefficient generation
+    * 2box = two-boxes generation
+    * spheredown = generation on the lower part of a sphere (in minimisation)
+    * sphereup = generation on the upper part of a sphere (in minimisation)
+  - `ratioND` = proportion of objective coefficient vectors (here considered as a vector in $\mathbb{R}^p$, one for each variable, defining the objective coefficient for all the objective for this variable) that are non-dominated (with respect to the other objective coefficient vectors).
 
 ## Output statistics
 
-For each algorithm run we have statistics:
+For each algorithm run we have the following statistics, that can be found in stat,csv. Some of these are also input statistics but reintroduced as output statistics for a better readability. We have:
 
-  - `cpu`: Cpu time.
-  - ... [Add all output statistics]
+  - `pb`: class of the problem.
+  - $n$: number of variables.
+  - $p$: number of objectives.
+  - `coef`: method for generation of the objective coefficients (see Section Research questions).
+  - `rangemin`: minimum possible value for the objective coefficients.
+  - `rangemax`: maximum possible value for the objective coefficients.
+  - `nodesel`: node selection strategy.
+  - `varsel`: variable selection strategy.
+  - `OB`: objective branching strategy.
+  - `solved`: 1 if the instance is solved within 3600 sec, 0 otherwise.
+  - `YN`: size of YN. If `solved` = 0, it represent the size of the upper bound set at 3600 sec, when the algorithm stops.
+  - `nbnodes`: number of nodes explored.
+  - `mindepthT`: minimal depth of a leaf node.
+  - `maxdepthT`: maximal depth of a leaf node (and thus of the tree).
+  - `avgdepthT`: average depth of the leaf nodes.
+  - `avgdepthYN`: average depth of the nodes where the non-dominated points were found.
+  - `nbleaf`: number of leaf nodes.
+  - `nbinfeas`: number of nodes pruned by infeasibility.
+  - `pctinfeas`: proportion (in %) of leaf nodes pruned by infeasibility.
+  - `tpsinfeas`: average time spend to prune a node by infeasibility (in msec).
+  - `nbopt`: number of nodes pruned by optimality.
+  - `pctopt`: proportion (in %) of leaf nodes pruned by optimality.
+  - `tpsopt`: average time spend to prune a node by optimality (in msec).
+  - `nbdomi`: number of nodes pruned by dominance.
+  - `pctdomi`: proportion (in %) of leaf nodes pruned by dominance.
+  - `avgdomi`: average time spend to prune a node by dominance (in msec).
+  - `nbLB`: number of lower bound set computed.
+  - `avgfacets`: average number of facets in the lower bound set (i.e. in $\mathcal{L} + \mathbb{R}^p$).
+  - `avgNDf`: average number of strictly non-dominated facets.
+  - `pctavgNDf`: proportion (in %) of facets that are strictly non-dominated.
+  - `avgWNDf`: average number of weekly non-dominated facets.
+  - `pctavgWNDf`: proportion (in %) of facets that are weekly non-dominated.
+  - `maxfacets`: maximal number of facets a lower bound set had in the tree.
+  - `maxNDf`: number of strictly non-dominated facets in the lower bound set with the maximal number of facets.
+  - `pctmaxNDf`: proportion (in %) of facets that are strictly non-dominated in the lower bound set with the maximal number of facets.
+  - `maxWNDf`: number of weekly non-dominated facets in the lower bound set with the maximal number of facets.
+  - `pctmaxWNDf`: proportion (in %) of facets that are weekly non-dominated in the lower bound set with the maximal number of facets.
+  - `tpstotal`: CPU time (in sec) used to solve the instance. 3600 if the instance is not solved.
+  - `tpsLB`: CPU time (in sec) used to compute lower bound sets.
+  - `pcttpsLB`: proportion (in %) of the total CPU time spend in the computation of lower bound sets.
+  - `tpsdomi`: CPU time (in sec) used to dominance test when the algorithm has to determine whether a node can be pruned by dominance or not.
+  - `pcttpsdomi`: proportion (in %) of the total CPU time spend in the dominance test when the algorithm has to determine whether a node can be pruned by dominance or not.
+  - `tpsUB`: CPU time (in sec) used to update the upper bound set.
+  - `pcttpsUB`: proportion (in %) of the total CPU time spend in updating the upper bound set.
+  - `tpsnodesel`: CPU time (in sec) used to choose the next node to develop.
+  - `pcttpsnodesel`: proportion (in %) of the total CPU time spend in choosing the next node to develop.
+  - `tpsvarsel`: CPU time (in sec) used to choose the variable to branch on.
+  - `pcttpsvarsel`: proportion (in %) of the total CPU time spend in choosing the variable to branch on.
+  - `tpsOB`: CPU time (in sec) used to create the sub-problems in the objective space, i.e. to compute objective branching. (/!\ it requires two different steps in total: computing the SLUBs but also do additional dominance test to determine the dominance status of each local upper bounds ! This number take into account the two steps.)
+  - `pcttpsOB`: proportion (in %) of the total CPU time spend in computing objective branching.
+  - `tpsSLUB`: CPU time (in sec) used to compute the super local upper bounds.
+  - `pcttpsSLUB`: proportion (in %) of the total CPU time spend in computing the super local upper bounds.
+  - `tpsdomiLUB`: CPU time (in sec) used to do the additionnal dominance tests to get the dominance status of EACH local upper bound.
+  - `pcttpsdomiLUB`: proportion (in %) of the total CPU time spend in doing the additionnal dominance tests on the local upper bounds.
+  - `nbOB`: number of nodes where two or more sub-problems are created in the objective space. When using the exact objective branching (`OB` = exact), it in particular shows how often it is actually possible to split the objective space with the definition of the sub-problems that we used ($z(x) \leqq \bar{z}$, $\bar{z} \in \mathbb{R}^p$).
+  - `pctnbOB`: proportion (in %) of the nodes explored that where split in two or more sub-problems in the objective space.
+  - `avgdepthOB`: [relevant only if `OB` = exact] average depth of the nodes split in two or more sub-problems in the objective space.
+  - `mindepthOB`: [relevant only if `OB` = exact] minimal depth of the nodes split in two or more sub-problems in the objective space.
+  - `maxdepthOB`: [relevant only if `OB` = exact] maximal depth of the nodes split in two or more sub-problems in the objective space.
+  - `avgnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space.
+  - `maxnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space.
+  - `ratioNDcoef`: proportion (expressed as a number between 0 and 1) of objective coefficient vectors (here considered as a vector in $\mathbb{R}^p$, one for each variable, defining the objective coefficient for all the objective for this variable) that are non-dominated (with respect to the other objective coefficient vectors).
 
+For each instance, other statistics can be found in the `details` folder. We have:
 
+  - `<instance>_coef.csv`: each row correspond to a variable. The $p$ first column represent the $p$ objective coefficients for a given variable. The last column is 1 if the objective coefficient vector is not dominated by another one, 0 otherwise.
+  - `<instance>_UB.csv`: each row represent a $y \in \mathcal{Y}_N$. The $p$ first columns represent the values for the $p$ objective functions. The other columns are redundant information with what comes later and can be ignored.
+  - `<instances>_XE.csv`: each row represent a $y \in \mathcal{Y}_N$, sorted exactly in the same order as in `<instance>_UB.csv`. Each column represent the value of a variable, corresponding to the pre-image of the current $y$.
+  
+For each run, statistics on the non-dominated points can be found in the folder `UBrun`. The names of the files are in the form `<instance>_<nodesel>_<varsel>_<OB>_UB.csv`, where `<instance` is the name of the instance, `<nodesel>` is the node selection strategy (see next section for the names), `<varsel>` is the variable selection strategy (see next section for the names) and `<OB>` is the objective branching strategy (-2 for `OB` = None, 1 for `OB` = cone, 2 for `OB` = exact). In this file, each row correspond to a $y \in \mathcal{Y}_N$. The statistics are the following:
 
+  - the $p$ first columns correspond the values of the objective functions.
+  - `node`: number of the node where this point has been discovered. The higher this number is, the later the point has been discovered.
+  - `time`: time (in sec) elapsed between the start of the algorithm and when this point has been found (for the first time).
+  - `depth`: depth of the node where this point has been found (for the first time).
+  
+  
+  
 
 # Research questions
 
