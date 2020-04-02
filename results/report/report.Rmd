@@ -342,7 +342,7 @@ The focus will be here on the objective function coefficients. The first researc
 
 For the facility location problems, two sets of costs (i.e. coefficients of objective function) can be identified: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. Let the assignment costs take their values in $[a,b]$, the generation of the facility opening costs will be divided into two categories of instances:
 
-* facility location easy : $f_j \in [b+1,a+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier (see later in the study).
+* facility location easy : $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier (see later in the study).
 * facility location hard : $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harded (see later in the study).
 
 The second research question related to that topic is: **does the method used to generate the coefficients of the objective function has an impact on the difficulty of the problem ?**. Indeed, the usual procedure to generate objective function is to generate the coefficients randomly in a given range $[a,b]$. However, one could imagine other way to generate coefficient. Four methods will be studied here.
