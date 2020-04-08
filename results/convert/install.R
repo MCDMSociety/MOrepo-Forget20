@@ -1,4 +1,6 @@
 install.packages("remotes")
+install.packages("rgl")
+install.packages("rmarkdown")
 install.packages("tidyverse")
 install.packages("fs")
 remotes::install_github("relund/gMOIP")
