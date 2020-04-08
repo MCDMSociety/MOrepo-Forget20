@@ -1,5 +1,5 @@
 install.packages("remotes")
-install.packages(tidyverse)
-install.packages(fs)
+install.packages("tidyverse")
+install.packages("fs")
 remotes::install_github("relund/gMOIP")
 remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
