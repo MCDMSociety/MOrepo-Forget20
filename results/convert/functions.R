@@ -430,20 +430,7 @@ convexHull <- function(pts, addRays = FALSE, useRGLBBox = FALSE, direction = 1,
    if (length(direction) != p) direction = rep(direction[1],p)
    # print(set)
    if (addRays) {
-      if (rgl::rgl.cur() > 0 & useRGLBBox) {
-         limits <- rgl::par3d()$bbox
-         for (i in 1:dim(pts)[1]) {
-            pt <- as.vector(pts[i,])
-            if (!(limits[1] < pt[1] && pt[1] < limits[2] &&
-                  limits[3] < pt[2] && pt[2] < limits[4] &&
-                  limits[5] < pt[3] && pt[3] < limits[6])){
-               stop("The point is not in the interior of the current bounding box. Resize your axes.")
-            }
-         }
-         m <- c(limits[1], limits[3], limits[5])
-         M <- c(limits[2], limits[4], limits[6])
-         set <- addRays(pts, m, M, direction)
-      } else set <- addRays(pts, direction = direction)
+      set <- addRays(pts, direction = direction)
    } else {
       set <- cbind(pts, pt = 1) # point in (1=original set, 0=artificial)
    }
