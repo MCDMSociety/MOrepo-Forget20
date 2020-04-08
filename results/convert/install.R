@@ -3,4 +3,13 @@ remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
 install.packages("rmarkdown")
 install.packages("tidyverse")
 install.packages("fs")
+install.packages("Matrix")
+install.packages("grDevices")
+install.packages("geometry")
+install.packages("MASS")
+install.packages("stats")
+install.packages("purrr")
+install.packages("utils")
+install.packages("tidyr")
+
 
