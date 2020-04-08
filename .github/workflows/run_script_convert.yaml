@@ -4,7 +4,8 @@ on:
   push:
     paths:
       - .github/workflows/run_script_convert.yaml
-      - script_karup1.R
+      - results/convert/script_convert.R
+      - results/convert/main.R
   schedule:
     - cron: '0 1 * * *'  # at 1:00
 
@@ -17,9 +18,9 @@ jobs:
       - uses: r-lib/actions/setup-r@master
       - uses: r-lib/actions/setup-pandoc@master
       - name: Install packages
-        run: Rscript install.R
+        run: Rscript results/convert/install.R
       - name: Run R script
-        run: Rscript --verbose script_convert.R
+        run: Rscript --verbose results/convert/script_convert.R
       - name: Commit results
         run: |
           git commit --allow-empty -am 'gHA build: ${{github.run_number}}' || echo "No changes to commit"
