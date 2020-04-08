@@ -1,5 +1,8 @@
 install.packages("remotes")
+install.packages("rgl")
+install.packages("rmarkdown")
 install.packages("tidyverse")
 install.packages("fs")
+options(rgl.useNULL=TRUE)
 remotes::install_github("relund/gMOIP")
 remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
