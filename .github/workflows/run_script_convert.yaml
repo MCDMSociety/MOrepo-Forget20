@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - .github/workflows/run_script_convert.yaml
+      - results/convert/install.R
       - results/convert/script_convert.R
       - results/convert/main.R
   schedule:
