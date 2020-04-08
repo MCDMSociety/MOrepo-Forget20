@@ -67,6 +67,7 @@ nrow(tmp) == 0
 #' ### Create json files
 #' All result files are in csv format with comma delimitor and dot as decimal mark.
 resFiles <- list.files(recursive = T)
+start_time <- Sys.time()
 for (iName in unique(dat$instance)) {  # 1:nrow(dat)
    tmp <- dat %>% dplyr::filter(instance == iName)
    resFilesTmp <- grep(iName, resFiles, value = T)
@@ -78,6 +79,8 @@ for (iName in unique(dat$instance)) {  # 1:nrow(dat)
          cat("Already generated for all methods!\n")
          next
       }
+      end_time <- Sys.time()
+      if (end_time - start_time > 60*60*4) break   # max of 4 hours run time
       pts0 <- read_csv(grep(str_c(iName,"_UB"), resFiles, value = T), col_types = cols())[,1:tmp$p[1]] %>%
          mutate(rowId = 1:nrow(.))
       pts <- addNDSet(pts0[,1:tmp$p[1]]) %>%
