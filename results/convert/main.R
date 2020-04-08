@@ -31,10 +31,10 @@ knitr::opts_chunk$set(
 #' Install packages:
 # remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
 library(MOrepoTools)
-library(gMOIP)
 library(tidyverse)
 library(fs)
 options(width = 100)
+source("functions.R")
 
 #' Get all instances
 instances <- list.files("../../instances/raw/", recursive = T) %>%

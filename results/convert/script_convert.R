@@ -1,1 +1,1 @@
-cat("Test")
+rmarkdown::render("main.R")
