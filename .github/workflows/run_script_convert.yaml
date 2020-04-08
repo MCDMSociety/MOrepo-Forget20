@@ -20,7 +20,8 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@master
       - name: Install packages
         run: Rscript results/convert/install.R
-        env: RGL_USE_NULL: TRUE
+        env:
+          RGL_USE_NULL: TRUE
       - name: Run R script
         run: Rscript --verbose results/convert/script_convert.R
       - name: Commit results
