@@ -1,0 +1,26 @@
+name: R script for converting results
+
+on:
+  push:
+    paths:
+      - .github/workflows/run_script_convert.yaml
+      - script_karup1.R
+  schedule:
+    - cron: '0 1 * * *'  # at 1:00
+
+jobs:
+  render:
+    name: Run script_convert.R
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@master
+      - uses: r-lib/actions/setup-pandoc@master
+      - name: Install packages
+        run: Rscript install.R
+      - name: Run R script
+        run: Rscript --verbose script_convert.R
+      - name: Commit results
+        run: |
+          git commit --allow-empty -am 'gHA build: ${{github.run_number}}' || echo "No changes to commit"
+          git push https://${{github.actor}}:${{secrets.token}}@github.com/${{github.repository}}.git HEAD:${{ github.ref }} || echo "No changes to commit"
