@@ -1,2 +1,4 @@
 *.png
 report_cache
+*_cache
+report_json*
