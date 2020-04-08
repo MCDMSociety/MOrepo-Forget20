@@ -134,15 +134,17 @@ for (iName in unique(dat$instance)) {  # 1:nrow(dat)
             # we add all other things under misc
             misc = misc
          ))
+         #' Move the file
+         jsonF <- grep("json", dir_ls(), value = T)
+         file_move(jsonF, paste0("../",jsonF))
       }
    } else warning("Tjeck error: Can't find result files!")
    cat("\n")
 }
 
 
-#' Move the files
-jsonF <- grep("json", dir_ls(), value = T)
-file_move(jsonF, paste0("../",jsonF))
+
+
 
 
 
