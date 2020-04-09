@@ -81,7 +81,7 @@ for (iName in unique(dat$instance)) {
          next
       }
       message("\nDuration: ", now() - start_time,"\n")
-      if (now() - start_time > 60*60*4) {message("\nStop script. Max time obtained."); break}   # max of 4 hours run time
+      if (now() - start_time > 120) {message("\nStop script. Max time obtained."); break}   # max of 4 hours run time 60*60*4
       pts0 <- read_csv(grep(str_c(iName,"_UB"), resFiles, value = T), col_types = cols())[,1:tmp$p[1]] %>%
          mutate(rowId = 1:nrow(.))
       pts <- addNDSet(pts0[,1:tmp$p[1]]) %>%
