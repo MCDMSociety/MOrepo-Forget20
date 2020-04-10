@@ -25,7 +25,7 @@ jobs:
           RGL_USE_NULL: TRUE
       - name: Run R script
         run: Rscript --verbose results/convert/script_convert.R
-      - name: commit
+      - name: Commit
         run: |
           git add .
           git commit -m 'gHA convert: ${{github.run_number}}' || echo "No changes to commit"
