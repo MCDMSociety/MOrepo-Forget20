@@ -24,11 +24,9 @@ jobs:
         env:
           RGL_USE_NULL: TRUE
       - name: Run R script
-        run: Rscript --verbose results/convert/script_convert.R
-      - name: Commit
+        run: Rscript results/convert/script_convert.R
+      - name: Commit results
         run: |
-          git add .
-          git commit -m 'gHA convert: ${{github.run_number}}' || echo "No changes to commit"
-      - uses: r-lib/actions/pr-push@master
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          git commit --allow-empty -am 'gHA build: ${{github.run_number}}' || echo "No changes to commit"
+          git push https://${{github.actor}}:${{secrets.token}}@github.com/${{github.repository}}.git HEAD:${{ github.ref }} || echo "No changes to commit"
+
