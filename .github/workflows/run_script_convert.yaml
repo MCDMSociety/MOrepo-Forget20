@@ -9,7 +9,7 @@ on:
       - results/convert/main.R
       - results/convert/functions.R
   schedule:
-    - cron: '0 */7 * * *'  # every 7'th hour
+    - cron: '0 * * * *'
 
 jobs:
   render:
