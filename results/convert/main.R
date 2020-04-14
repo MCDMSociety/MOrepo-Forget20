@@ -151,7 +151,6 @@ for (iName in unique(dat$instance)) {
       }
    } else warning("Tjeck error: Can't find result files!")
    cat("\n")
-   break;
 }
 
 
