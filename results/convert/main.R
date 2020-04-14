@@ -68,7 +68,7 @@ nrow(tmp) == 0
 
 points <- data.frame(z1 = c(27, 30, 31, 34, 42, 43, 49, 51), z2 = c(56, 53, 36, 33, 30, 25, 23, 9),
                      type = c('se', 'us', 'se', 'us', 'us', 'us', 'us', 'se'))
-createResultFile(instanceName = "Tuyttens00_AP_n05", contributionName = "Pedersen08",
+createResultFile(instanceName = "Test", contributionName = "Pedersen08",
                  objectives = 2, points = points, card = 8, suppCard = 3, extCard = 3,
                  objectiveType = c("int", "int"), direction = c("min", "min"),
                  comments = "Results from the paper by Pedersen et. al (2008)", optimal = TRUE
