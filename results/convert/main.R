@@ -88,11 +88,13 @@ for (iName in unique(dat$instance)) {
       if (now() - start_time > 60*60*4) {message("\nStop script. Max time obtained."); break}   # max of 4 hours run time 60*60*4
       pts0 <- read_csv(grep(str_c(iName,"_UB"), resFiles, value = T), col_types = cols())[,1:tmp$p[1]] %>%
          mutate(rowId = 1:nrow(.))
-      pts <- addNDSet(pts0[,1:tmp$p[1]]) %>%
-         select(-(nd:us), type = "cls")
-      pts <- full_join(pts0, pts, by = c("z1", "z2", "z3")) %>%
-         arrange(rowId) %>% # so the order will be the same as in XE
-         select(contains("z"), type)
+      pts <- pts0 %>% mutate(type = NA) %>% select(contains("z"), type)
+      # pts <- addNDSet(pts0[,1:tmp$p[1]]) %>%
+      #    select(-(nd:us), type = "cls")
+      # pts <- full_join(pts0, pts, by = c("z1", "z2", "z3")) %>%
+      #    arrange(rowId) %>% # so the order will be the same as in XE
+      #    select(contains("z"), type)
+
       # coeff <- read_csv(grep(str_c(iName,"_coef"), resFiles, value = T))
       # coeffRatio <- sum(coeff$nondominated)/nrow(coeff)
       for (i in 1:nrow(tmp)) {
@@ -113,7 +115,8 @@ for (iName in unique(dat$instance)) {
          if (nrow(pts) == nrow(pts2)) pts3 <- pts
          if (tmp$solved[i] == 0) {
             pts3 <- pts1[,1:tmp$p[i]]
-            pts3 <- addNDSet(pts3) %>% select(-(nd:us), type = "cls")
+            pts3 <- pts3 %>% mutate(type = NA)
+            # pts3 <- addNDSet(pts3) %>% select(-(nd:us), type = "cls")
          }
          if (nrow(pts3) != tmp$YN[i]) warning("Tjeck error: Different number of nondominated points!")
 
