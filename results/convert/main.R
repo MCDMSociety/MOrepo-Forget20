@@ -73,18 +73,18 @@ for (iName in unique(dat$instance)) {
    tmp <- dat %>% dplyr::filter(instance == iName)
    resFilesTmp <- grep(iName, resFiles, value = T)
    if (length(resFilesTmp) > 0) {
-      message(iName,": ")
-      cat(iName, ": ", sep="")
+      # message(iName,": ")
+      # cat(iName, ": ", sep="")
       mth1 <- paste0(tmp$nodesel, "_", tmp$varsel, "_", tolower(tmp$OB))
       if (all(file_exists(paste0("../", iName, "_", mth1, "_result.json")))) {
-         cat("Already generated for all methods!\n")
+         # cat("Already generated for all methods!\n")
          next
       }
       if (nrow(tmp %>% dplyr::filter(solved == 1) %>% distinct(YN)) > 1) {
-         cat("Error:", iName, ": Different number of nondominated points for exact solutions!\n")
+         warning("Error: ", iName, ". Different number of nondominated points for exact solutions!\n", sep="")
          next
       }
-      message("\nDuration: ", now() - start_time,"\n")
+      # message("\nDuration: ", now() - start_time,"\n")
       if (now() - start_time > 60*45) {message("\nStop script. Max time obtained."); break}   # max of 4 hours run time 60*60*4
       if (length(grep(str_c(iName,"_UB"), resFiles, value = T)) == 0) {
          warning("Error: ", iName, "_UB don't exists!", sep = "")
@@ -102,27 +102,27 @@ for (iName in unique(dat$instance)) {
       # coeff <- read_csv(grep(str_c(iName,"_coef"), resFiles, value = T))
       # coeffRatio <- sum(coeff$nondominated)/nrow(coeff)
       for (i in 1:nrow(tmp)) {
-         message("\n\nFile ", tmp$rowname[i], "/", nrow(dat), "\n\n")
+         message("File ", tmp$rowname[i], "/", nrow(dat), " | ")
          mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
          mth <- mth1 %>%
             str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
-         cat(tmp$rowname[i],": ", mth, "  ", sep="")
+         # cat(tmp$rowname[i],": ", mth, "  ", sep="")
          if (file_exists(paste0(iName, "_", mth1, "_result.json"))) {
-            cat("Already generated! ")
+            # cat("Already generated! ")
             next
          }
          # if (round(coeffRatio,3) != round(tmp$ratioNDcoef[i], 3)) warning("Tjeck error: Ratio not the same!", coeffRatio, "!>", tmp$ratioNDcoef)
-         pts1 <- read_csv(grep(mth, resFilesTmp, value = T), col_types = cols())
-         pts2 <- full_join(pts,pts1)
+         pts1 <- read_csv(grep(str_c(iName, "_", mth), resFilesTmp, value = T), col_types = cols())
+         pts2 <- full_join(pts,pts1, by = c("z1", "z2", "z3"))
          pts3 <- pts %>% slice(0)
-         if (nrow(pts) != nrow(pts2) & tmp$solved[i] == 1) warning("Tjeck error: ND sets not equal!")
+         if (nrow(pts) != nrow(pts2) & tmp$solved[i] == 1) warning("Error: ND sets not equal!")
          if (nrow(pts) == nrow(pts2)) pts3 <- pts
          if (tmp$solved[i] == 0) {
             pts3 <- pts1[,1:tmp$p[i]]
             pts3 <- pts3 %>% mutate(type = NA)
             # pts3 <- addNDSet(pts3) %>% select(-(nd:us), type = "cls")
          }
-         if (nrow(pts3) != tmp$YN[i]) warning("Tjeck error: Different number of nondominated points!")
+         if (nrow(pts3) != tmp$YN[i]) warning("Error: Different number of nondominated points!")
 
          misc <- list(
             algConfig = tmp %>% select(nodesel:OB) %>% slice(i) %>% as.list(),
@@ -153,7 +153,7 @@ for (iName in unique(dat$instance)) {
          jsonF <- grep("json", dir_ls(), value = T)
          file_move(jsonF, paste0("../",jsonF))
       }
-   } else warning("Tjeck error: Can't find result files!")
+   } else warning("Error: Can't find result files for ", iName, "!", sep="")
    cat("\n")
 }
 
@@ -165,13 +165,13 @@ for (iName in unique(dat$instance)) {
    tmp <- dat %>% dplyr::filter(instance == iName)
    resFilesTmp <- grep(iName, resJsonFiles, value = T)
    classified <- F
-   message("\nDuration: ", now() - start_time,"\n")
+   # message("\nDuration: ", now() - start_time,"\n")
    if (now() - start_time > 60*60*4) {message("\nStop script. Max time obtained."); break}   # max of 4 hours run time 60*60*4
    if (length(resFilesTmp) > 0) {
-      message(iName,": ")
-      cat(iName, ": ", sep="")
+      # message(iName,": ")
+      # cat(iName, ": ", sep="")
       for (i in 1:nrow(tmp)) {
-         message("\nFile ", tmp$rowname[i], "/", nrow(dat))
+         message("File ", tmp$rowname[i], "/", nrow(dat), " | ", sep="")
          lst <- jsonlite::fromJSON(resFilesTmp[i])
          if (length(which(is.na(lst$points$type))) > 0 & lst$optimal) { # not classified yet
             if (!classified) {
@@ -189,14 +189,14 @@ for (iName in unique(dat$instance)) {
             lst$points <- pts
             str <- jsonlite::toJSON(lst, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null")
             readr::write_lines(str, resFilesTmp[i])
-            message("Now classified")
+            # message("Now classified")
          } else {
-            message("Already classified")
+            # message("Already classified")
             pts <- lst$points
             classified <- T
          }
       }
-   } else warning("Tjeck error: Can't find result files!")
+   } else warning("Error: Can't find result files for ", iName, "!", sep="")
 }
 
 
