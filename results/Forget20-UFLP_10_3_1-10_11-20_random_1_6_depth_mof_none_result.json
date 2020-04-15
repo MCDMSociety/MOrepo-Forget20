@@ -20,55 +20,55 @@
       "z1": 64,
       "z2": 76,
       "z3": 44,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 54,
       "z2": 63,
       "z3": 52,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 51,
       "z2": 82,
       "z3": 72,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 51,
       "z2": 81,
       "z3": 73,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 67,
       "z2": 61,
       "z3": 87,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 49,
       "z2": 77,
       "z3": 94,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 51,
       "z2": 77,
       "z3": 87,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 53,
       "z2": 77,
       "z3": 71,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 53,
       "z2": 76,
       "z3": 72,
-      "type": null
+      "type": "us"
     }
   ],
   "misc": {

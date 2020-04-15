@@ -20,73 +20,73 @@
       "z1": 64,
       "z2": 50,
       "z3": 58,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 60,
       "z2": 54,
       "z3": 59,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 57,
       "z2": 58,
       "z3": 52,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 100,
       "z2": 45,
       "z3": 99,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 54,
       "z2": 95,
       "z3": 55,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 56,
       "z2": 87,
       "z3": 54,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 93,
       "z2": 49,
       "z3": 100,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 98,
       "z2": 47,
       "z3": 95,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 55,
       "z2": 93,
       "z3": 56,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 95,
       "z2": 48,
       "z3": 96,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 94,
       "z2": 48,
       "z3": 97,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 94,
       "z2": 49,
       "z3": 87,
-      "type": null
+      "type": "us"
     }
   ],
   "misc": {

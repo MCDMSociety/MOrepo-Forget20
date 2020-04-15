@@ -20,43 +20,43 @@
       "z1": 48,
       "z2": 66,
       "z3": 78,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 74,
       "z2": 66,
       "z3": 60,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 64,
       "z2": 72,
       "z3": 62,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 62,
       "z2": 75,
       "z3": 62,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 69,
       "z2": 68,
       "z3": 62,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 54,
       "z2": 72,
       "z3": 74,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 64,
       "z2": 70,
       "z3": 71,
-      "type": null
+      "type": "us"
     }
   ],
   "misc": {

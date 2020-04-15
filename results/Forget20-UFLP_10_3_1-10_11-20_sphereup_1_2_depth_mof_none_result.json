@@ -20,97 +20,97 @@
       "z1": 90,
       "z2": 80,
       "z3": 65,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 76,
       "z2": 70,
       "z3": 89,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 82,
       "z2": 71,
       "z3": 82,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 93,
       "z2": 71,
       "z3": 80,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 70,
       "z2": 93,
       "z3": 73,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 70,
       "z2": 88,
       "z3": 74,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 72,
       "z2": 82,
       "z3": 80,
-      "type": null
+      "type": "sne"
     },
     {
       "z1": 69,
       "z2": 104,
       "z3": 107,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 97,
       "z2": 69,
       "z3": 115,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 103,
       "z2": 69,
       "z3": 108,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 108,
       "z2": 69,
       "z3": 104,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 69,
       "z2": 112,
       "z3": 97,
-      "type": null
+      "type": "se"
     },
     {
       "z1": 89,
       "z2": 120,
       "z3": 72,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 102,
       "z2": 69,
       "z3": 111,
-      "type": null
+      "type": "sne"
     },
     {
       "z1": 78,
       "z2": 79,
       "z3": 83,
-      "type": null
+      "type": "us"
     },
     {
       "z1": 78,
       "z2": 83,
       "z3": 73,
-      "type": null
+      "type": "us"
     }
   ],
   "misc": {
