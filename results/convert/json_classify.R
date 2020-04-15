@@ -88,5 +88,7 @@ for (iName in unique(dat$instance)) {
    } else warning("Error: Can't find result files for ", iName, "!", sep="")
 }
 
+warnings()
+
 
 #' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html

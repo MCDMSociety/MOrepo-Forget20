@@ -159,4 +159,6 @@ for (iName in unique(dat$instance)) {
    cat("\n")
 }
 
+warnings()
+
 #' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html
