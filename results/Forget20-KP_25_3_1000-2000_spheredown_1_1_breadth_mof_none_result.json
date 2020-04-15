@@ -13,20 +13,20 @@
   },
   "valid": true,
   "card": 2,
-  "suppCard": 2,
+  "suppCard": 0,
   "extCard": 0,
   "points": [
     {
       "z1": -22455,
       "z2": -23690,
       "z3": -25300,
-      "type": "se"
+      "type": null
     },
     {
       "z1": -22642,
       "z2": -23087,
       "z3": -25529,
-      "type": "se"
+      "type": null
     }
   ],
   "misc": {
