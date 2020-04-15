@@ -56,7 +56,7 @@ for (iName in unique(dat$instance)) {
    resFilesTmp <- grep(iName, resJsonFiles, value = T)
    classified <- F
    # message("\nDuration: ", now() - start_time,"\n")
-   if (now() - start_time > 60*60*4) {message("\nStop script. Max time obtained."); break}   # max of 4 hours run time 60*60*4
+   if (now() - start_time > 60*45) {message("\nStop script. Max time obtained."); break}   # max of 4 hours run time 60*60*4
    if (length(resFilesTmp) > 0) {
       # message(iName,": ")
       # cat(iName, ": ", sep="")
