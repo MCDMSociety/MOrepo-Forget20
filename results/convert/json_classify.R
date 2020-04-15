@@ -60,7 +60,7 @@ for (iName in unique(dat$instance)) {
    if (length(resFilesTmp) > 0) {
       # message(iName,": ")
       # cat(iName, ": ", sep="")
-      for (i in 1:nrow(tmp)) {
+      for (i in 1:length(resFilesTmp)) {
          message("File ", tmp$rowname[i], "/", nrow(dat), " | ", sep="")
          lst <- jsonlite::fromJSON(resFilesTmp[i])
          if (length(which(is.na(lst$points$type))) > 0 & lst$optimal) { # not classified yet
@@ -75,7 +75,6 @@ for (iName in unique(dat$instance)) {
                   select(contains("z"), type)
                classified = T
             }
-            print(pts)
             lst$points <- pts
             str <- jsonlite::toJSON(lst, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null")
             readr::write_lines(str, resFilesTmp[i])
