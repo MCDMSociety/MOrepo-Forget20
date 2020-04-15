@@ -87,7 +87,7 @@ for (iName in unique(dat$instance)) {
          next
       }
       # message("\nDuration: ", now() - start_time,"\n")
-      if (now() - start_time > 60*45) {message("\nStop script. Max time obtained."); break}   # max of 45 min
+      if (now() - start_time > 60*10) {message("\nStop script. Max time obtained."); break}   # max of 10 min
       if (length(grep(str_c(iName,"_UB"), resFiles, value = T)) == 0) {
          warning("Error: ", iName, "_UB don't exists!", sep = "")
          next
