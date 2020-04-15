@@ -20,85 +20,85 @@
       "z1": -22,
       "z2": -34,
       "z3": -45,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -39,
       "z2": -32,
       "z3": -37,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -37,
       "z2": -32,
       "z3": -38,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -40,
       "z2": -32,
       "z3": -31,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -30,
       "z2": -30,
       "z3": -43,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -32,
       "z2": -26,
       "z3": -40,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -25,
       "z2": -34,
       "z3": -39,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -30,
       "z2": -33,
       "z3": -41,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -33,
       "z2": -40,
       "z3": -30,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -31,
       "z2": -34,
       "z3": -38,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -38,
       "z2": -39,
       "z3": -32,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -31,
       "z2": -31,
       "z3": -40,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -38,
       "z2": -36,
       "z3": -34,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -26,
       "z2": -35,
       "z3": -36,
-      "type": null
+      "type": "us"
     }
   ],
   "misc": {

@@ -20,133 +20,133 @@
       "z1": -41,
       "z2": -50,
       "z3": -43,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -61,
       "z2": -37,
       "z3": -63,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -41,
       "z2": -49,
       "z3": -44,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -49,
       "z2": -44,
       "z3": -50,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -63,
       "z2": -27,
       "z3": -68,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -46,
       "z2": -47,
       "z3": -48,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -47,
       "z2": -46,
       "z3": -48,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -44,
       "z2": -49,
       "z3": -43,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -49,
       "z2": -38,
       "z3": -57,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -64,
       "z2": -24,
       "z3": -68,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -62,
       "z2": -29,
       "z3": -65,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -32,
       "z2": -51,
       "z3": -37,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -63,
       "z2": -28,
       "z3": -64,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -49,
       "z2": -45,
       "z3": -48,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -54,
       "z2": -38,
       "z3": -56,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -53,
       "z2": -39,
       "z3": -56,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -35,
       "z2": -52,
       "z3": -36,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -46,
       "z2": -45,
       "z3": -49,
-      "type": null
+      "type": "us"
     },
     {
       "z1": -18,
       "z2": -55,
       "z3": -20,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -36,
       "z2": -54,
       "z3": -35,
-      "type": null
+      "type": "se"
     },
     {
       "z1": -56,
       "z2": -42,
       "z3": -54,
-      "type": null
+      "type": "sne"
     },
     {
       "z1": -55,
       "z2": -43,
       "z3": -55,
-      "type": null
+      "type": "se"
     }
   ],
   "misc": {
