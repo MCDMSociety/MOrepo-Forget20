@@ -86,6 +86,10 @@ for (iName in unique(dat$instance)) {
       }
       message("\nDuration: ", now() - start_time,"\n")
       if (now() - start_time > 60*45) {message("\nStop script. Max time obtained."); break}   # max of 4 hours run time 60*60*4
+      if (length(grep(str_c(iName,"_UB"), resFiles, value = T)) == 0) {
+         warning("Error: ", iName, "_UB don't exists!", sep = "")
+         next
+      }
       pts0 <- read_csv(grep(str_c(iName,"_UB"), resFiles, value = T), col_types = cols())[,1:tmp$p[1]] %>%
          mutate(rowId = 1:nrow(.))
       pts <- pts0 %>% mutate(type = NA) %>% select(contains("z"), type)
@@ -151,6 +155,48 @@ for (iName in unique(dat$instance)) {
       }
    } else warning("Tjeck error: Can't find result files!")
    cat("\n")
+}
+
+
+
+#' ### Update json files with classification of points
+resJsonFiles <- list.files("..", ".json", full.names = T)
+for (iName in unique(dat$instance)) {
+   tmp <- dat %>% dplyr::filter(instance == iName)
+   resFilesTmp <- grep(iName, resJsonFiles, value = T)
+   classified <- F
+   message("\nDuration: ", now() - start_time,"\n")
+   if (now() - start_time > 60*60*4) {message("\nStop script. Max time obtained."); break}   # max of 4 hours run time 60*60*4
+   if (length(resFilesTmp) > 0) {
+      message(iName,": ")
+      cat(iName, ": ", sep="")
+      for (i in 1:nrow(tmp)) {
+         message("\nFile ", tmp$rowname[i], "/", nrow(dat))
+         lst <- jsonlite::fromJSON(resFilesTmp[i])
+         if (length(which(is.na(lst$points$type))) > 0 & lst$optimal) { # not classified yet
+            if (!classified) {
+               pts0 <- lst$points[,1:(ncol(lst$points)-1)] %>%
+                  mutate(rowId = 1:nrow(.))
+               pts <- classifyNDSet(pts0[,1:(ncol(pts0)-1)]) %>%
+                  select(-(se:us), type = "cls")
+               print(pts)
+               pts <- full_join(pts0, pts, by = c("z1", "z2", "z3")) %>%
+                  arrange(rowId) %>% # so the order will be the same as in XE
+                  select(contains("z"), type)
+               classified = T
+            }
+            print(pts)
+            lst$points <- pts
+            str <- jsonlite::toJSON(lst, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null")
+            readr::write_lines(str, resFilesTmp[i])
+            message("Now classified")
+         } else {
+            message("Already classified")
+            pts <- lst$points
+            classified <- T
+         }
+      }
+   } else warning("Tjeck error: Can't find result files!")
 }
 
 
