@@ -438,25 +438,25 @@ tree before the algorithm ends.
   
 
 
-The second purpose of this study is to learn how the caracteristics of an instance can affect its
-difficulty. The difficulty will be here mesured by the *size of the non-dominated set*, and the
-*computational time* required to solve the instance. The computational time will be determined
-using the branch and bound algorithm previously described. Note that the complexity of an objective
-space search algorithm is positively correlated to the size of the non-dominated set as the more
-non-dominated there are, the more integer programs have to be solved.
+<!-- The second purpose of this study is to learn how the caracteristics of an instance can affect its -->
+<!-- difficulty. The difficulty will be here mesured by the *size of the non-dominated set*, and the -->
+<!-- *computational time* required to solve the instance. The computational time will be determined -->
+<!-- using the branch and bound algorithm previously described. Note that the complexity of an objective -->
+<!-- space search algorithm is positively correlated to the size of the non-dominated set as the more -->
+<!-- non-dominated there are, the more integer programs have to be solved. -->
 
-The focus will be here on the objective function coefficients. The first research question here is: **does the range of the objective function coefficient has an impact on the difficulty of the problem ?**. In order to answer that, three different ranges will be tested:
+<!-- The focus will be here on the objective function coefficients. The first research question here is: **does the range of the objective function coefficient has an impact on the difficulty of the problem ?**. In order to answer that, three different ranges will be tested: -->
 
-* $[1,10]$: a small range of values.
-* $[1,1000]$: a large range of values
-* $[1000,2000]$: a large range of values, but shifted to larger values.
+<!-- * $[1,10]$: a small range of values. -->
+<!-- * $[1,1000]$: a large range of values -->
+<!-- * $[1000,2000]$: a large range of values, but shifted to larger values. -->
 
-For the facility location problems, two sets of costs (i.e. coefficients of objective function) can be identified: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. Let the assignment costs take their values in $[a,b]$, the generation of the facility opening costs will be divided into two categories of instances:
+<!-- For the facility location problems, two sets of costs (i.e. coefficients of objective function) can be identified: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. Let the assignment costs take their values in $[a,b]$, the generation of the facility opening costs will be divided into two categories of instances: -->
 
-* facility location easy: $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier (see later in the study).
-* facility location hard: $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harded (see later in the study).
+<!-- * facility location easy: $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier (see later in the study). -->
+<!-- * facility location hard: $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harded (see later in the study). -->
 
-The second research question related to that topic is: **does the method used to generate the coefficients of the objective function has an impact on the difficulty of the problem ?**. Indeed, the usual procedure to generate objective function is to generate the coefficients randomly in a given range $[a,b]$. However, one could imagine other way to generate coefficient. Four methods will be studied here.
+<!-- The second research question related to that topic is: **does the method used to generate the coefficients of the objective function has an impact on the difficulty of the problem ?**. Indeed, the usual procedure to generate objective function is to generate the coefficients randomly in a given range $[a,b]$. However, one could imagine other way to generate coefficient. Four methods will be studied here. -->
 
 
 # Analysis: Research Question 1 (R1)
