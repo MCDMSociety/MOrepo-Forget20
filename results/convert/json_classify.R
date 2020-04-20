@@ -48,7 +48,7 @@ dat <- read_csv("data/stat.csv", col_types = cols()) %>% rownames_to_column()
 dat
 
 start_time <- now()
-
+# 2884,2924,2964,3004,3044
 #' ### Update json files with classification of points
 resJsonFiles <- list.files("..", ".json", full.names = T)
 for (iName in unique(dat$instance)) {
@@ -60,16 +60,19 @@ for (iName in unique(dat$instance)) {
    if (length(resFilesTmp) > 0) {
       # message(iName,": ")
       # cat(iName, ": ", sep="")
-      for (i in 1:length(resFilesTmp)) {
+      for (i in 1:nrow(tmp)) {
+         mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
+         fileN <- paste0("../", iName, "_", mth1, "_result.json")
+         if (!file_exists(fileN)) next
          message("File ", tmp$rowname[i], "/", nrow(dat), " | ", sep="")
-         lst <- jsonlite::fromJSON(resFilesTmp[i])
+         lst <- jsonlite::fromJSON(fileN)
          if (length(which(is.na(lst$points$type))) > 0 & lst$optimal) { # not classified yet
             if (!classified) {
                pts0 <- lst$points[,1:(ncol(lst$points)-1)] %>%
                   mutate(rowId = 1:nrow(.))
                pts <- classifyNDSet(pts0[,1:(ncol(pts0)-1)]) %>%
                   select(-(se:us), type = "cls")
-               print(pts)
+               # print(pts)
                pts <- full_join(pts0, pts, by = c("z1", "z2", "z3")) %>%
                   arrange(rowId) %>% # so the order will be the same as in XE
                   select(contains("z"), type)
@@ -77,7 +80,7 @@ for (iName in unique(dat$instance)) {
             }
             lst$points <- pts
             str <- jsonlite::toJSON(lst, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null")
-            readr::write_lines(str, resFilesTmp[i])
+            readr::write_lines(str, fileN)
             # message("Now classified")
          } else {
             # message("Already classified")
