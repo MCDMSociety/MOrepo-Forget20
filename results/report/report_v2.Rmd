@@ -459,7 +459,7 @@ tree before the algorithm ends.
 <!-- The second research question related to that topic is: **does the method used to generate the coefficients of the objective function has an impact on the difficulty of the problem ?**. Indeed, the usual procedure to generate objective function is to generate the coefficients randomly in a given range $[a,b]$. However, one could imagine other way to generate coefficient. Four methods will be studied here. -->
 
 
-# Analysis: Research Question 1 (R1)
+# Analysis: Research Question 1 (R1) - How do input statistics affect the number of nondominated solutions?
 
 In this section, relations between |YN| (`YN`) and various input statistics. How do input
 statistics affect the number of nondominated solutions?
@@ -492,7 +492,9 @@ ggplot(datPA, aes(y = YN , x = n)) +
   theme(legend.position="bottom", legend.title=element_blank()) 
 ```
 
-Based on the plots we may answer the research question by concluding ...
+Based on the plots we may answer the research question by concluding that range have an effect. A small cofficient range gives a smaller range of possible objective values and hence fewer possible nondominated points. Note a smaller range may result in a larger amount of alternative solutions corresponding to a nondominted point. The speed of the algorithm may be affected by alternative optimal solutions ...
+
+For AS scaling the cost don't affect the size of nondominated points.
 
 
 ## R1b: Does the generation method of the objective coefficients (`coef`) have an effect?
