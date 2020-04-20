@@ -38,65 +38,47 @@ options(width = 100)
 setwd("./results/convert")
 source("functions.R")
 
-#' Get all instances
-instances <- list.files("../../instances/raw/", recursive = T) %>%
-   str_remove(".*/") %>% str_remove(".raw")
-str(instances)
-
 #' Read result output
 dat <- read_csv("data/stat.csv", col_types = cols()) %>% rownames_to_column()
 dat
 
-start_time <- now()
-#' ### Update json files with classification of points
-resJsonFiles <- list.files("..", ".json", full.names = T)
+# start_time <- now()
+#' ### Check classification of points
+endRun = FALSE
 for (iName in unique(dat$instance)) {
-   fileNCsv <- read_csv(str_c("data/details/", iName, "_UB.txt"), col_types = cols())[,1:3]
+   if (endRun) break
+   fileNCsv <- str_c("data/details/", iName, "_UB.txt")
    if (!file_exists(fileNCsv)) next
+   pts <- read_csv(fileNCsv, col_types = cols())[,1:3]
    tmp <- dat %>% dplyr::filter(instance == iName)
-   resFilesTmp <- grep(iName, resJsonFiles, value = T)
-   classified <- F
-   # message("\nDuration: ", now() - start_time,"\n")
-   if (now() - start_time > 60*20) {message("\nStop script. Max time obtained."); break}
-   if (length(resFilesTmp) > 0) {
-      # message(iName,": ")
-      # cat(iName, ": ", sep="")
-      for (i in 1:nrow(tmp)) {
-         mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
-         mth <- mth1 %>%
-            str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
-         fileNJson <- paste0("../", iName, "_", mth1, "_result.json")
-
-         if (!file_exists(fileN)) next
-         message("File ", tmp$rowname[i], "/", nrow(dat), " | ", sep="")
-         lst <- jsonlite::fromJSON(fileN)
-
-         if (length(which(is.na(lst$points$type))) > 0 & lst$optimal) { # not classified yet
-            if (!classified) {
-               pts0 <- lst$points[,1:(ncol(lst$points)-1)] %>%
-                  mutate(rowId = 1:nrow(.))
-               pts <- classifyNDSet(pts0[,1:(ncol(pts0)-1)]) %>%
-                  select(-(se:us), type = "cls")
-               # print(pts)
-               pts <- full_join(pts0, pts, by = c("z1", "z2", "z3")) %>%
-                  arrange(rowId) %>% # so the order will be the same as in XE
-                  select(contains("z"), type)
-               classified = T
-            }
+   # if (now() - start_time > 60*20) {message("\nStop script. Max time obtained."); break}
+   message("\n", iName,": ", appendLF = F)
+   for (i in 1:nrow(tmp)) {
+      message("File ", tmp$rowname[i], "/", nrow(dat), "", sep="", appendLF = F)
+      mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
+      mth <- mth1 %>%
+         str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
+      fileNJson <- paste0("../", iName, "_", mth1, "_result.json")
+      if (!file_exists(fileNJson)) next
+      lst <- jsonlite::fromJSON(fileNJson)
+      if (length(which(is.na(lst$points$type))) == 0 & lst$optimal) { # classified
+         pts1 <- lst$points[,1:(ncol(lst$points)-1)] %>%
+            mutate(rowId = 1:nrow(.))
+         pts2 <- full_join(pts1, pts, by = c("z1", "z2", "z3"))
+         if (nrow(pts) != nrow(pts2)) {
+            message ("\nError: Not same solutions! Recalc.")
+            pts3 <- classifyNDSet(pts) %>%
+               select(-(se:us), type = "cls")
             lst$points <- pts
             str <- jsonlite::toJSON(lst, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null")
-            readr::write_lines(str, resFilesTmp[i])
-            # message("Now classified")
+            readr::write_lines(str, fileNJson)
          } else {
-            # message("Already classified")
-            pts <- lst$points
-            classified <- T
+            message(" - OK | ", appendLF = F)
          }
-      }
-   } else warning("Error: Can't find result files for ", iName, "!", sep="")
+      } else {message(" - Skip | ", appendLF = F)}
+   }
 }
 
 warnings()
-
 
 #' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html
