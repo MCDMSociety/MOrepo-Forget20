@@ -83,7 +83,7 @@ for (iName in unique(dat$instance)) {
          next
       }
       if (nrow(tmp %>% dplyr::filter(solved == 1) %>% distinct(YN)) > 1) {
-         warning("Error: ", iName, ". Different number of nondominated points for exact solutions!\n", sep="")
+         warning("Error: ", iName, ". Different number of nondominated points when compare exact solutions!", sep="")
          next
       }
       # message("\nDuration: ", now() - start_time,"\n")
@@ -109,7 +109,7 @@ for (iName in unique(dat$instance)) {
          mth <- mth1 %>%
             str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
          # cat(tmp$rowname[i],": ", mth, "  ", sep="")
-         if (file_exists(paste0(iName, "_", mth1, "_result.json"))) {
+         if (file_exists(paste0("../", iName, "_", mth1, "_result.json"))) {
             # cat("Already generated! ")
             next
          }
@@ -117,15 +117,22 @@ for (iName in unique(dat$instance)) {
          pts1 <- read_csv(grep(str_c(iName, "_", mth), resFilesTmp, value = T), col_types = cols())
          pts2 <- full_join(pts,pts1, by = c("z1", "z2", "z3"))
          pts3 <- pts %>% slice(0)
-         if (nrow(pts) != nrow(pts2) & tmp$solved[i] == 1) warning("Error: ND sets not equal!")
+         if (nrow(pts) != nrow(pts2) & tmp$solved[i] == 1) {
+            warning("Error: Different number of ND points in ",
+                    grep(str_c(iName, "_", mth), resFilesTmp, value = T), " compared to UB set (solved = 1)!")
+            next
+         }
          if (nrow(pts) == nrow(pts2)) pts3 <- pts
          if (tmp$solved[i] == 0) {
             pts3 <- pts1[,1:tmp$p[i]]
             pts3 <- pts3 %>% mutate(type = NA)
             # pts3 <- addNDSet(pts3) %>% select(-(nd:us), type = "cls")
          }
-         if (nrow(pts3) != tmp$YN[i]) warning("Error: Different number of nondominated points!")
-
+         if (nrow(pts3) != tmp$YN[i]) {
+            warning("Error: Number of nondominated points and YN are not equal in ",
+                     grep(str_c(iName, "_", mth), resFilesTmp, value = T), "!")
+            next
+         }
          misc <- list(
             algConfig = tmp %>% select(nodesel:OB) %>% slice(i) %>% as.list(),
             inputStat = list(
