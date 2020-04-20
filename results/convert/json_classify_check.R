@@ -44,9 +44,7 @@ dat
 
 # start_time <- now()
 #' ### Check classification of points
-endRun = FALSE
 for (iName in unique(dat$instance)) {
-   if (endRun) break
    fileNCsv <- str_c("data/details/", iName, "_UB.txt")
    if (!file_exists(fileNCsv)) next
    pts <- read_csv(fileNCsv, col_types = cols())[,1:3]
@@ -62,8 +60,7 @@ for (iName in unique(dat$instance)) {
       if (!file_exists(fileNJson)) next
       lst <- jsonlite::fromJSON(fileNJson)
       if (length(which(is.na(lst$points$type))) == 0 & lst$optimal) { # classified
-         pts1 <- lst$points[,1:(ncol(lst$points)-1)] %>%
-            mutate(rowId = 1:nrow(.))
+         pts1 <- lst$points[,1:3]
          pts2 <- full_join(pts1, pts, by = c("z1", "z2", "z3"))
          if (nrow(pts) != nrow(pts2)) {
             message ("\nError: Not same solutions! Recalc.")
