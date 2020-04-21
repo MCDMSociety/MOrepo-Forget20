@@ -3,9 +3,9 @@ name: R script for generating statistics.csv
 on:
   push:
     paths:
-      - .github/workflows/json_gen_stat.yaml
+      - .github/workflows/json_gen_stat_csv.yaml
       - results/convert/install.R
-      - results/convert/json_gen_stat.R
+      - results/convert/json_gen_stat_csv.R
       - results/*.json
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
         env:
           RGL_USE_NULL: TRUE
       - name: Run R script
-        run: Rscript results/convert/json_gen_stat.R
+        run: Rscript results/convert/json_gen_stat_csv.R
       - name: Commit results
         run: |
           git pull --rebase
