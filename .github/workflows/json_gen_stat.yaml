@@ -1,4 +1,4 @@
-name: R script checking nd points
+name: R script for generating statistics.csv
 
 on:
   push:
