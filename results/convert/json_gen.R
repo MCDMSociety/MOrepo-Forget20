@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
    cache = TRUE, autodep = TRUE, error = TRUE, warning =  TRUE,
    out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
-
+options(nwarnings = 10000)
 
 #' This script is used to convert the program output to json result files (one for each instance).
 #' All the program output is stored in the `data` subfolder
