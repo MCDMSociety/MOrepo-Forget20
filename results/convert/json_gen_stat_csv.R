@@ -70,6 +70,7 @@ for (i in 1:10) {
    )
    dat <- bind_rows(dat, res)
 }
+dat
 dat <- type_convert(dat)
 write_csv(dat, "../statistics.csv")
 warnings()
