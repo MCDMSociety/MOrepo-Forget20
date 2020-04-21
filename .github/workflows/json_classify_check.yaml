@@ -27,8 +27,8 @@ jobs:
         run: Rscript results/convert/json_classify_check.R
       - name: Commit results
         run: |
-          git pull --rebase
           git add .
           git commit --allow-empty -am 'gHA build: ${{github.run_number}}' || echo "No changes to commit"
+          git pull --rebase
           git push https://${{github.actor}}:${{secrets.token}}@github.com/${{github.repository}}.git HEAD:${{ github.ref }} || echo "No changes to commit"
 
