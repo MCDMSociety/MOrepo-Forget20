@@ -38,7 +38,7 @@ setwd("./results/convert")
 
 resJsonFiles <- list.files("..", ".json", full.names = T)
 dat <- NULL
-for (i in 1:10) {
+for (i in 1:length(resJsonFiles)) {
    lst <- jsonlite::fromJSON(resJsonFiles[i])
    outS <- lst$misc$outputStat
    outS$yNStat <- NULL
@@ -71,7 +71,7 @@ for (i in 1:10) {
    dat <- bind_rows(dat, res)
 }
 dat
-dat <- type_convert(dat)
+# dat <- type_convert(dat)
 write_csv(dat, "../statistics.csv")
 warnings()
 
