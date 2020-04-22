@@ -43,16 +43,19 @@ for (i in 1:length(resJsonFiles)) {
    outS <- lst$misc$outputStat
    outS$yNStat <- NULL
    outS <- unlist(outS)
+   rng <- str_c("[", lst$misc$inputStat$coeffRange[1], ",", lst$misc$inputStat$coeffRange[2], "]")
+   pC <- str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*$)', '\\2')
+   if (pC == "UFLP") rangeC = str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*?)_(.*?)_(.*?_.*?)_(.*$)', '\\5')
    res <- c(
       instance = lst$instanceName,
       namePrefix = str_replace(lst$instanceName, '(.*)_(.*)(_.?.?$)', '\\1'),
       insId = str_replace(lst$instanceName, '(.*_)(.*$)', '\\2'),
       constId = str_replace(lst$instanceName, '(.*)_(.*)(_.?.?$)', '\\2'),
-      pb = str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*$)', '\\2'),
+      pb = pC,
       n = lst$misc$inputStat$n,
       p = lst$objectives,
       coef = lst$misc$inputStat$coeffGenMethod,
-      rangeC = str_c("[", lst$misc$inputStat$coeffRange[1], ",", lst$misc$inputStat$coeffRange[2], "]"),
+      rangeC = rng,
       rangeGapC = lst$misc$inputStat$coeffRange[2] - lst$misc$inputStat$coeffRange[1],
       nodesel = lst$misc$algConfig$nodesel,
       varsel = lst$misc$algConfig$varsel,
