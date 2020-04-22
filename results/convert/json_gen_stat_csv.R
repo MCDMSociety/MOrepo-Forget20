@@ -45,7 +45,10 @@ for (i in 1:length(resJsonFiles)) {
    outS <- unlist(outS)
    rng <- str_c("[", lst$misc$inputStat$coeffRange[1], ",", lst$misc$inputStat$coeffRange[2], "]")
    pC <- str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*$)', '\\2')
-   if (pC == "UFLP") rangeC = str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*?)_(.*?)_(.*?_.*?)_(.*$)', '\\5')
+   if (pC == "UFLP") {
+      rangeC = str_c("[", str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*?)_(.*?)_(.*?_.*?)_(.*$)', '\\5'), "]")
+      rangeC = str_replace_all(rangeC, c("_" = "]|[", "-" = ","))
+   }
    res <- c(
       instance = lst$instanceName,
       namePrefix = str_replace(lst$instanceName, '(.*)_(.*)(_.?.?$)', '\\1'),
@@ -75,7 +78,7 @@ for (i in 1:length(resJsonFiles)) {
 }
 dat
 # dat <- type_convert(dat)
-write_csv(dat, "../statistics.csv")
+# write_csv(dat, "../statistics.csv")
 warnings()
 
 #' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html
