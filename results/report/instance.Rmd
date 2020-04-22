@@ -44,13 +44,20 @@ knitr::opts_chunk$set(
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
  
+ Solved configurations:
+ 
 ```{r, include=FALSE}
 inst = params$currentInstance
 D <- read_csv("data/stat.csv")
 carac <- filter(D,instance==inst,solved==1)
 
-dat <- read_csv(paste("data/details/",inst,"_UB.csv",sep=""))
-pts <- as.matrix(dat[,1:3])
+perfPrelim <- filter(D,instance==inst)
+slvd <- c(perfPrelim[[11]][1],perfPrelim[[11]][2],perfPrelim[[11]][3],perfPrelim[[11]][4]) # TO BE CHANGED DEPENDING OF NB OF CONFIG, slvd[i] = 1 if config i solved, 0 otherwise
+
+if(1 %in% slvd){
+  dat <- read_csv(paste("data/details/",inst,"_UB.csv",sep=""))
+  pts <- as.matrix(dat[,1:3])
+}
 
 dat2 <- read_csv(paste("data/details/",inst,"_coef.csv",sep=""))
 coef <- as.matrix(dat2[,1:3])
@@ -81,18 +88,24 @@ The convex hull of the non-dominated set is depicted by the gray surface.
 #pts
 #dat[1:3]
 
-pts <- classifyNDSet(pts[,1:3])
-pts[,1:3]
+if(1 %in% slvd){
+  pts <- classifyNDSet(pts[,1:3])
+  pts[,1:3]
 
-ini3D(argsPlot3d = list(xlim = c(min(pts[,1])-2,max(pts[,1])+2),
-  ylim = c(min(pts[,2])-2,max(pts[,2])+2),
-  zlim = c(min(pts[,3])-2,max(pts[,3])+2)))
-plotPoints3D(pts[pts$se,1:3], argsPlot3d = list(col = "red"))
-plotPoints3D(pts[!pts$sne,1:3], argsPlot3d = list(col = "black"))
-plotPoints3D(pts[!pts$us,1:3], argsPlot3d = list(col = "blue"))
-plotHull3D(pts[,1:3], addRays = TRUE, argsPolygon3d = list(alpha = 0.5), useRGLBBox = TRUE)
+  ini3D(argsPlot3d = list(xlim = c(min(pts[,1])-2,max(pts[,1])+2),
+    ylim = c(min(pts[,2])-2,max(pts[,2])+2),
+    zlim = c(min(pts[,3])-2,max(pts[,3])+2)))
+  plotPoints3D(pts[pts$se,1:3], argsPlot3d = list(col = "red"))
+  plotPoints3D(pts[!pts$sne,1:3], argsPlot3d = list(col = "black"))
+  plotPoints3D(pts[!pts$us,1:3], argsPlot3d = list(col = "blue"))
+  plotHull3D(pts[,1:3], addRays = TRUE, argsPolygon3d = list(alpha = 0.5), useRGLBBox = TRUE)
 
-finalize3D()
+  finalize3D()
+} else {
+  print("No configuration solved !")
+}
+
+
 ```
 
 # Coefficient of the objective function
@@ -110,18 +123,28 @@ finalize3D()
 ```{r,echo=FALSE}
 perfPrelim <- filter(D,instance==inst,OB=="None")
 Y <- perfPrelim[[12]][1]
+slvd <- c(perfPrelim[[11]][1],perfPrelim[[11]][2],perfPrelim[[11]][3],perfPrelim[[11]][4])
 
-datA <- read_csv(paste("data/details/UBrun/",inst,"_d_mof_-2_UB.csv",sep=""))
-datB <- read_csv(paste("data/details/UBrun/",inst,"_b_mof_-2_UB.csv",sep=""))
-datC <- read_csv(paste("data/details/UBrun/",inst,"_d_mfavg_-2_UB.csv",sep=""))
-datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
+if(slvd[1] == 1){
+  datA <- read_csv(paste("data/details/UBrun/",inst,"_d_mof_-2_UB.csv",sep=""))
+}
+if(slvd[2] == 1){
+  datB <- read_csv(paste("data/details/UBrun/",inst,"_b_mof_-2_UB.csv",sep=""))
+}
+if(slvd[3] == 1){
+  datC <- read_csv(paste("data/details/UBrun/",inst,"_d_mfavg_-2_UB.csv",sep=""))
+}
+if(slvd[4] == 1){
+  datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
+}
     
     # depth-mof
     
     T <- filter(perfPrelim,nodesel=="depth",varsel=="mof")[[39]]
     st1 <- seq(0,T,by=T/99)
     val1 <- rep(0,100)
-    for(i in 1:100){
+    if(slvd[1] == 1){
+      for(i in 1:100){
       bidouille <- count(datA,time <= st1[i])
       bidouille <- filter(bidouille,bidouille[1]!=FALSE)
       if (count(bidouille) == 0) {
@@ -132,6 +155,8 @@ datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
       }
       val1[i] <- 100*numer/Y
     }
+    }
+    
 
     # breadth-mof
     
@@ -140,7 +165,8 @@ datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
     T <- T[[39]]
     st2 <- seq(0,T,by=T/99)
     val2 <- rep(0,100)
-    for(i in 1:100){
+    if(slvd[2] == 1){
+      for(i in 1:100){
       bidouille <- count(datB,time <= st2[i])
       bidouille <- filter(bidouille,bidouille[1]!=FALSE)
       if (count(bidouille) == 0) {
@@ -151,6 +177,8 @@ datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
       }
       val2[i] <- 100*numer/Y
     }
+    }
+    
     
   # depth-mfavg
     
@@ -159,7 +187,8 @@ datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
     T <- T[[39]]
     st3 <- seq(0,T,by=T/99)
     val3 <- rep(0,100)
-    for(i in 1:100){
+    if(slvd[3] == 1){
+      for(i in 1:100){
       bidouille <- count(datC,time <= st3[i])
       bidouille <- filter(bidouille,bidouille[1]!=FALSE)
       if (count(bidouille) == 0) {
@@ -170,6 +199,8 @@ datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
       }
       val3[i] <- 100*numer/Y
     }
+    }
+    
     
     # breadth-mfavg
     
@@ -178,7 +209,8 @@ datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
     T <- T[[39]]
     st4 <- seq(0,T,by=T/99)
     val4 <- rep(0,100)
-    for(i in 1:100){
+    if(slvd[4] == 1){
+      for(i in 1:100){
       bidouille <- count(datD,time <= st4[i])
       bidouille <- filter(bidouille,bidouille[1]!=FALSE)
       if (count(bidouille) == 0) {
@@ -188,6 +220,7 @@ datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
         numer <- bidouille[[1,2]]
       }
       val4[i] <- 100*numer/Y
+    }
     }
     
     
