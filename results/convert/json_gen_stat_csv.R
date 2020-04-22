@@ -47,7 +47,7 @@ for (i in 1:length(resJsonFiles)) {
    pC <- str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*$)', '\\2')
    if (pC == "UFLP") {
       rng = str_c("[", str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*?)_(.*?)_(.*?_.*?)_(.*$)', '\\5'), "]")
-      rng = str_replace_all(rangeC, c("_" = "]|[", "-" = ","))
+      rng = str_replace_all(rng, c("_" = "]|[", "-" = ","))
    }
    res <- c(
       instance = lst$instanceName,
