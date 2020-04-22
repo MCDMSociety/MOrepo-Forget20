@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
    cache = TRUE, autodep = TRUE, error = TRUE, warning =  TRUE,
    out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
-options(nwarnings = 10000)
+options(nwarnings = 100)
 
 
 #' This script is used to generate the aggregated statistics stored in `statistics.csv` in the
@@ -46,8 +46,8 @@ for (i in 1:length(resJsonFiles)) {
    rng <- str_c("[", lst$misc$inputStat$coeffRange[1], ",", lst$misc$inputStat$coeffRange[2], "]")
    pC <- str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*$)', '\\2')
    if (pC == "UFLP") {
-      rangeC = str_c("[", str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*?)_(.*?)_(.*?_.*?)_(.*$)', '\\5'), "]")
-      rangeC = str_replace_all(rangeC, c("_" = "]|[", "-" = ","))
+      rng = str_c("[", str_replace(lst$instanceName, '(^.*?)-(.*?)_(.*?)_(.*?)_(.*?_.*?)_(.*$)', '\\5'), "]")
+      rng = str_replace_all(rangeC, c("_" = "]|[", "-" = ","))
    }
    res <- c(
       instance = lst$instanceName,
@@ -78,7 +78,7 @@ for (i in 1:length(resJsonFiles)) {
 }
 dat
 # dat <- type_convert(dat)
-# write_csv(dat, "../statistics.csv")
+write_csv(dat, "../statistics.csv")
 warnings()
 
 #' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html
