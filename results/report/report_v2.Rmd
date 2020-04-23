@@ -40,7 +40,7 @@ loadPackages <- function(packages) {
   lapply(packages, library, character.only = TRUE)
   invisible(NULL)
 }
-loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown","ggplot2"))
+loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown", "ggplot2", "plotly"))
 
 library(knitr)
 library(rgl)
@@ -52,7 +52,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
   cache = TRUE, autodep = TRUE, echo=FALSE,
-  out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
+  out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
 )
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
@@ -174,15 +174,11 @@ This report present the computational results for the instances. All instances a
 # Instances
 
 ```{r load instance results}
-dat <- read_csv("../convert/data/stat.csv") %>% 
-  mutate(rangeC = str_c("[",rangemin,",",rangemax,"]"), 
-         namePrefix = str_replace(instance, '(.*)_(.*)(_.?.?$)', '\\1'),
-         insId = str_replace(instance, '(.*_)(.*$)', '\\2'), 
-         constId = str_replace(instance, '(.*)_(.*)(_.?.?$)', '\\2'))
+dat <- read_csv("../statistics.csv")   #"../convert/data/stat.csv"
 
 datInput <- dat %>% 
   distinct(instance, .keep_all = TRUE) %>% 
-  select(instance, pb, n, p, coef,rangemin,rangemax, ratioNDcoef)
+  select(instance, pb, n, p, coef, rangeC, ratioNDcoef)
 ```
 
 We consider a total of `r nrow(datInput)` instances named 
@@ -234,7 +230,9 @@ We have:
     * UFLP = Uncapacited Facility Location Problem
   - `n`: Number of variables.
   - `p`: Number of objectives.
-  - `rangemin`, `rangemax`: the range the objective coefficients are generated within.
+  - `rangeC`: the range the objective coefficients are generated within. For the facility location problems, two sets of costs are generated: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. In this case `rangeC` defines two ranges: the assignment costs in $[a,b]$ and the facility opening costs which will be divided into two categories of instances:
+    * facility location easy: $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier.
+    * facility location hard: $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harder.
   - `coef`: The method used for the generation of the objective coefficients (see section Research questions). We have:
     * random = random coefficient generation
     * 2box = two-boxes generation
@@ -247,7 +245,6 @@ We have:
 The coefficient are generated randomly with a uniform distribution in the range $[a,b]$. For three objectives, random generated coefficients looks as follows.
 
 ```{r, webgl = TRUE, echo = FALSE}
-
 range <- matrix(c(1,100, 50,100, 10,50), ncol = 2, byrow = TRUE )
 ini3D()
 pts <- genSample(3, 1000, range = range, random = TRUE)
@@ -422,7 +419,11 @@ We first consider
      d) Can we exclude some values of the input statistics for further study (e.g. some ranges)?
      
   2. Which instances are hard to solve?
+     a) What is the cpu for each instance?
+     b) In which subprocedures are the cpu time used?
+     b) Which sphere generation methods are hardest to solve?
      a) What is the std.dev. within each instance group?
+     
 
 Next, we study how some components of the branch and bound influences the behaviour of the algorithm:
 
@@ -451,10 +452,7 @@ tree before the algorithm ends.
 <!-- * $[1,1000]$: a large range of values -->
 <!-- * $[1000,2000]$: a large range of values, but shifted to larger values. -->
 
-<!-- For the facility location problems, two sets of costs (i.e. coefficients of objective function) can be identified: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. Let the assignment costs take their values in $[a,b]$, the generation of the facility opening costs will be divided into two categories of instances: -->
 
-<!-- * facility location easy: $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier (see later in the study). -->
-<!-- * facility location hard: $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harded (see later in the study). -->
 
 <!-- The second research question related to that topic is: **does the method used to generate the coefficients of the objective function has an impact on the difficulty of the problem ?**. Indeed, the usual procedure to generate objective function is to generate the coefficients randomly in a given range $[a,b]$. However, one could imagine other way to generate coefficient. Four methods will be studied here. -->
 
@@ -469,9 +467,8 @@ statistics affect the number of nondominated solutions?
 ```{r}
 datP <- dat %>%  
   dplyr::filter(solved==1) %>% 
-  select(instance, pb, n, p, coef,rangemin,rangemax, ratioNDcoef, YN) %>% 
-  distinct() %>% 
-  mutate(rangeC = str_c("[",rangemin,",",rangemax,"]"))
+  select(instance, pb, n, p, coef, rangeC, ratioNDcoef, YN) %>% 
+  distinct() 
 
 ggplot(datP, aes(y = YN , x = n)) + 
   geom_jitter(aes(color = rangeC)) + 
@@ -492,14 +489,33 @@ ggplot(datPA, aes(y = YN , x = n)) +
   theme(legend.position="bottom", legend.title=element_blank()) 
 ```
 
-Based on the plots we may answer the research question by concluding that range have an effect. A small cofficient range gives a smaller range of possible objective values and hence fewer possible nondominated points. Note a smaller range may result in a larger amount of alternative solutions corresponding to a nondominted point. The speed of the algorithm may be affected by alternative optimal solutions ...
+Based on the plots we may answer the research question by concluding that range have an effect. A small cofficient range gives a smaller range of possible objective values and hence fewer possible nondominated points. Note a smaller range may result in a larger amount of alternative solutions corresponding to a nondominted point. The speed of the algorithm may be affected by alternative optimal solutions.
 
-For AS scaling the cost don't affect the size of nondominated points.
+For AP scaling the cost don't affect the size of nondominated points. For UFLP there is an effect due to the way costs are generated so here scaling don't give the same results. [Missing comments for KP and IP]
+
+We may conclude that further study only consider range [1,1000] and the two cases for the UFLP with this range. 
+
+Note that the number of nondominated points increase with the number of variables which is due to the total possible range of the objectives increase with `n` (there is room for more points). 
+
+```{r}
+plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d", 
+        mode="markers", 
+        data = dat %>% dplyr::filter(pb == "AP"),
+        marker = list(size=3),
+        color = ~n) %>% plotly::layout(title = "AP")
+
+plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d", 
+        mode="markers", 
+        data = dat %>% dplyr::filter(pb == "UFLP"),
+        marker = list(size=3),
+        color = ~n) %>% plotly::layout(title = "UFLP")
+```
+
 
 
 ## R1b: Does the generation method of the objective coefficients (`coef`) have an effect?
 
-```{r}
+```{r, fig.asp = 1}
 ggplot(datP, aes(y = YN , x = n)) +
   geom_jitter(aes(color = coef)) +
   facet_grid(rows = vars(rangeC), cols = vars(pb), margins = T, scales = "free") +
@@ -507,50 +523,238 @@ ggplot(datP, aes(y = YN , x = n)) +
   theme(legend.position="bottom", legend.title=element_blank())
 
 datPA <- datP %>%
-  group_by(pb, coef, rangemin, rangemax, n) %>%
+  group_by(pb, coef, rangeC, n) %>%
   dplyr::summarise(YN = mean(YN))
 
-ggplot(datP, aes(y = YN , x = n)) +
+ggplot(datPA, aes(y = YN , x = n)) +
   geom_jitter(aes(color = coef)) +
   facet_grid(rows = vars(rangeC), cols = vars(pb), margins = T, scales = "free") +
   ggtitle("Effect of generation method (average |YN| for each instance group)") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-Based on the plots we may answer the research question by concluding ...
+Based on the plots we may answer the research question by concluding that the objective cofficient generation method have a high effect on the number of solutions. Random generation on average produce the lowest amount, then 2box. The two sphere methods seems to give approx. the same results. 
+
+Note in general the speed of the algorithm is higly correlated with the number of non-dominated points. That is, instances with a high number of nondominated points are harder to solve. Based on this we may conclude that using one of the sphere methods for further study seems a good choice. We may also consider comparing it against the easiest method.  
 
 
 ## R1c: Does the proportion of objective coefficient vectors that are non-dominated (`ratioNDcoef`) have an effect?
 
-```{r}
-ggplot(datP, aes(y = YN , x = n)) +
-  geom_jitter(aes(color = ratioNDcoef)) +
-  facet_grid(rows = vars(rangeC), cols = vars(pb), margins = T) +
-  ggtitle("Effect of ratio (|YN| for each instance)") +
-  theme(legend.position="bottom", legend.title=element_blank())
+This is highly related to the objective cofficient generation method:
 
+```{r}
+tmp <- dat %>% group_by(pb, coef, rangeC) %>% summarize(ratio = mean(ratioNDcoef))
+tmp %>% arrange(pb, rangeC, ratio)
+```
+
+Note for the fixed `pb` and `rangeC` the ratio approx. increase in the order random, 2box, spheredown and sphereup (with random and 2box (spheredown and sphereup) often close to each other). However it is important to keep in mind that the ratio is highly dependent on the problem class (how variables are linked together). The UFLP have much smaller ratios due to that the costs relate to different aspects of the problem. 
+
+
+```{r, fig.asp = 1}
 ggplot(datP, aes(y = YN , x = n)) +
-  geom_jitter(aes(color = ratioNDcoef)) +
-  facet_grid(rows = vars(coef), cols = vars(pb), margins = T) +
+  geom_jitter(aes(color = ratioNDcoef, shape = coef)) +
+  facet_grid(rows = vars(rangeC), cols = vars(pb), margins = T, scales = "free") +
   ggtitle("Effect of ratio (|YN| for each instance)") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-Based on the plots we may answer the research question by concluding ...
+```{r, eval=FALSE}
+ggplot(datP, aes(y = YN , x = n)) +
+  geom_jitter(aes(color = ratioNDcoef, shape = rangeC)) +
+  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Effect of ratio (|YN| for each instance)") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+
+Based on the plot we may answer the research question by concluding that the ratio may have a high effect on the number of non-dominated solutions. Given a fixed problem class and objective coefficient range, the ratio may have a high effect on the dificulty of the instance. 
 
 ## R1d: Can we exclude some values of the input statistics for further study (e.g. some ranges)?
 
+The above analysis may conclude that instances with a lower number of nondominated points can be generated by
+
+  1. Use a narrow cost range.
+  2. Use random cost generation which result in a low ratio.
+  
+To have harder instances we may skip these instances and instead use instances wiht a higher number of nondominated points
+
+  1. Use a wide cost range (e.g. [1,1000]).
+  2. Use a sphere generation method.
+  
+Scaling the range don't have a high effect on most problem classes. 
 
 
-# Analysis: Research Question 2 (R2)
+# Analysis: Research Question 2 (R2) - Which instances are hard to solve?
 
-We focus on cpu time (`?`) and try to get an overview over difficulty of the instances.
+We focus on cpu time (`tpstotal`) and try to get an overview over difficulty of the instances.
+
+## R2a: What is the cpu for each instance?
+
+First let us have a general look:
+
+```{r}
+ggplot(dat, aes(y = tpstotal , x = n)) + 
+  stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
+  geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 1, height = 0, size = 0.7) +
+  # facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Cpu time for all instances (lines are means)") +
+  theme(legend.position="bottom", legend.title=element_blank()) 
+```
+
+The general picture is fuzzy due to different problem classes, ranges and generation methods. However, breadth.mof.None seems to win. Let us have a closer look:
+
+```{r, fig.asp=1}
+datP <- dat %>% 
+  dplyr::filter(pb == "AP") 
+ggplot(datP, aes(y = tpstotal , x = n)) + 
+  stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
+  geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 3, height = 0, size = 0.7) +
+  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "free") +
+  ggtitle("Cpu time for AP (note scale free)") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+
+
+```{r, fig.asp=1}
+datP <- dat %>% 
+  dplyr::filter(pb == "KP") 
+ggplot(datP, aes(y = tpstotal , x = n)) + 
+  stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
+  geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 1, height = 0, size = 0.7) +
+  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
+  ggtitle("Cpu time for KP") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+
+```{r, fig.asp=1}
+datP <- dat %>% 
+  dplyr::filter(pb == "UFLP") 
+ggplot(datP, aes(y = tpstotal , x = n)) + 
+  stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
+  geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 4, height = 0, size = 0.7) +
+  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
+  ggtitle("Cpu time for UFLP") +
+  theme(legend.position="bottom", legend.title=element_blank()) 
+```
+
+A better approach may be to find the winner configuration for each instance given some groupings:
+
+```{r}
+datP <- 
+  dat %>% 
+  group_by(instance) %>% 
+  nest() %>% 
+  mutate(data = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
+  mutate(win = map(data, function(df) {str_c(df$nodesel[1], ".", df$varsel[1], ".", df$OB[1])})) %>% 
+  unnest(c(win, data)) 
+
+res <- datP %>% 
+  mutate(count = nrow(.)) %>% 
+  group_by(win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(desc(pct))
+ggplot(res, aes(y = pct, x = win, fill = win)) + 
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col() + 
+  ggtitle("Winner pct") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+Overall breadth methods win.
+
+```{r}
+res <- datP %>% 
+  group_by(pb) %>% 
+  mutate(count = n()) %>% 
+  group_by(pb, win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(pb,desc(pct))
+ggplot(res, aes(y = pct, x = win, fill = win)) + 
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col() + 
+  facet_grid(rows = vars(pb), scales = "fixed") +
+  ggtitle("Winner pct") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+Note if we look at different problem classes different variable selection methods win. 
+
+```{r}
+res <- datP %>% 
+  group_by(pb, coef) %>% 
+  mutate(count = n()) %>% 
+  group_by(pb, coef, win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(pb, coef, desc(pct))
+ggplot(res, aes(y = pct, x = win, fill = win)) + 
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col() + 
+  facet_grid(rows = vars(pb), cols = vars(coef), scales = "fixed") +
+  ggtitle("Winner pct") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+We may also group by `coef`. Which only seems to have an effect for AP.
+
+
+```{r}
+res <- datP %>% 
+  group_by(pb, YN) %>% 
+  mutate(count = n()) %>% 
+  group_by(pb, YN, win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(pb, YN, desc(pct))
+ggplot(res, aes(x = YN, fill = win)) + 
+  geom_histogram(position = "fill", bins = 10) + 
+  stat_bin(bins = 10, geom="text", colour="white", size=3.5,
+            aes(label=..count.., group = win), position=position_fill(vjust=0.5)) +
+  facet_grid(rows = vars(pb), margins = T, scales = "fixed") +
+  ggtitle("Pct for each configuration given 10 bins") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+Will different methods be used for harder instances (here we use YN as a proxy for hard). Let us try to plot the cpu time for winners only:
+
+```{r, fig.asp=1}
+datPP <- datP %>% 
+  dplyr::filter(pb == "AP") 
+ggplot(datPP, aes(y = tpstotal , x = n)) + 
+  stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_jitter(aes(color = win), width = 3, height = 0, size = 0.7) +
+  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
+  ggtitle("Cpu time for AP") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+
+```{r, fig.asp=1}
+datPP <- datP %>% 
+  dplyr::filter(pb == "KP") 
+ggplot(datPP, aes(y = tpstotal , x = n)) + 
+  stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_jitter(aes(color = win), width = 1, height = 0, size = 0.7) +
+  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
+  ggtitle("Cpu time for KP") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+
+```{r, fig.asp=1}
+datPP <- datP %>% 
+  dplyr::filter(pb == "UFLP") 
+ggplot(datPP, aes(y = tpstotal , x = n)) + 
+  stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_jitter(aes(color = win), width = 4, height = 0, size = 0.7) +
+  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
+  ggtitle("Cpu time for UFLP") +
+  theme(legend.position="bottom", legend.title=element_blank()) 
+```
+
+
 
 ## What is the std.dev. within each instance group?
 
 By instance group we mean an unique combination of `namePrefix`, `constId`, `pb`, `n`, `coef`, `rangeC`, `nodesel`, `varsel`, `OB`
 
-```{r}
+```{r, eval = FALSE}
 datP <- dat %>% 
   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, contains("tps")) %>% 
   group_by(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB) %>% nest()
@@ -596,8 +800,6 @@ ggplot(datP, aes(y = maxV_tpstotal, x = n)) +
   theme(legend.position="bottom", legend.title=element_blank()) 
 ```
 
-```{r}
-datP <- datP %>% select()
-```
+
 
 
