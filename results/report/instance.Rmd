@@ -1,18 +1,19 @@
 ---
 title: "`r params$new_title`"
-author: "Nicolas"
+author: "Nicolas Forget, Lars Relund Nielsen, Sune Lauth Gadegaard"
 date: "`r Sys.Date()`"
 output:
   html_document: 
     df_print: paged
-    number_sections: yes
+    number_sections: false
     toc: yes
     theme: cosmo
+    keep_md: false
 editor_options: 
-  chunk_output_type: console
+  chunk_output_cls: console
 params:
   new_title: 'Results for instance '
-  currentInstance: 'AS_5_3_2box_1_10_1'
+  currentInstance: 'Forget20-AP_10_3_1-10_2box_1_1'
 ---
  
 ```{r setup, include=FALSE}
@@ -30,204 +31,386 @@ loadPackages <- function(packages) {
   lapply(packages, library, character.only = TRUE)
   invisible(NULL)
 }
-loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown"))
+loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown", "fs"))
 options(rgl.useNULL=TRUE)
 options(rgl.printRglwidget=FALSE)
 
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "",
   warning=FALSE, message=FALSE, include = TRUE, 
+  cache = TRUE, autodep = TRUE, echo=FALSE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
  
- Solved configurations:
- 
-```{r, include=FALSE}
+```{r}
 inst = params$currentInstance
-D <- read_csv("data/stat.csv")
-carac <- filter(D,instance==inst,solved==1)
-
-perfPrelim <- filter(D,instance==inst)
-slvd <- c(perfPrelim[[11]][1],perfPrelim[[11]][2],perfPrelim[[11]][3],perfPrelim[[11]][4]) # TO BE CHANGED DEPENDING OF NB OF CONFIG, slvd[i] = 1 if config i solved, 0 otherwise
-
-if(1 %in% slvd){
-  dat <- read_csv(paste("data/details/",inst,"_UB.csv",sep=""))
-  pts <- as.matrix(dat[,1:3])
-}
-
-dat2 <- read_csv(paste("data/details/",inst,"_coef.csv",sep=""))
-coef <- as.matrix(dat2[,1:3])
-nn <- count(dat2)[[1,1]]
+jsonFiles <- list.files("..", str_c(inst, "_.*.json"), full.names = T)
+instFile <- list.files("../..", str_c(inst,".raw"), full.names = T, recursive = T)
+datStat <- read_csv("../statistics.csv") %>% 
+  dplyr::filter(instance == inst)
 ```
 
-[Return to main report](report.html)
+We consider instance (see [main](report.html) report for a description of stattistics):
 
-# Instance caracteristics
-
-```{r, echo = FALSE}
-newtab <- slice( select(carac, instance, pb, n, p, coef, YN, ratioNDcoef) , 1)
-newtab
+```{r}
+datInput <- datStat %>% 
+  distinct(instance, .keep_all = TRUE) %>% 
+  select(instance, pb, n, p, coef, rangeC, ratioNDcoef)
+datInput
 ```
 
+The cofficients are generated using the `r datInput$coef` method and have a nondominated ratio of `r datInput$ratioNDcoef`:
 
-# Non-dominated points
-
-In the following plot, the non-dominated set is depicted according to the following rule :
-
-* Red : supported extreme point
-* Blue : supported non-extreme point
-* Black : non-supported point
-
-The convex hull of the non-dominated set is depicted by the gray surface.
- 
-```{r, webgl = TRUE, echo = FALSE}
-#pts
-#dat[1:3]
-
-if(1 %in% slvd){
-  pts <- classifyNDSet(pts[,1:3])
-  pts[,1:3]
-
-  ini3D(argsPlot3d = list(xlim = c(min(pts[,1])-2,max(pts[,1])+2),
-    ylim = c(min(pts[,2])-2,max(pts[,2])+2),
-    zlim = c(min(pts[,3])-2,max(pts[,3])+2)))
-  plotPoints3D(pts[pts$se,1:3], argsPlot3d = list(col = "red"))
-  plotPoints3D(pts[!pts$sne,1:3], argsPlot3d = list(col = "black"))
-  plotPoints3D(pts[!pts$us,1:3], argsPlot3d = list(col = "blue"))
-  plotHull3D(pts[,1:3], addRays = TRUE, argsPolygon3d = list(alpha = 0.5), useRGLBBox = TRUE)
-
-  finalize3D()
-} else {
-  print("No configuration solved !")
-}
-
-
-```
-
-# Coefficient of the objective function
-
-```{r, webgl = TRUE, echo = FALSE}
-
-dat2[,1:3]
+```{r, webgl = TRUE}
+# read coef from instance
+coefPoints <- read_delim(instFile, delim = " ", skip = 4, n_max = 3, col_names = F, trim_ws = T)[,1:datInput$n] %>% t() 
+rownames(coefPoints) <- NULL
+colnames(coefPoints) <- c("Z1", "Z2", "Z3")
+coefPoints <- as_tibble(coefPoints)
 ini3D()
-plotPoints3D(coef)
+plotPoints3D(coefPoints)
 finalize3D()
 ```
 
-# Preliminary tests
+# Non-dominated points
 
-```{r,echo=FALSE}
-perfPrelim <- filter(D,instance==inst,OB=="None")
-Y <- perfPrelim[[12]][1]
-slvd <- c(perfPrelim[[11]][1],perfPrelim[[11]][2],perfPrelim[[11]][3],perfPrelim[[11]][4])
+All nondominated points were `r if (!any(datStat$solved)) "not"` found by one of the algorithm runs:
 
-if(slvd[1] == 1){
-  datA <- read_csv(paste("data/details/UBrun/",inst,"_d_mof_-2_UB.csv",sep=""))
-}
-if(slvd[2] == 1){
-  datB <- read_csv(paste("data/details/UBrun/",inst,"_b_mof_-2_UB.csv",sep=""))
-}
-if(slvd[3] == 1){
-  datC <- read_csv(paste("data/details/UBrun/",inst,"_d_mfavg_-2_UB.csv",sep=""))
-}
-if(slvd[4] == 1){
-  datD <- read_csv(paste("data/details/UBrun/",inst,"_b_mfavg_-2_UB.csv",sep=""))
-}
-    
-    # depth-mof
-    
-    T <- filter(perfPrelim,nodesel=="depth",varsel=="mof")[[39]]
-    st1 <- seq(0,T,by=T/99)
-    val1 <- rep(0,100)
-    if(slvd[1] == 1){
-      for(i in 1:100){
-      bidouille <- count(datA,time <= st1[i])
-      bidouille <- filter(bidouille,bidouille[1]!=FALSE)
-      if (count(bidouille) == 0) {
-        numer <- 0
-      }
-      else{
-        numer <- bidouille[[1,2]]
-      }
-      val1[i] <- 100*numer/Y
-    }
-    }
-    
+```{r, webgl = TRUE}
+id <- 1
+if (any(datStat$solved)) id <- which(datStat$solved)[1]
+mth <- paste0(datStat$nodesel[id], "_", datStat$varsel[id], "_", tolower(datStat$OB[id]))
+fileN <- grep(str_c(inst, "_", mth, "_result.json"), jsonFiles, value = T)
+if (!file.exists(fileN)) stop("File ", fileN, " cannot be found!")
+lstRes <- jsonlite::fromJSON(fileN)
+pts <- lstRes$points
+ini3D(argsPlot3d = list(xlim = c(min(pts[,1])-2,max(pts[,1])+2),
+    ylim = c(min(pts[,2])-2,max(pts[,2])+2),
+    zlim = c(min(pts[,3])-2,max(pts[,3])+2)))
+plotPoints3D(pts[pts$cls == "se",1:3], argsPlot3d = list(col = "red"))
+plotPoints3D(pts[pts$cls == "sne",1:3], argsPlot3d = list(col = "green"))
+plotPoints3D(pts[pts$cls == "us",1:3], argsPlot3d = list(col = "blue"))
+plotHull3D(pts[,1:3], addRays = TRUE, argsPolygon3d = list(alpha = 0.5), useRGLBBox = TRUE)
+finalize3D(argsAxes3d = list(edges = "bbox"))
+str <- ""
+if (!any(datStat$solved)) str <- str_c("Solution for algorithm configuration ", mth, ".")
+```
 
-    # breadth-mof
-    
-    perfPrelim <- filter(D,instance==inst)
-    T <- perfPrelim %>% filter(nodesel=="breadth",varsel=="mof")
-    T <- T[[39]]
-    st2 <- seq(0,T,by=T/99)
-    val2 <- rep(0,100)
-    if(slvd[2] == 1){
-      for(i in 1:100){
-      bidouille <- count(datB,time <= st2[i])
-      bidouille <- filter(bidouille,bidouille[1]!=FALSE)
-      if (count(bidouille) == 0) {
-        numer <- 0
-      }
-      else{
-        numer <- bidouille[[1,2]]
-      }
-      val2[i] <- 100*numer/Y
-    }
-    }
-    
-    
-  # depth-mfavg
-    
-    perfPrelim <- filter(D,instance==inst)
-    T <- perfPrelim %>% filter(nodesel=="depth",varsel=="mfavg")
-    T <- T[[39]]
-    st3 <- seq(0,T,by=T/99)
-    val3 <- rep(0,100)
-    if(slvd[3] == 1){
-      for(i in 1:100){
-      bidouille <- count(datC,time <= st3[i])
-      bidouille <- filter(bidouille,bidouille[1]!=FALSE)
-      if (count(bidouille) == 0) {
-        numer <- 0
-      }
-      else{
-        numer <- bidouille[[1,2]]
-      }
-      val3[i] <- 100*numer/Y
-    }
-    }
-    
-    
-    # breadth-mfavg
-    
-    perfPrelim <- filter(D,instance==inst)
-    T <- perfPrelim %>% filter(nodesel=="breadth",varsel=="mfavg")
-    T <- T[[39]]
-    st4 <- seq(0,T,by=T/99)
-    val4 <- rep(0,100)
-    if(slvd[4] == 1){
-      for(i in 1:100){
-      bidouille <- count(datD,time <= st4[i])
-      bidouille <- filter(bidouille,bidouille[1]!=FALSE)
-      if (count(bidouille) == 0) {
-        numer <- 0
-      }
-      else{
-        numer <- bidouille[[1,2]]
-      }
-      val4[i] <- 100*numer/Y
-    }
-    }
-    
-    
-  pl <- tibble(x1=st1 , y1=val1 , x2=st2 , y2=val2 , x3=st3 , y3=val3 , x4=st4 , y4=val4)
-  pl %>% ggplot() + geom_line(aes(x=x1,y=y1,colour="depth-mof")) + geom_line(aes(x=x2,y=y2,colour="breadth-mof")) + geom_line(aes(x=x3,y=y3,colour="depth-mfavg")) + geom_line(aes(x=x4,y=y4,colour="breadth-mfavg")) + xlab("Time (in sec)") + ylab("Proportion of non-dominated points found")
+`r str` The nondominated set is depicted using <span style="color:red">red</span> for supported extreme points, <span style="color:green">green</span> for supported non-extreme points and <span style="color:blue">blue</span> for unsupported points. The convex hull of the nondominated set is depicted by the gray surface.
 
+# Algorithm results
+
+Current algorithm configurations are tested:
+
+```{r}
+datStat %>% 
+  select(instance, nodesel:OB, tpstotal)
+```
+
+Peformance plots (absolute and relative):
+
+```{r}
+# Add UB results
+res <- NULL
+for (i in 1:nrow(datStat)) {
+  mth <- paste0(datStat$nodesel[i], "_", datStat$varsel[i], "_", tolower(datStat$OB[i]))
+  fileN <- grep(str_c(inst, "_", mth, "_result.json"), jsonFiles, value = T)
+  if (!file.exists(fileN)) stop("File ", fileN, " cannot be found!")
+  lstRes <- jsonlite::fromJSON(fileN)
+  res[[i]] <- lstRes$misc$outputStat$yNStat
+}
+datStat <- datStat %>% 
+  mutate(resUB = res) %>% 
+  mutate(relativeSolved = 
+    pmap(list(resUB, tpstotal, str_c(nodesel, "_", varsel, "_", tolower(OB))), 
+         function(df = ..1, cpuT = ..2, mth = ..3) {
+            res <- tibble(mth = mth, pct = c(nrow(df), rep(nrow(df), nrow(df)), nrow(df)), cpu = c(0, df$time, cpuT)) %>% rownames_to_column()
+            res <- res %>% mutate(pct = (as.numeric(rowname)-1)/pct) %>% select(-rowname)
+            res[nrow(res),"pct"] <- 1
+            res <- bind_rows(res, tibble(mth = mth, pct = res$pct[1:(nrow(res)-1)], cpu = res$cpu[2:nrow(res)])) %>% arrange(pct, cpu)
+            res %>% mutate(pctCpu = cpu/cpuT)
+          }))
+
+res <- datStat %>% select(relativeSolved) %>% unnest(relativeSolved)
+ggplot(aes(x = cpu, y = pct, color = mth), data = res) + 
+  geom_line() + #geom_point() +
+  xlab("CPU time (in sec)") + ylab("Proportion of nondominated points found") + 
+  theme(legend.position="bottom", legend.title=element_blank()) 
+
+ggplot(aes(x = pctCpu, y = pct, color = mth), data = res) + 
+  geom_line() + #geom_point() +
+  xlab("Relative CPU time") + ylab("Proportion of nondominated points found") + 
+  theme(legend.position="bottom", legend.title=element_blank()) 
+```
+
+```{r}
+createMovie <- function(pts, cpuTotal, duration = 40, add = 0.1, filePrefix = "movie", dir = str_c("tmp_", filePrefix), checkGif = TRUE) {
+  if (checkGif) {
+    if (file_exists(str_c(filePrefix, ".gif"))) return(invisible(NULL))
+  }
+  
+  dir_create(dir)
+  olddir <- setwd(dir)
+  # par3d(skipRedraw = TRUE) # stops intermediate redraws
+  # on.exit(par3d(skipRedraw = FALSE)) # redraw at the end
+  
+  # if (!genPng) {
+  #   frames <- length(list.files(path=".", pattern = '*.png'))
+  #   frameRate <- frames/duration
+  #   cat("\nGenerate ", filePrefix, ".mkv:\n", sep="")
+  #   system(str_c("ffmpeg -y -framerate ", frameRate, " -i ", filePrefix, "%05d.png -c:v copy ", filePrefix, ".mkv"))
+  #   cat("\nGenerate ", filePrefix, ".gif:\n", sep="")
+  #   cat("ffmpeg -y -i ", filePrefix, ".mkv -vf \"fps=10,scale=1000:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse\" -loop 0 ", filePrefix, ".gif\n", sep = "")
+  #   system(str_c("ffmpeg -y -i ", filePrefix, ".mkv -vf \"fps=10,scale=1000:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse\" -loop 0 ", filePrefix, ".gif"))
+  #   return(invisible(NULL))
+  # }
+  
+  dublicateFile <- function(i, to) {
+    if (i >= to) return(i <- i + 1)
+    # cat("  Start file dublicate ... ")
+    fN <- sprintf("%s%05d.png", filePrefix, i)
+    for (k in (i+1):to) {
+      file.copy(fN, sprintf("%s%05d.png", filePrefix, k))
+    }
+    # cat("finished\n")
+    return(i <- to + 1)
+  }
+  
+  # use node as frame ids
+  frames <- round((1 + add)*max(pts$node),0)
+  framesS <- round(add*max(pts$node)/2,0)
+  pts <- full_join(pts, classifyNDSet(pts[,1:3])) %>% 
+  as_tibble() %>% 
+  mutate(colP = case_when(
+    cls == "se" ~ "red",
+    cls == "sne" ~ "green",
+    cls == "us" ~ "blue",
+    TRUE ~ "gray"), 
+    frame = node + framesS) 
+  
+  # first frame
+  cat("Frame 1/", frames, "\n", sep = "")
+  par3d("windowRect"= c(10,50,1010,1050))
+  view <- matrix( c(0.82544869184494, -0.418245762586594, -0.379084706306458, 0, 
+                    -0.403665781021118, 0.0320594720542431, -0.914344727993011, 0, 
+                    0.394574046134949, 0.907767832279205, -0.142367839813232, 0, 
+                    0, 0, 0, 1), nc = 4)
+  loadView(v = view, zoom = 0.75)
+  ini3D(argsPlot3d = list(xlim = c(min(pts[,1])-2,max(pts[,1])+2),
+      ylim = c(min(pts[,2])-2,max(pts[,2])+2),
+      zlim = c(min(pts[,3])-2,max(pts[,3])+2)))
+  axes3d()
+  # title3d(main = str_c("Nondominated points generated over time (", filePrefix, ")"))
+  i <- 1 # file numbering
+  rgl.snapshot(filename = sprintf("%s%05d.png", filePrefix, i), fmt = "png"); 
+  j <- 1 # row index
+  i <- dublicateFile(i, pts$frame[j]-1)
+  repeat {
+    if (j > nrow(pts)) break
+    cat("Frame ", i, "/", frames, "\n", sep = "")
+    tmp <- pts %>% dplyr::filter(frame == pts$frame[j])
+    for (s in unique(tmp$cls)) {
+      tmp1 <- tmp %>% dplyr::filter(cls == s)
+      plotCones3D(tmp1[, 1:3], argsPlot3d = list(col = tmp1$colP[1]), rectangle = T,
+                argsPolygon3d = list(alpha = 1, color = "lightblue"), drawLines = F)
+    }
+    rgl.snapshot(filename = sprintf("%s%05d.png", filePrefix, i), fmt = "png");
+    j <- j + nrow(tmp)
+    if (j > nrow(pts)) {i <- i + 1; break}
+    i <- dublicateFile(i, pts$frame[j]-1)
+  }
+  # last frames
+  plotHull3D(pts[,1:3], addRays = TRUE, argsPolygon3d = list(alpha = 0.5), useRGLBBox = TRUE)
+  rgl.snapshot(filename = sprintf("%s%05d.png", filePrefix, i), fmt = "png")
+  rgl.close()
+  i <- dublicateFile(i, frames)
+  # gen output
+  frameRate <- i/duration
+  cat("\nGenerate ", filePrefix, ".mkv:\n", sep="")
+  system(str_c("ffmpeg -y -framerate ", frameRate, " -i ", filePrefix, "%05d.png -c:v copy ", filePrefix, ".mkv"))
+  cat("\nGenerate ", filePrefix, ".gif:\n", sep="")
+  cat("ffmpeg -y -i ", filePrefix, ".mkv -vf \"fps=10,scale=1000:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse\" -loop 0 ", filePrefix, ".gif\n", sep = "")
+  system(str_c("ffmpeg -y -i ", filePrefix, ".mkv -vf \"fps=10,scale=1000:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse\" -loop 0 ", filePrefix, ".gif"))
+  file.rename(str_c(filePrefix, ".mkv"), str_c("../", filePrefix, ".mkv"))
+  file.rename(str_c(filePrefix, ".gif"), str_c("../", filePrefix, ".gif"))
+  setwd(olddir)
+  dir_delete(dir)
+}
+
+gifFiles <- NULL
+for (i in 1:nrow(datStat)) {
+  pfx <- paste0(datStat$instance[i], "_", datStat$nodesel[i], "_", datStat$varsel[i], "_", tolower(datStat$OB[i]))
+  pts <- datStat$resUB[[i]]
+  createMovie(pts, datStat$tpstotal[i], filePrefix = pfx)
+  gifFiles <- c(gifFiles, str_c(pfx, ".gif"))
+}
 ```
 
 
-# Objective branching tests
+```{r, eval = FALSE}
+out <- ""
+for (s in gifFiles) {
+  out <- str_c(out, " ![alt-text-1](", s, ")")
+}
+```
+
+
+
+
+```{r, results='hide'}
+titleN <- str_replace_all(gifFiles, '(^.*)_(.*?_.*?_.*?)(.gif$)', '\\2')
+i <- 1
+out <- "  |  \n------------- | -------------\n"
+for (r in 1:ceiling(length(gifFiles)/2)) {  # two cols
+  if (i > length(gifFiles)) break
+  out <- str_c(out, titleN[i], " ![", gifFiles[i], "](", gifFiles[i], ") | ")
+  i <- i + 1
+  if (i > length(gifFiles)) break
+  out <- str_c(out, titleN[i], " ![", gifFiles[i], "](", gifFiles[i], ")\n")
+  i <- i + 1
+}
+```
+
+`r out`
+
+
+
+
+
+
+
+
+
+[Return to main report](report.html)
+
+
+```{r testing, eval = FALSE}
+library(rgl)
+
+# i = 1
+# pts <- datStat$resUB[[i]]
+# pts <- full_join(pts, classifyNDSet(pts[,1:3])) %>% 
+#   as_tibble() %>% 
+#   mutate(colP = case_when(
+#     cls == "se" ~ "red",
+#     cls == "sne" ~ "green",
+#     cls == "us" ~ "blue",
+#     TRUE ~ "gray"))
+# cpuT <- datStat$tpstotal[i]
+# ini3D(argsPlot3d = list(xlim = c(min(pts[,1])-2,max(pts[,1])+2),
+#     ylim = c(min(pts[,2])-2,max(pts[,2])+2),
+#     zlim = c(min(pts[,3])-2,max(pts[,3])+2)))
+# axes3d()
+# for (j in 1:nrow(pts)) {
+#   if (pts$cls[j] == "se") colP <- "red"
+#   else if (pts$cls[j] == "sne") colP <- "green"
+#   else if (pts$cls[j] == "us") colP <- "blue"
+#   else colP <- "gray"
+#   plotCones3D(pts[j, 1:3], argsPlot3d = list(col = colP), rectangle = T, argsPolygon3d = list(alpha = 1, color = "lightblue"))
+#   # Sys.sleep(5*pts$time/cpuT)
+# }
+# plotHull3D(pts[,1:3], addRays = TRUE, argsPolygon3d = list(alpha = 0.5), useRGLBBox = TRUE)
+
+
+
+
+
+# 
+# view <- matrix( c(0.82544869184494, -0.418245762586594, -0.379084706306458, 0, -0.403665781021118, 0.0320594720542431, -0.914344727993011, 0, 0.394574046134949, 0.907767832279205, -0.142367839813232, 0, 0, 0, 0, 1), nc = 4)
+# loadView(v = view)
+# ini3D(argsPlot3d = list(xlim = c(min(pts[,1])-2,max(pts[,1])+2),
+#     ylim = c(min(pts[,2])-2,max(pts[,2])+2),
+#     zlim = c(min(pts[,3])-2,max(pts[,3])+2)))
+# axes3d()
+# spin <- spin3d(axis = c(0, 0, 0.5), rpm = 4) # the scene spinner
+# j <- 1
+# f <- function(time) {
+#     par3d(skipRedraw = TRUE) # stops intermediate redraws
+#     on.exit(par3d(skipRedraw = FALSE)) # redraw at the end
+#     # rgl.pop(id = spriteid) # delete the old sprite
+#     if (j <= nrow(pts)) {
+#       tmp <- pts %>% dplyr::filter(node == pts$node[j])
+#       tmp1 <- tmp %>% dplyr::filter(se)
+#       if (nrow(tmp1) > 0) plotCones3D(tmp1[, 1:3], argsPlot3d = list(col = "red"), rectangle = T, 
+#                   argsPolygon3d = list(alpha = 1, color = "lightblue"), drawLines = F)
+#       tmp1 <- tmp %>% dplyr::filter(sne)
+#       if (nrow(tmp1) > 0) plotCones3D(tmp1[, 1:3], argsPlot3d = list(col = "blue"), rectangle = T, 
+#                   argsPolygon3d = list(alpha = 1, color = "lightblue"), drawLines = F)
+#       tmp1 <- tmp %>% dplyr::filter(us)
+#       if (nrow(tmp1) > 0) plotCones3D(tmp1[, 1:3], argsPlot3d = list(col = "green"), rectangle = T, 
+#                   argsPolygon3d = list(alpha = 1, color = "lightblue"), drawLines = F)
+#       # for (k in 1:nrow(tmp)) {
+#       #   plotCones3D(tmp[k, 1:3], argsPlot3d = list(col = tmp$colP[k]), rectangle = T, 
+#       #               argsPolygon3d = list(alpha = 1, color = "lightblue"), drawLines = F)
+#       # }
+#       j <<- j + nrow(tmp)
+#     }
+#     else if (j == nrow(pts) + 1) {
+#       plotHull3D(pts[,1:3], addRays = TRUE, argsPolygon3d = list(alpha = 0.5), useRGLBBox = TRUE)
+#       j <<- j + 1
+#     }
+#     else
+#       return(spin(time))
+#     Sys.sleep(1)
+#     spin(0)
+# }
+# fps <- 10
+# dur <- ceiling(nrow(pts)/fps) + 15
+# play3d(f, duration = dur)
+# # movie3d(f, dir = ".", duration = dur, fps = fps, movie = str_c("test"))
+
+# Spin one object
+open3d()
+plot3d(oh3d(col = "lightblue", alpha = 0.5))
+play3d(spin3d(axis = c(1, 0, 0), rpm = 30), duration = 2)
+
+# Show spinning sprites, and rotate the whole view
+open3d()
+spriteid <- NULL
+
+spin1 <- spin3d(rpm = 4.5 ) # the scene spinner
+spin2 <- spin3d(rpm = 9 ) # the sprite spinner
+
+f <- function(time) {
+    par3d(skipRedraw = TRUE) # stops intermediate redraws
+    on.exit(par3d(skipRedraw = FALSE)) # redraw at the end
+
+    rgl.pop(id = spriteid) # delete the old sprite
+    cubeid <- shade3d(cube3d(), col = "red")
+    spriteid <<- sprites3d(0:1, 0:1, 0:1, shape = cubeid,
+                   userMatrix = spin2(time, 
+                     base = spin1(time)$userMatrix)$userMatrix)
+    spin1(time)
+}
+play3d(f, duration = 2)
+
+
+
+
+
+library(magick)
+
+labels<-as.character(unique(dnd$predclass))
+frames <- length(labels)
+
+for (i in 1:frames) {
+  name<- paste('00',i,'plot.png', sep='')
+  png(name)
+  plot.new()
+  sp3d<-scatterplot3d(x =dnd$AC, y = dnd$Con, z = dnd$HP, color="darkgrey", type="h",pch=16,angle=30)
+  sp3d
+  sp3d$points3d(dnd[dnd$predclass==labels[i],c("AC")],dnd[dnd$predclass==labels[i],c("Con")],dnd[dnd$predclass==labels[i],c("HP")],col="red", type="h", pch=16)
+  legend(sp3d$xyz.convert(41, 3, 310),legend =c(labels[i],paste0("Non-",labels[i])), col =c("darkgrey","red"), pch = 16)
+  dev.off()
+}
+
+list.files(path=".", pattern = '*.png', full.names = TRUE) %>% 
+  image_read() %>% 
+  image_join() %>% 
+  image_animate(fps=4) %>% 
+  image_write("dnd_classes.gif")
+```
+

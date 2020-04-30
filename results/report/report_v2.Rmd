@@ -1,6 +1,6 @@
 ---
 title: "Computational results for the instances"
-author: "Nicolas Forget"
+author: "Nicolas Forget, Lars Relund Nielsen, Sune Lauth Gadegaard"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document: 
