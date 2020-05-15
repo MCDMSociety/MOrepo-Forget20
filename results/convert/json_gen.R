@@ -80,10 +80,10 @@ for (iName in unique(dat$instance)) {
       # message(iName,": ")
       # cat(iName, ": ", sep="")
       mth1 <- paste0(tmp$nodesel, "_", tmp$varsel, "_", tolower(tmp$OB))
-      if (all(file_exists(paste0("../", iName, "_", mth1, "_result.json")))) {
-         # cat("Already generated for all methods!\n")
-         next
-      }
+      # if (all(file_exists(paste0("../", iName, "_", mth1, "_result.json")))) {
+      #    # cat("Already generated for all methods!\n")
+      #    next
+      # }
       if (nrow(tmp %>% dplyr::filter(solved == 1) %>% distinct(YN)) > 1) {
          warning("Error: ", iName, ". Different number of nondominated points when compare exact solutions for different alg. configs!", sep="")
          next
@@ -111,10 +111,10 @@ for (iName in unique(dat$instance)) {
          mth <- mth1 %>%
             str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
          # cat(tmp$rowname[i],": ", mth, "  ", sep="")
-         if (file_exists(paste0("../", iName, "_", mth1, "_result.json"))) {
-            # cat("Already generated! ")
-            next
-         }
+         # if (file_exists(paste0("../", iName, "_", mth1, "_result.json"))) {
+         #    # cat("Already generated! ")
+         #    next
+         # }
          # if (round(coeffRatio,3) != round(tmp$ratioNDcoef[i], 3)) warning("Tjeck error: Ratio not the same!", coeffRatio, "!>", tmp$ratioNDcoef)
          pts1 <- read_csv(grep(str_c(iName, "_", mth), resFilesTmp, value = T), col_types = cols())
          pts2 <- full_join(pts,pts1, by = c("z1", "z2", "z3"))
@@ -154,7 +154,7 @@ for (iName in unique(dat$instance)) {
             points = pts3,
             card = tmp$YN[i],
             suppCard = nrow(dplyr::filter(pts3, type == "se" | type == "sne")),
-            extCard = nrow(dplyr::filter(pts3, type == "us")),
+            extCard = nrow(dplyr::filter(pts3, type == "se")),
             comments = paste0("Instance solved using config ", mth1),
             optimal = if_else(tmp$solved[i] == 1, TRUE, FALSE),
             # we add all other things under misc
