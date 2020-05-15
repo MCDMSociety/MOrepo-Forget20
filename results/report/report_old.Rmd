@@ -1,0 +1,1717 @@
+---
+title: "Preliminary results"
+output:
+  html_document: 
+    df_print: paged
+    number_sections: yes
+    toc: yes
+    theme: cosmo
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- 
+NOTE if you experience problems with files in Dropbox it may help to disable DB sync while working
+on the files!
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor
+inside it and pressing *Ctrl+Shift+Enter*.
+
+Help: See Help -> Markdown Quick Reference or Help -> Cheetsheets
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+When you save the notebook, an HTML file containing the code and output will be saved alongside it
+(click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike
+*Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last
+run in the editor is displayed.
+-->
+
+```{r setup, include=FALSE}
+#' Function for loading missing packages that install them if not already installed.
+#'
+#' @param packages String vector with package names
+#'
+#' @return NULL (invisible)
+#' @export
+#'
+#' @examples loadPackages(c("MASS", "ggplot2", "tikzDevice"))
+loadPackages <- function(packages) {
+  newP <- packages[!(packages %in% installed.packages()[,"Package"])]
+  if(length(newP)) install.packages(newP, repos = "http://cran.rstudio.com/")
+  lapply(packages, library, character.only = TRUE)
+  invisible(NULL)
+}
+loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown","ggplot2"))
+
+library(knitr)
+library(rgl)
+options(rgl.useNULL=TRUE)
+options(rgl.printRglwidget=FALSE)
+rgl::setupKnitr()
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning=FALSE, message=FALSE, include = TRUE, 
+  cache = TRUE, autodep = TRUE,
+  out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
+)
+knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
+
+
+
+
+# Generation of stat for preliminary tests
+
+  # Table for avg times
+
+    gen_table_times <- function(tab){
+      
+      t <- tab %>%
+        group_by(pb,n,varsel,nodesel) %>%
+          summarize(avg = mean(tpstotal))
+
+      t <- pivot_wider(t,names_from = nodesel, values_from = avg)
+      t <- pivot_wider(t,names_from = varsel, values_from = c("breadth","depth"))
+      t
+    }
+    
+  # Plot of avg times
+    
+    gen_plot_times <- function(tab){
+      
+      t <- tab %>%
+        group_by(pb,n,varsel,nodesel) %>%
+          summarize(avg = mean(tpstotal))
+      t <- pivot_wider(t,names_from = nodesel, values_from = avg)
+      t <- pivot_wider(t,names_from = varsel, values_from = c("breadth","depth"))
+      
+      t %>% ggplot( aes(x=n)) + geom_line(aes(y=breadth_mfavg,colour="breadth-mfavg")) + geom_line(aes(y=depth_mfavg,colour="depth_mfavg")) + geom_line(aes(y=breadth_mof,colour="breadth_mof")) + geom_line(aes(y=depth_mof,colour="depth_mof")) + ylab("average time (sec)") + xlab("Number of variables") + ggtitle("Average computational time")
+    }
+    
+  # Tables for nb nodes
+    
+    gen_table_nodes <- function(tab){
+      
+      t <- tab %>%
+        group_by(pb,n,varsel,nodesel) %>%
+          summarize(avg = mean(nbnodes))
+
+      t <- pivot_wider(t,names_from = nodesel, values_from = avg)
+      t <- pivot_wider(t,names_from = varsel, values_from = c("breadth","depth"))
+      t
+    }
+
+  # Plot for nb nodes
+    
+    gen_plot_nodes <- function(tab){
+      
+      t <- tab %>%
+        group_by(pb,n,varsel,nodesel) %>%
+          summarize(avg = mean(nbnodes))
+      t <- pivot_wider(t,names_from = nodesel, values_from = avg)
+      t <- pivot_wider(t,names_from = varsel, values_from = c("breadth","depth"))
+      
+      t %>% ggplot( aes(x=n)) + geom_line(aes(y=breadth_mfavg,colour="breadth-mfavg")) + geom_line(aes(y=depth_mfavg,colour="depth_mfavg")) + geom_line(aes(y=breadth_mof,colour="breadth_mof")) + geom_line(aes(y=depth_mof,colour="depth_mof")) + ylab("Number of nodes") + xlab("Number of variables") + ggtitle("Average number of nodes explored")
+    }
+    
+# Coefficient analysis
+    
+    # Plot relation Cn - |YN|
+    
+    gen_plot_correl_coef <- function(dat,pbb){
+      
+      datcoef <- filter(dat,solved==1,pb==pbb)
+      datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
+
+      datcoef %>% ggplot( aes(x=YN , y=ratioNDcoef, colour=n)) + geom_point() +     ggtitle("Relation between the number of non-dominated coefficients and |YN|")
+    }
+    
+    # Plot |YN| & CPU time
+    
+    gen_plot_YN_cpu <- function(dat,pbb,nodemeth,varmeth,obmeth){
+      
+      datcoef <- filter(dat,solved==1,pb==pbb,nodesel==nodemeth,varsel==varmeth,OB==obmeth)
+      #datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
+
+      datcoef %>% ggplot( aes(x=YN , y=tpstotal, colour=n)) + geom_point() +     ggtitle("Relation between |YN| and the cpu time")
+    }
+    
+    # Plot complexity per range
+    
+    gen_plot_range <- function(dat,pbb,coeff){
+      
+      datcoef <- filter(dat,solved==1,pb==pbb,coef==coeff)
+      datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
+      
+      datcoef <- datcoef %>% group_by(n,rangemin,rangemax) %>% summarise(avg = mean(YN))
+      plt <- datcoef %>% ggplot(aes(x=n , y=avg, group=interaction(rangemin,rangemax) , colour=interaction(rangemin,rangemax))) + geom_line() + xlab("Number of variables") + ylab("Average size of YN") + ggtitle(paste("Tri-objective",pbb,"problems with",coeff,"generation for the coefficients"))
+      show(plt)
+    }
+    
+    gen_plot_range_full <- function(dat,pbb,coeff){
+      
+      datcoef <- filter(dat,solved==1,pb==pbb,coef==coeff)
+      datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
+      
+      datcoef %>% ggplot(aes(x=n, y=YN, group=interaction(rangemin,rangemax), colour=interaction(rangemin,rangemax))) + geom_point() + xlab("Number of variables") + ylab("Average size of YN") + ggtitle(paste("Tri-objective",pbb,"problems with",coeff,"generation for the coefficients"))
+    }
+    
+    # Plot complexity per coef
+    
+    gen_plot_coef <- function(dat,pbb,rmin,rmax){
+      
+      datcoef <- filter(dat, solved==1, pb==pbb, rangemin==rmin, rangemax==rmax)
+      datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
+      
+      datcoef <- datcoef %>% group_by(n,coef) %>% summarise(avg = mean(YN))
+      plt <- datcoef %>% ggplot(aes(x=n , y=avg, group=coef , colour=coef)) + geom_line() + xlab("Number of variables") + ylab("Average size of YN") +  ggtitle(paste("Tri-objective",pbb,"problems with coefficients in the range [",rmin,",",rmax,"]"))
+      show(plt)
+    }
+
+```
+
+All the problems are in minimization here, i.e. if an objective function $z(x)$ is actually in maximisation, we will minimise $-z(x)$ instead. Only binary variables are considered here.
+
+
+
+# Instances
+
+[An explanation of instances and instance names (as in the ReadMe file)]
+
+List of test instances.
+
+[Go to instance example](instance.html, cache=FALSE)
+
+```{r instance table, echo=FALSE}
+dat <- read_csv("../convert/data/stat.csv")
+#dat <- filter(dat)
+
+sh <- distinct(dat,instance,.keep_all = TRUE)
+select(sh, instance, pb, n, p, coef,rangemin,rangemax)
+```
+
+Several methods for generating the coefficient of the objective functions are tested here. This is given by the column coef.
+
+* random : the coefficient are generated randomly in the inerval [a,b]
+* spheredown : the coefficient are generated on the non-dominated part of a sphere in minimisation in the interval [a,b]
+* sphereup : the coefficient are generated on the non-dominated part of a sphere in maximisation in the interval [a,b]
+* 2box : the coefficients are generated randomly in two small boxes of R^3
+
+
+
+# Input and output statistics
+
+A set of statistics are stored for each instance and algorithm run.
+
+## Input statistics
+
+For each instance we have the following statistics:
+
+  - Problem class (PC):
+    * KP = Knapsack Problem
+    * AP = Assignment Problem
+    * UFLP = Uncapacited Facility Location Problem
+  - $n$: number of variables.
+  - $p$: number of objectives.
+  - `rangeC`: the range the objective coefficients are generated within
+  - `coef`: the method used for the generation of the objective coefficients (see section Research questions). We have:
+    * random = random coefficient generation
+    * 2box = two-boxes generation
+    * spheredown = generation on the lower part of a sphere (in minimisation)
+    * sphereup = generation on the upper part of a sphere (in minimisation)
+  - `ratioND` = proportion of objective coefficient vectors (here considered as a vector in $\mathbb{R}^p$, one for each variable, defining the objective coefficient for all the objective for this variable) that are non-dominated (with respect to the other objective coefficient vectors).
+
+## Output statistics
+
+For each algorithm run we have the following statistics, that can be found in stat,csv. Some of these are also input statistics but reintroduced as output statistics for a better readability. We have:
+
+  - `pb`: class of the problem.
+  - $n$: number of variables.
+  - $p$: number of objectives.
+  - `coef`: method for generation of the objective coefficients (see Section Research questions).
+  - `rangemin`: minimum possible value for the objective coefficients.
+  - `rangemax`: maximum possible value for the objective coefficients.
+  - `nodesel`: node selection strategy.
+  - `varsel`: variable selection strategy.
+  - `OB`: objective branching strategy.
+  - `solved`: 1 if the instance is solved within 3600 sec, 0 otherwise.
+  - `YN`: size of YN. If `solved` = 0, it represent the size of the upper bound set at 3600 sec, when the algorithm stops.
+  - `nbnodes`: number of nodes explored.
+  - `mindepthT`: minimal depth of a leaf node.
+  - `maxdepthT`: maximal depth of a leaf node (and thus of the tree).
+  - `avgdepthT`: average depth of the leaf nodes.
+  - `avgdepthYN`: average depth of the nodes where the non-dominated points were found.
+  - `nbleaf`: number of leaf nodes.
+  - `nbinfeas`: number of nodes pruned by infeasibility.
+  - `pctinfeas`: proportion (in %) of leaf nodes pruned by infeasibility.
+  - `tpsinfeas`: average time spend to prune a node by infeasibility (in msec).
+  - `nbopt`: number of nodes pruned by optimality.
+  - `pctopt`: proportion (in %) of leaf nodes pruned by optimality.
+  - `tpsopt`: average time spend to prune a node by optimality (in msec).
+  - `nbdomi`: number of nodes pruned by dominance.
+  - `pctdomi`: proportion (in %) of leaf nodes pruned by dominance.
+  - `avgdomi`: average time spend to prune a node by dominance (in msec).
+  - `nbLB`: number of lower bound set computed.
+  - `avgfacets`: average number of facets in the lower bound set (i.e. in $\mathcal{L} + \mathbb{R}^p$).
+  - `avgNDf`: average number of strictly non-dominated facets.
+  - `pctavgNDf`: proportion (in %) of facets that are strictly non-dominated.
+  - `avgWNDf`: average number of weekly non-dominated facets.
+  - `pctavgWNDf`: proportion (in %) of facets that are weekly non-dominated.
+  - `maxfacets`: maximal number of facets a lower bound set had in the tree.
+  - `maxNDf`: number of strictly non-dominated facets in the lower bound set with the maximal number of facets.
+  - `pctmaxNDf`: proportion (in %) of facets that are strictly non-dominated in the lower bound set with the maximal number of facets.
+  - `maxWNDf`: number of weekly non-dominated facets in the lower bound set with the maximal number of facets.
+  - `pctmaxWNDf`: proportion (in %) of facets that are weekly non-dominated in the lower bound set with the maximal number of facets.
+  - `tpstotal`: CPU time (in sec) used to solve the instance. 3600 if the instance is not solved.
+  - `tpsLB`: CPU time (in sec) used to compute lower bound sets.
+  - `pcttpsLB`: proportion (in %) of the total CPU time spend in the computation of lower bound sets.
+  - `tpsdomi`: CPU time (in sec) used to dominance test when the algorithm has to determine whether a node can be pruned by dominance or not.
+  - `pcttpsdomi`: proportion (in %) of the total CPU time spend in the dominance test when the algorithm has to determine whether a node can be pruned by dominance or not.
+  - `tpsUB`: CPU time (in sec) used to update the upper bound set.
+  - `pcttpsUB`: proportion (in %) of the total CPU time spend in updating the upper bound set.
+  - `tpsnodesel`: CPU time (in sec) used to choose the next node to develop.
+  - `pcttpsnodesel`: proportion (in %) of the total CPU time spend in choosing the next node to develop.
+  - `tpsvarsel`: CPU time (in sec) used to choose the variable to branch on.
+  - `pcttpsvarsel`: proportion (in %) of the total CPU time spend in choosing the variable to branch on.
+  - `tpsOB`: CPU time (in sec) used to create the sub-problems in the objective space, i.e. to compute objective branching. (/!\ it requires two different steps in total: computing the SLUBs but also do additional dominance test to determine the dominance status of each local upper bounds ! This number take into account the two steps.)
+  - `pcttpsOB`: proportion (in %) of the total CPU time spend in computing objective branching.
+  - `tpsSLUB`: CPU time (in sec) used to compute the super local upper bounds.
+  - `pcttpsSLUB`: proportion (in %) of the total CPU time spend in computing the super local upper bounds.
+  - `tpsdomiLUB`: CPU time (in sec) used to do the additionnal dominance tests to get the dominance status of EACH local upper bound.
+  - `pcttpsdomiLUB`: proportion (in %) of the total CPU time spend in doing the additionnal dominance tests on the local upper bounds.
+  - `nbOB`: number of nodes where two or more sub-problems are created in the objective space. When using the exact objective branching (`OB` = exact), it in particular shows how often it is actually possible to split the objective space with the definition of the sub-problems that we used ($z(x) \leqq \bar{z}$, $\bar{z} \in \mathbb{R}^p$).
+  - `pctnbOB`: proportion (in %) of the nodes explored that where split in two or more sub-problems in the objective space.
+  - `avgdepthOB`: [relevant only if `OB` = exact] average depth of the nodes split in two or more sub-problems in the objective space.
+  - `mindepthOB`: [relevant only if `OB` = exact] minimal depth of the nodes split in two or more sub-problems in the objective space.
+  - `maxdepthOB`: [relevant only if `OB` = exact] maximal depth of the nodes split in two or more sub-problems in the objective space.
+  - `avgnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space.
+  - `maxnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space.
+  - `ratioNDcoef`: proportion (expressed as a number between 0 and 1) of objective coefficient vectors (here considered as a vector in $\mathbb{R}^p$, one for each variable, defining the objective coefficient for all the objective for this variable) that are non-dominated (with respect to the other objective coefficient vectors).
+
+For each instance, other statistics can be found in the `details` folder. We have:
+
+  - `<instance>_coef.csv`: each row correspond to a variable. The $p$ first column represent the $p$ objective coefficients for a given variable. The last column is 1 if the objective coefficient vector is not dominated by another one, 0 otherwise.
+  - `<instance>_UB.csv`: each row represent a $y \in \mathcal{Y}_N$. The $p$ first columns represent the values for the $p$ objective functions. The other columns are redundant information with what comes later and can be ignored.
+  - `<instances>_XE.csv`: each row represent a $y \in \mathcal{Y}_N$, sorted exactly in the same order as in `<instance>_UB.csv`. Each column represent the value of a variable, corresponding to the pre-image of the current $y$.
+  
+For each run, statistics on the non-dominated points can be found in the folder `UBrun`. The names of the files are in the form `<instance>_<nodesel>_<varsel>_<OB>_UB.csv`, where `<instance` is the name of the instance, `<nodesel>` is the node selection strategy (see next section for the names), `<varsel>` is the variable selection strategy (see next section for the names) and `<OB>` is the objective branching strategy (-2 for `OB` = None, 1 for `OB` = cone, 2 for `OB` = exact). In this file, each row correspond to a $y \in \mathcal{Y}_N$. The statistics are the following:
+
+  - the $p$ first columns correspond the values of the objective functions.
+  - `node`: number of the node where this point has been discovered. The higher this number is, the later the point has been discovered.
+  - `time`: time (in sec) elapsed between the start of the algorithm and when this point has been found (for the first time).
+  - `depth`: depth of the node where this point has been found (for the first time).
+  
+  
+  
+
+# Research questions
+
+The first purpose of this study is to learn how some components of the branch and bound influences the behaviour of the algorithm it terms of *computational time* (expressed in seconds everywhere) and in term of *number of nodes explored* (i.e. how much nodes are developed in the branch and bound tree before the algorithm ends).
+
+The branch and bound algorithm will always use the linear relaxation as lower bound set and the incumbent set as upper bound set. At each nodes, the extreme points of the lower bound set are checked for integrality and possibly added to the upper bound set. The components that will vary are:
+
+* the node selection : in the multi-objective branch and bound literature, depth first strategies are (almost) always used and are considered as better strategies than breadth first. However, our conjecture is that if a problem with an "easy" single-objective version is solved, then many non-dominated points may be found in a node close to the root node, in the early stages of the tree. Hence, using a breadth first strategy may provide a better upper bound set earlier in the algorithm, as a larger number of points are expected to be found shallow in the tree while only a few points can be found at each node deep in the tree (1 maximum at a leaf node for example). However, it is not clear to see what is the actual impact. Hence, here comes the first research question : **how does depth and breadth first strategies affects the behaviour of the algorithm ?** (computational time, number of nodes explored)
+
+* the variable selection : to the best of our knowledge, no extensive study for variable selection has been conducted in the literature. Sometimes, this component is even not mentioned. As it is not the main purpose of this study, only two rules that rely on the caracteristics of the lower bound set will be tested here.
+
+  + mof : Most Often Fractional. The branching is operated on the variable that is the most often fractional among the extreme points of the lower bound set.
+  
+  + mfavg : Most Fractional in AVeraGe. The branching is operated on the variable such that its average value among the extreme points of the lower bound set is the most fractional, i.e. the closest to 0.5.
+  
+* the branching scheme : in a regular branch and bound, branching is operated (i.e. sub-problems are created) in the decision space. In the bi-objective case, it has been shown that creating additional sub-problems in the objective space (procedure called objective branching in this study) leads to better computational times. A new research question arises here : **what is the impact of objective branching on a branch and bound algorithm for solving problems with three objectives ?** In order to address that, three versions of the branch and bound will be tested (with the best node and variable selection previously identified for each problem configuration):
+
+  + None : no objective branching is performed. Hence, this version is just a regular branch and bound.
+  
+  + exact : objective branching is performed using the algorithm from [master thesis paper].
+  
+  + unique cone : a unique sub-problem is created at each node. In this case, objective branching is applied on the nadir point of the local upper bounds dominated by the lower bound set. See [master thesis paper] for more details.
+  
+
+The second purpose of this study is to learn how the caracteristics of an instance can affect its difficulty. The difficulty will be here mesured by the *size of the non-dominated set*, and the *computational time* required to solve the instance. The computational time will be determined using the branch and bound algorithm previously described. Note that the complexity of an objective space search algorithm is positively correlated to the size of the non-dominated set as the more non-dominated there are, the more integer programs have to be solved.
+
+The focus will be here on the objective function coefficients. The first research question here is: **does the range of the objective function coefficient has an impact on the difficulty of the problem ?**. In order to answer that, three different ranges will be tested:
+
+* $[1,10]$ : a small range of values.
+* $[1,1000]$ : a large range of values
+* $[1000,2000]$ : a large range of values, but shifted to larger values.
+
+For the facility location problems, two sets of costs (i.e. coefficients of objective function) can be identified: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. Let the assignment costs take their values in $[a,b]$, the generation of the facility opening costs will be divided into two categories of instances:
+
+* facility location easy : $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier (see later in the study).
+* facility location hard : $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harded (see later in the study).
+
+The second research question related to that topic is: **does the method used to generate the coefficients of the objective function has an impact on the difficulty of the problem ?**. Indeed, the usual procedure to generate objective function is to generate the coefficients randomly in a given range $[a,b]$. However, one could imagine other way to generate coefficient. Four methods will be studied here.
+
+* random : the coefficient are generated randomly with a uniform distribution in the range $[a,b]$. For three objectives, random generated coefficients looks as follows.
+
+```{r, webgl = TRUE, echo = FALSE}
+
+range <- matrix(c(1,100, 50,100, 10,50), ncol = 2, byrow = TRUE )
+ini3D()
+pts <- genSample(3, 1000, range = range, random = TRUE)
+plotPoints3D(pts)
+finalize3D()
+```
+
+* sphere down : the coefficients are generated on the lower part of a sphere (see next picture). Note that the sphere is adjusted such that the coefficients are in the range $[a,b]$, i.e. the sphere is not necessarily included in $[a,b]^p$.
+
+```{r, webgl = TRUE, echo = FALSE, cache=FALSE}
+
+cent <- c(1000,1000,1000)
+r <- 750
+planeC <- c(cent-r/3)
+planeC <- c(planeC, -sum(planeC^2))
+pts <- genSample(3, 500,
+  argsSphere = list(center = cent, radius = r, below = TRUE, plane = planeC, factor = 6))
+
+ini3D()
+rgl::spheres3d(cent, radius=r, color = "grey100", alpha=0.1)
+plotPoints3D(pts)
+rgl::planes3d(planeC[1],planeC[2],planeC[3],planeC[4], alpha = 0.5, col = "red")
+finalize3D()
+```
+
+* sphere up : the coefficients are generated on the upper part of a sphere (see next picture). Note that the sphere is adjusted such that the coefficients are in the range $[a,b]$, i.e. the sphere is not necessarily included in $[a,b]^p$.
+
+```{r, webgl = TRUE, echo = FALSE, cache=FALSE}
+
+cent <- c(1000,1000,1000)
+r <- 750
+planeC <- c(cent+r/3)
+planeC <- c(planeC, -sum(planeC^2))
+pts <- genSample(3, 500,
+  argsSphere = list(center = cent, radius = r, below = FALSE, plane = planeC, factor = 6))
+
+ini3D()
+rgl::spheres3d(cent, radius=r, color = "grey100", alpha=0.1)
+plotPoints3D(pts)
+rgl::planes3d(planeC[1],planeC[2],planeC[3],planeC[4], alpha = 0.5, col = "red")
+finalize3D()
+```
+
+* 2box : the coefficients are generated randomly but in two specific parts of $[a,b]^p$ (see next picture).
+
+```{r, webgl = TRUE, echo = FALSE, cache=FALSE}
+
+range <- matrix(c(1,1000, 1,1000, 1,1000), ncol = 2, byrow = TRUE )
+ini3D(argsPlot3d = list(box = TRUE, axes = TRUE))
+pts <- genSample(3, 300, range = range, box = TRUE)
+plotPoints3D(pts)
+finalize3D()
+```
+
+
+
+
+# Preliminary tests CPU time
+
+Here are tested different combinations of variable and node selection for the basic branch and bound. In the following :
+
+* depth = depth first strategy for node selection. The last node created is the first explored.
+* breadth = breadth first strategy for node selection. The first node created is the first explored.
+* mof = Most Often Fractional strategy for variable selection. Branching is operated on the variable that is the most often fractional among the extreme points of the lower bound set.
+* mfavg = Most Fractional in AVeraGe strategy for variable selection Branching is operated on the variable that is the most fractional (i.e. the closest to 0.5) in average among the extreme points of the lower bound set.
+
+
+## Random coefficient generation
+
+```{r, echo=FALSE}
+coeff <- "random"
+```
+The coefficient are generated using the `r coeff` method.
+
+### Range : [1,10]
+
+```{r, echo=FALSE}
+rmin <- 1
+rmax <- 10
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+### Range : [1,1000]
+
+```{r, echo=FALSE}
+rmin <- 1
+rmax <- 1000
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+### Range : [1000,2000]
+
+```{r, echo=FALSE}
+rmin <- 1000
+rmax <- 2000
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+
+
+## Sphere Down coefficient generation
+
+```{r, echo=FALSE}
+coeff <- "spheredown"
+```
+The coefficient are generated using the `r coeff` method.
+
+### Range : [1,10]
+
+```{r, echo=FALSE}
+rmin <- 1
+rmax <- 10
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+### Range : [1,1000]
+
+```{r, echo=FALSE}
+rmin <- 1
+rmax <- 1000
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+### Range : [1000,2000]
+
+```{r, echo=FALSE}
+rmin <- 1000
+rmax <- 2000
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+
+## Sphere Up coefficient generation
+
+```{r, echo=FALSE}
+coeff <- "sphereup"
+```
+The coefficient are generated using the `r coeff` method.
+
+### Range : [1,10]
+
+```{r, echo=FALSE}
+rmin <- 1
+rmax <- 10
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+### Range : [1,1000]
+
+```{r, echo=FALSE}
+rmin <- 1
+rmax <- 1000
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+### Range : [1000,2000]
+
+```{r, echo=FALSE}
+rmin <- 1000
+rmax <- 2000
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+
+
+## Two boxes coefficient generation
+
+```{r, echo=FALSE}
+coeff <- "random"
+```
+The coefficient are generated using the `r coeff` method.
+
+### Range : [1,10]
+
+```{r, echo=FALSE}
+rmin <- 1
+rmax <- 10
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+### Range : [1,1000]
+
+```{r, echo=FALSE}
+rmin <- 1
+rmax <- 1000
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+### Range : [1000,2000]
+
+```{r, echo=FALSE}
+rmin <- 1000
+rmax <- 2000
+
+```
+The coefficient of the objective functions are in the range [`r rmin`,`r rmax`].
+
+#### Knapsack
+
+Knapsack problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "KP",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Assignment
+
+Assignment problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "AS",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location easy
+
+Easy facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLe",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+#### Facility location hard
+
+Hard facility location problems are studied here. The table below shows the average computational times in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+tab <- filter(dat,OB == "None",pb == "FLh",coef == coeff,rangemin == rmin,rangemax == rmax)
+
+gen_table_times(tab)
+gen_plot_times(tab)
+
+```
+
+The table below shows the average number of nodes explored in function of the size of the problem and of the variable and node selection strategies. The corresponding plot is given afterwards.
+
+```{r, echo=FALSE}
+
+gen_table_nodes(tab)
+gen_plot_nodes(tab)
+```
+
+
+
+
+
+# Study on the coefficients of the objective function
+
+In this section, relations between |YN| and various characteristics of the coefficient of the objective function are studied.
+
+## Knapsack
+
+The relation between |YN| (x-axis), the proportion of non-dominated objective function coefficients (y-axis) and the number of variables (color-axis) is shown in the next plot.
+
+In the plot coming after, the relation between the size of the non-dominated set and the CPU time required to find it with the best configuration previously found is shown.
+
+```{r,echo=FALSE}
+pbb = "KP"
+gen_plot_correl_coef(dat,pbb)
+gen_plot_YN_cpu(dat,pbb,"breadth","mof","None")
+```
+
+The next plots study the impact of the range of the range of the objective function coefficient on |YN|. This is done separately for each coefficient generation methods.
+
+```{r,echo=FALSE}
+meth <- c("random","spheredown","sphereup","2box")
+for (m in meth) {
+  gen_plot_range(dat,pbb,m)  
+}
+```
+
+The next plots study the impact of the method used for the generation of the objective function coefficient on |YN|. This is done separately for each possible ranges for the coefficients.
+
+```{r,echo=FALSE}
+ranmin <- c(1,1,1000)
+ranmax <- c(10,1000,2000)
+for (i in 1:3) {
+  gen_plot_coef(dat,pbb,ranmin[i],ranmax[i])  
+}
+```
+
+
+## Assignment
+
+The relation between |YN| (x-axis), the proportion of non-dominated objective function coefficients (y-axis) and the number of variables (color-axis) is shown in the next plot.
+
+In the plot coming after, the relation between the size of the non-dominated set and the CPU time required to find it with the best configuration previously found is shown.
+
+```{r,echo=FALSE}
+pbb = "AS"
+gen_plot_correl_coef(dat,pbb)
+gen_plot_YN_cpu(dat,pbb,"breadth","mfavg","None")
+```
+
+The next plots study the impact of the range of the range of the objective function coefficient on |YN|. This is done separately for each coefficient generation methods.
+
+```{r,echo=FALSE}
+meth <- c("random","spheredown","sphereup","2box")
+for (m in meth) {
+  gen_plot_range(dat,pbb,m)  
+}
+```
+
+The next plots study the impact of the method used for the generation of the objective function coefficient on |YN|. This is done separately for each possible ranges for the coefficients.
+
+```{r,echo=FALSE}
+ranmin <- c(1,1,1000)
+ranmax <- c(10,1000,2000)
+for (i in 1:3) {
+  gen_plot_coef(dat,pbb,ranmin[i],ranmax[i])  
+}
+```
+
+
+## Facility location easy
+
+The relation between |YN| (x-axis), the proportion of non-dominated objective function coefficients (y-axis) and the number of variables (color-axis) is shown in the next plot.
+
+In the plot coming after, the relation between the size of the non-dominated set and the CPU time required to find it with the best configuration previously found is shown.
+
+```{r,echo=FALSE}
+pbb = "FLe"
+gen_plot_correl_coef(dat,pbb)
+gen_plot_YN_cpu(dat,pbb,"breadth","mof","None")
+```
+
+The next plots study the impact of the range of the range of the objective function coefficient on |YN|. This is done separately for each coefficient generation methods.
+
+```{r,echo=FALSE}
+meth <- c("random","spheredown","sphereup","2box")
+for (m in meth) {
+  gen_plot_range(dat,pbb,m)  
+}
+```
+
+The next plots study the impact of the method used for the generation of the objective function coefficient on |YN|. This is done separately for each possible ranges for the coefficients.
+
+```{r,echo=FALSE}
+ranmin <- c(1,1,1000)
+ranmax <- c(10,1000,2000)
+for (i in 1:3) {
+  gen_plot_coef(dat,pbb,ranmin[i],ranmax[i])  
+}
+```
+
+
+
+## Facility location hard
+
+The relation between |YN| (x-axis), the proportion of non-dominated objective function coefficients (y-axis) and the number of variables (color-axis) is shown in the next plot.
+
+In the plot coming after, the relation between the size of the non-dominated set and the CPU time required to find it with the best configuration previously found is shown.
+
+```{r,echo=FALSE}
+pbb = "FLh"
+gen_plot_correl_coef(dat,pbb)
+gen_plot_YN_cpu(dat,pbb,"breadth","mfavg","None")
+```
+
+The next plots study the impact of the range of the range of the objective function coefficient on |YN|. This is done separately for each coefficient generation methods.
+
+```{r,echo=FALSE}
+meth <- c("random","spheredown","sphereup","2box")
+for (m in meth) {
+  gen_plot_range(dat,pbb,m)  
+}
+```
+
+The next plots study the impact of the method used for the generation of the objective function coefficient on |YN|. This is done separately for each possible ranges for the coefficients.
+
+```{r,echo=FALSE}
+ranmin <- c(1,1,1000)
+ranmax <- c(10,1000,2000)
+for (i in 1:3) {
+  gen_plot_coef(dat,pbb,ranmin[i],ranmax[i])  
+}
+```
+
+end
