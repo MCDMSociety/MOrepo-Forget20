@@ -2,3 +2,7 @@
 report_cache
 *_cache
 report_json*
+instance.md
+instance.html
+*.gif
+*.mkv

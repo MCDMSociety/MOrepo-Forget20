@@ -7,8 +7,8 @@ on:
       - results/convert/install.R
       - results/convert/json_gen.R
       - results/convert/functions.R
-#  schedule:
-#    - cron: '0 * * * *'
+  schedule:
+    - cron: '0 * * * *'
 
 jobs:
   render:

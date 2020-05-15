@@ -67,7 +67,7 @@ nrow(tmp) == 0
 
 
 
-#' ### Create json files without classification of points
+#' ### Create json files with classification of points
 #' All result files are in csv format with comma delimitor and dot as decimal mark.
 resFiles <- list.files(recursive = T)
 start_time <- now()
@@ -86,21 +86,20 @@ for (iName in unique(dat$instance)) {
          warning("Error: ", iName, ". Different number of nondominated points when compare exact solutions!", sep="")
          next
       }
-      # message("\nDuration: ", now() - start_time,"\n")
-      if (now() - start_time > 60*10) {message("\nStop script. Max time obtained."); break}   # max of 10 min
+      message("\nDuration: ", now() - start_time,"\n")
+      if (now() - start_time > 60*10) {message("\nStop script. Max time obtained."); break}
       if (length(grep(str_c(iName,"_UB"), resFiles, value = T)) == 0) {
          warning("Error: ", iName, "_UB don't exists!", sep = "")
          next
       }
       pts0 <- read_csv(grep(str_c(iName,"_UB"), resFiles, value = T), col_types = cols())[,1:tmp$p[1]] %>%
          mutate(rowId = 1:nrow(.))
-      pts <- pts0 %>% mutate(type = NA) %>% select(contains("z"), type)
-      # pts <- addNDSet(pts0[,1:tmp$p[1]]) %>%
-      #    select(-(nd:us), type = "cls")
+      # pts <- pts0 %>% mutate(type = NA) %>% select(contains("z"), type)
+      pts <- classifyNDSet(pts0[,1:(ncol(pts0)-1)]) %>%
+         select(-(se:us), type = "cls")
       # pts <- full_join(pts0, pts, by = c("z1", "z2", "z3")) %>%
       #    arrange(rowId) %>% # so the order will be the same as in XE
       #    select(contains("z"), type)
-
       # coeff <- read_csv(grep(str_c(iName,"_coef"), resFiles, value = T))
       # coeffRatio <- sum(coeff$nondominated)/nrow(coeff)
       for (i in 1:nrow(tmp)) {
