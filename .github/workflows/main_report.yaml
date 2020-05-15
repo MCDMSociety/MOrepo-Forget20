@@ -1,0 +1,32 @@
+name: R script generating report files
+
+on:
+  push:
+    paths:
+      - .github/workflows/main_report.yaml
+      - results/convert/*.R
+      - results/*.json
+#  schedule:
+#    - cron: '0 * * * *'
+
+jobs:
+  render:
+    name: Generate report files
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@master
+      - uses: r-lib/actions/setup-pandoc@master
+      - name: Install packages
+        run: Rscript results/convert/install.R
+        env:
+          RGL_USE_NULL: TRUE
+      - name: Run R script main_report.R
+        run: Rscript results/report/main_report.R
+      - name: Commit results
+        run: |
+          git add .
+          git commit --allow-empty -am 'gHA build: ${{github.run_number}}' || echo "No changes to commit"
+          git pull --rebase
+          git push https://${{github.actor}}:${{secrets.token}}@github.com/${{github.repository}}.git HEAD:${{ github.ref }} || echo "No changes to commit"
+

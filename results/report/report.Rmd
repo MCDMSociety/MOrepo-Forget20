@@ -50,7 +50,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
-  cache = TRUE, autodep = TRUE, echo=FALSE,
+  # cache = TRUE, autodep = TRUE, 
+  echo=FALSE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
 )
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
