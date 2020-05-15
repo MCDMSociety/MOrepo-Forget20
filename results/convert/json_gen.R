@@ -86,8 +86,9 @@ for (iName in unique(dat$instance)) {
          warning("Error: ", iName, ". Different number of nondominated points when compare exact solutions!", sep="")
          next
       }
-      message("\nDuration: ", now() - start_time,"\n")
-      if (now() - start_time > 60*10) {message("\nStop script. Max time obtained."); break}
+      diff <- as.duration(now() - start_time)
+      message("\nDuration: ", diff,"\n")
+      if (diff > 60*10) {message("\nStop script. Max time obtained."); break}
       if (length(grep(str_c(iName,"_UB"), resFiles, value = T)) == 0) {
          warning("Error: ", iName, "_UB don't exists!", sep = "")
          next
