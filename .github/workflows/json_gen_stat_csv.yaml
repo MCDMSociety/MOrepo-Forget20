@@ -9,6 +9,13 @@ on:
       - results/*.json
 
 jobs:
+  deploy:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Sleep so start after json_gen.R
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '20m'
   render:
     name: Gen statistics.csv
     runs-on: macOS-latest
