@@ -14,7 +14,7 @@
   "valid": true,
   "card": 5,
   "suppCard": 5,
-  "extCard": 0,
+  "extCard": 5,
   "points": [
     {
       "z1": -20,
