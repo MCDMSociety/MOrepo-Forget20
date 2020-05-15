@@ -1,0 +1,25 @@
+[90m# A tibble: 5,177 x 72[39m
+   instance namePrefix insId constId pb    n     p     coef  rangeC rangeGapC nodesel varsel OB   
+   [3m[90m<chr>[39m[23m    [3m[90m<chr>[39m[23m      [3m[90m<chr>[39m[23m [3m[90m<chr>[39m[23m   [3m[90m<chr>[39m[23m [3m[90m<chr>[39m[23m [3m[90m<chr>[39m[23m [3m[90m<chr>[39m[23m [3m[90m<chr>[39m[23m  [3m[90m<chr>[39m[23m     [3m[90m<chr>[39m[23m   [3m[90m<chr>[39m[23m  [3m[90m<chr>[39m[23m
+[90m 1[39m Forget2… Forget20-… 1     1       AP    36    3     2box  [1,10] 9         breadth mfavg  None 
+[90m 2[39m Forget2… Forget20-… 1     1       AP    36    3     2box  [1,10] 9         breadth mof    None 
+[90m 3[39m Forget2… Forget20-… 1     1       AP    36    3     2box  [1,10] 9         depth   mfavg  None 
+[90m 4[39m Forget2… Forget20-… 1     1       AP    36    3     2box  [1,10] 9         depth   mof    None 
+[90m 5[39m Forget2… Forget20-… 10    1       AP    36    3     2box  [1,10] 9         breadth mfavg  None 
+[90m 6[39m Forget2… Forget20-… 10    1       AP    36    3     2box  [1,10] 9         breadth mof    None 
+[90m 7[39m Forget2… Forget20-… 10    1       AP    36    3     2box  [1,10] 9         depth   mfavg  None 
+[90m 8[39m Forget2… Forget20-… 10    1       AP    36    3     2box  [1,10] 9         depth   mof    None 
+[90m 9[39m Forget2… Forget20-… 2     1       AP    36    3     2box  [1,10] 9         breadth mfavg  None 
+[90m10[39m Forget2… Forget20-… 2     1       AP    36    3     2box  [1,10] 9         breadth mof    None 
+[90m# … with 5,167 more rows, and 59 more variables: solved [3m[90m<chr>[90m[23m, YN [3m[90m<chr>[90m[23m, rangeZ1 [3m[90m<chr>[90m[23m,[39m
+[90m#   rangeGapZ1 [3m[90m<chr>[90m[23m, rangeZ2 [3m[90m<chr>[90m[23m, rangeGapZ2 [3m[90m<chr>[90m[23m, rangeZ3 [3m[90m<chr>[90m[23m, rangeGapZ3 [3m[90m<chr>[90m[23m,[39m
+[90m#   ratioNDcoef [3m[90m<chr>[90m[23m, nbnodes [3m[90m<chr>[90m[23m, mindepthT [3m[90m<chr>[90m[23m, maxdepthT [3m[90m<chr>[90m[23m, avgdepthT [3m[90m<chr>[90m[23m,[39m
+[90m#   avgdepthYN [3m[90m<chr>[90m[23m, nbleaf [3m[90m<chr>[90m[23m, nbinfeas [3m[90m<chr>[90m[23m, pctinfeas [3m[90m<chr>[90m[23m, tpsinfeas [3m[90m<chr>[90m[23m, nbopt [3m[90m<chr>[90m[23m,[39m
+[90m#   pctopt [3m[90m<chr>[90m[23m, tpsopt [3m[90m<chr>[90m[23m, nbdomi [3m[90m<chr>[90m[23m, pctdomi [3m[90m<chr>[90m[23m, avgdomi [3m[90m<chr>[90m[23m, nbLB [3m[90m<chr>[90m[23m,[39m
+[90m#   avgfacets [3m[90m<chr>[90m[23m, avgNDf [3m[90m<chr>[90m[23m, pctavgNDf [3m[90m<chr>[90m[23m, avgWNDf [3m[90m<chr>[90m[23m, pctWNDf [3m[90m<chr>[90m[23m, maxfacets [3m[90m<chr>[90m[23m,[39m
+[90m#   maxNDf [3m[90m<chr>[90m[23m, pctmaxNDf [3m[90m<chr>[90m[23m, maxWNDf [3m[90m<chr>[90m[23m, pctmaxWNDf [3m[90m<chr>[90m[23m, tpstotal [3m[90m<chr>[90m[23m, tpsLB [3m[90m<chr>[90m[23m,[39m
+[90m#   pcttpsLB [3m[90m<chr>[90m[23m, tpsdomi [3m[90m<chr>[90m[23m, pcttpsdomi [3m[90m<chr>[90m[23m, tpsUB [3m[90m<chr>[90m[23m, pcttpsUB [3m[90m<chr>[90m[23m, tpsnodesel [3m[90m<chr>[90m[23m,[39m
+[90m#   pcttpsnodesel [3m[90m<chr>[90m[23m, tpsvarsel [3m[90m<chr>[90m[23m, pcttpsvarsel [3m[90m<chr>[90m[23m, tpsOB [3m[90m<chr>[90m[23m, pcttpsOB [3m[90m<chr>[90m[23m,[39m
+[90m#   tpsSLUB [3m[90m<chr>[90m[23m, pcttpsSLUB [3m[90m<chr>[90m[23m, tpsdomiLUB [3m[90m<chr>[90m[23m, pcttpsdomiLUB [3m[90m<chr>[90m[23m, nbOB [3m[90m<chr>[90m[23m,[39m
+[90m#   pctnbOB [3m[90m<chr>[90m[23m, avgdepthOB [3m[90m<chr>[90m[23m, mindepthOB [3m[90m<chr>[90m[23m, maxdepthOB [3m[90m<chr>[90m[23m, avgnbpbOB [3m[90m<chr>[90m[23m,[39m
+[90m#   maxnbpbOB [3m[90m<chr>[90m[23m[39m

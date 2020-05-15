@@ -1,0 +1,60 @@
+[1] 4
+[90m# A tibble: 4 x 64[39m
+  rowname instance pb        n     p coef  rangemin rangemax nodesel varsel OB    solved    YN
+  [3m[90m<chr>[39m[23m   [3m[90m<chr>[39m[23m    [3m[90m<chr>[39m[23m [3m[90m<dbl>[39m[23m [3m[90m<dbl>[39m[23m [3m[90m<chr>[39m[23m    [3m[90m<dbl>[39m[23m    [3m[90m<dbl>[39m[23m [3m[90m<chr>[39m[23m   [3m[90m<chr>[39m[23m  [3m[90m<chr>[39m[23m  [3m[90m<dbl>[39m[23m [3m[90m<dbl>[39m[23m
+[90m1[39m 81      Forget2… AS       36     3 2box         1       10 depth   mof    None       1    42
+[90m2[39m 82      Forget2… AS       36     3 2box         1       10 breadth mof    None       1    42
+[90m3[39m 83      Forget2… AS       36     3 2box         1       10 depth   mfavg  None       1    42
+[90m4[39m 84      Forget2… AS       36     3 2box         1       10 breadth mfavg  None       1    42
+[90m# … with 51 more variables: nbnodes [3m[90m<dbl>[90m[23m, mindepthT [3m[90m<dbl>[90m[23m, maxdepthT [3m[90m<dbl>[90m[23m, avgdepthT [3m[90m<dbl>[90m[23m,[39m
+[90m#   avgdepthYN [3m[90m<dbl>[90m[23m, nbleaf [3m[90m<dbl>[90m[23m, nbinfeas [3m[90m<dbl>[90m[23m, pctinfeas [3m[90m<dbl>[90m[23m, tpsinfeas [3m[90m<dbl>[90m[23m, nbopt [3m[90m<dbl>[90m[23m,[39m
+[90m#   pctopt [3m[90m<dbl>[90m[23m, tpsopt [3m[90m<dbl>[90m[23m, nbdomi [3m[90m<dbl>[90m[23m, pctdomi [3m[90m<dbl>[90m[23m, avgdomi [3m[90m<dbl>[90m[23m, nbLB [3m[90m<dbl>[90m[23m,[39m
+[90m#   avgfacets [3m[90m<dbl>[90m[23m, avgNDf [3m[90m<dbl>[90m[23m, pctavgNDf [3m[90m<dbl>[90m[23m, avgWNDf [3m[90m<dbl>[90m[23m, pctWNDf [3m[90m<dbl>[90m[23m, maxfacets [3m[90m<dbl>[90m[23m,[39m
+[90m#   maxNDf [3m[90m<dbl>[90m[23m, pctmaxNDf [3m[90m<dbl>[90m[23m, maxWNDf [3m[90m<dbl>[90m[23m, pctmaxWNDf [3m[90m<dbl>[90m[23m, tpstotal [3m[90m<dbl>[90m[23m, tpsLB [3m[90m<dbl>[90m[23m,[39m
+[90m#   pcttpsLB [3m[90m<dbl>[90m[23m, tpsdomi [3m[90m<dbl>[90m[23m, pcttpsdomi [3m[90m<dbl>[90m[23m, tpsUB [3m[90m<dbl>[90m[23m, pcttpsUB [3m[90m<dbl>[90m[23m, tpsnodesel [3m[90m<dbl>[90m[23m,[39m
+[90m#   pcttpsnodesel [3m[90m<dbl>[90m[23m, tpsvarsel [3m[90m<dbl>[90m[23m, pcttpsvarsel [3m[90m<dbl>[90m[23m, tpsOB [3m[90m<dbl>[90m[23m, pcttpsOB [3m[90m<dbl>[90m[23m,[39m
+[90m#   tpsSLUB [3m[90m<dbl>[90m[23m, pcttpsSLUB [3m[90m<dbl>[90m[23m, tpsdomiLUB [3m[90m<dbl>[90m[23m, pcttpsdomiLUB [3m[90m<dbl>[90m[23m, nbOB [3m[90m<dbl>[90m[23m,[39m
+[90m#   pctnbOB [3m[90m<dbl>[90m[23m, avgdepthOB [3m[90m<dbl>[90m[23m, mindepthOB [3m[90m<dbl>[90m[23m, maxdepthOB [3m[90m<dbl>[90m[23m, avgnbpbOB [3m[90m<dbl>[90m[23m,[39m
+[90m#   maxnbpbOB [3m[90m<dbl>[90m[23m, ratioNDcoef [3m[90m<dbl>[90m[23m[39m
+[1] TRUE
+[1] FALSE
+
+
+
+
+
+Warning messages:
+1: Error: Forget20-AP_7_3_1-10_spheredown_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+2: Error: Forget20-AP_8_3_1-10_sphereup_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+3: Error: Forget20-AP_8_3_1-10_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+4: Error: Forget20-AP_8_3_1-10_sphereup_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+5: Error: Forget20-UFLP_12_3_1-10_11-20_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+6: Error: Forget20-UFLP_14_3_1-10_11-20_random_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+7: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mof_-2_UB.csv compared to UB set (solved = 1)!
+8: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_b_mof_-2_UB.csv compared to UB set (solved = 1)!
+9: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mfavg_-2_UB.csv compared to UB set (solved = 1)!
+10: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+11: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+12: Error: Forget20-UFLP_6_3_1-10_1-1_random_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+13: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+14: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_spheredown_1_8_d_mof_-2_UB.csv compared to UB set (solved = 1)!
+15: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_spheredown_1_8_b_mof_-2_UB.csv compared to UB set (solved = 1)!
+16: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_sphereup_1_1_d_mof_-2_UB.csv compared to UB set (solved = 1)!
+17: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_sphereup_1_1_b_mof_-2_UB.csv compared to UB set (solved = 1)!
+18: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_sphereup_1_1_d_mfavg_-2_UB.csv compared to UB set (solved = 1)!
+19: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_sphereup_1_10_b_mof_-2_UB.csv compared to UB set (solved = 1)!
+20: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+21: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+22: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+23: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+24: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+25: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+26: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_7_3_1-10_1-1_spheredown_1_8_d_mof_-2_UB.csv compared to UB set (solved = 1)!
+27: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_7_3_1-10_1-1_spheredown_1_8_b_mof_-2_UB.csv compared to UB set (solved = 1)!
+28: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+29: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+30: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+31: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+32: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+33: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+34: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
