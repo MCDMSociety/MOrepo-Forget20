@@ -43,7 +43,7 @@ source("functions.R")
 
 #' Read result output
 dat <- read_csv("data/stat.csv", col_types = cols()) %>% rownames_to_column()
-dat
+# dat
 
 # start_time <- now()
 #' ### Check classification of points

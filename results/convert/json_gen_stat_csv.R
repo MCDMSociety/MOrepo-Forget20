@@ -78,7 +78,7 @@ for (i in 1:length(resJsonFiles)) {
    )
    dat <- bind_rows(dat, res)
 }
-dat
+# dat
 # dat <- type_convert(dat)
 write_csv(dat, "../statistics.csv")
 warnings()

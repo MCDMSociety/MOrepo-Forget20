@@ -53,19 +53,19 @@ dat <- read_csv("data/stat.csv", col_types = cols()) %>% rownames_to_column()
 
 #' ### Check if output consistent
 #' #### Different tests on each instance?
-tmp <- dat %>% group_by(instance) %>% summarise(count = n())
-unique(tmp$count)
+# tmp <- dat %>% group_by(instance) %>% summarise(count = n())
+# unique(tmp$count)
 #' An example:
-dat %>% dplyr::filter(instance == tmp$instance[1])
+# dat %>% dplyr::filter(instance == tmp$instance[1])
 #' That is the tests differ in `nodesel` and `varsel`.
 
 #' #### Do all results have an instance file?
-tmp <- tibble(instance = instances)
-nrow(dat) == nrow(dat %>% full_join(tmp))
+# tmp <- tibble(instance = instances)
+# nrow(dat) == nrow(dat %>% full_join(tmp))
 
 #' #### Do all methods find exact solution?
-tmp <- dat %>% group_by(instance, solved) %>% nest() %>% dplyr::filter(solved == 0)
-nrow(tmp) == 0
+# tmp <- dat %>% group_by(instance, solved) %>% nest() %>% dplyr::filter(solved == 0)
+# nrow(tmp) == 0
 
 
 
