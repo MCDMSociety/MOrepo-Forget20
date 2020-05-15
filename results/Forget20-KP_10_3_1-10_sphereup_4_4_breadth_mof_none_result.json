@@ -1,0 +1,271 @@
+{
+  "version": "1.0",
+  "contributionName": "Forget20",
+  "instanceName": "Forget20-KP_10_3_1-10_sphereup_4_4",
+  "objectives": 3,
+  "objectiveType": ["int", "int", "int"],
+  "comments": "Instance solved using config breadth_mof_none",
+  "direction": ["min", "min", "min"],
+  "optimal": true,
+  "cpu": {
+    "sec": 0.04,
+    "machineSpec": "Intel i7-4785T 2.20 GHz, 15.6 GB RAM, Ubuntu 14.04 LTS 64 bit"
+  },
+  "valid": true,
+  "card": 7,
+  "suppCard": 6,
+  "extCard": 1,
+  "points": [
+    {
+      "z1": -27,
+      "z2": -51,
+      "z3": -38,
+      "type": "se"
+    },
+    {
+      "z1": -31,
+      "z2": -50,
+      "z3": -36,
+      "type": "us"
+    },
+    {
+      "z1": -34,
+      "z2": -48,
+      "z3": -38,
+      "type": "se"
+    },
+    {
+      "z1": -37,
+      "z2": -37,
+      "z3": -28,
+      "type": "se"
+    },
+    {
+      "z1": -36,
+      "z2": -49,
+      "z3": -35,
+      "type": "se"
+    },
+    {
+      "z1": -37,
+      "z2": -39,
+      "z3": -26,
+      "type": "se"
+    },
+    {
+      "z1": -29,
+      "z2": -52,
+      "z3": -35,
+      "type": "se"
+    }
+  ],
+  "misc": {
+    "algConfig": {
+      "nodesel": "breadth",
+      "varsel": "mof",
+      "OB": "None"
+    },
+    "inputStat": {
+      "n": 10,
+      "coeffNDRatio": 0.6,
+      "coeffGenMethod": "sphereup",
+      "coeffRange": [1, 10]
+    },
+    "outputStat": {
+      "nbnodes": 89,
+      "mindepthT": 5,
+      "maxdepthT": 10,
+      "avgdepthT": 6.89,
+      "avgdepthYN": 6.14,
+      "nbleaf": 45,
+      "nbinfeas": 1,
+      "pctinfeas": 2.22,
+      "tpsinfeas": 0.22,
+      "nbopt": 15,
+      "pctopt": 33.33,
+      "tpsopt": 0.32,
+      "nbdomi": 29,
+      "pctdomi": 64.44,
+      "avgdomi": 0.45,
+      "nbLB": 88,
+      "avgfacets": 6.48,
+      "avgNDf": 0.31,
+      "pctavgNDf": 4.85,
+      "avgWNDf": 6.17,
+      "pctWNDf": 95.18,
+      "maxfacets": 18,
+      "maxNDf": 3,
+      "pctmaxNDf": 16.67,
+      "maxWNDf": 15,
+      "pctmaxWNDf": 83.33,
+      "tpstotal": 0.04,
+      "tpsLB": 0.04,
+      "pcttpsLB": 94.08,
+      "tpsdomi": 0,
+      "pcttpsdomi": 3.29,
+      "tpsUB": 0,
+      "pcttpsUB": 0.27,
+      "tpsnodesel": 0,
+      "pcttpsnodesel": 0.03,
+      "tpsvarsel": 0,
+      "pcttpsvarsel": 0.16,
+      "tpsOB": 0,
+      "pcttpsOB": 0,
+      "tpsSLUB": 0,
+      "pcttpsSLUB": 0,
+      "tpsdomiLUB": 0,
+      "pcttpsdomiLUB": 0,
+      "nbOB": 0,
+      "pctnbOB": 0,
+      "avgdepthOB": 0,
+      "mindepthOB": 2147483647,
+      "maxdepthOB": 0,
+      "avgnbpbOB": 0,
+      "maxnbpbOB": 0,
+      "yNStat": [
+        {
+          "z1": -27,
+          "z2": -51,
+          "z3": -38,
+          "node": 5,
+          "time": 0.00331807136535645,
+          "depth": 3
+        },
+        {
+          "z1": -29,
+          "z2": -52,
+          "z3": -35,
+          "node": 16,
+          "time": 0.00981307029724121,
+          "depth": 5
+        },
+        {
+          "z1": -36,
+          "z2": -49,
+          "z3": -35,
+          "node": 32,
+          "time": 0.018359899520874,
+          "depth": 6
+        },
+        {
+          "z1": -34,
+          "z2": -48,
+          "z3": -38,
+          "node": 38,
+          "time": 0.0210199356079102,
+          "depth": 6
+        },
+        {
+          "z1": -37,
+          "z2": -37,
+          "z3": -28,
+          "node": 51,
+          "time": 0.0268750190734863,
+          "depth": 6
+        },
+        {
+          "z1": -31,
+          "z2": -50,
+          "z3": -36,
+          "node": 74,
+          "time": 0.0374748706817627,
+          "depth": 8
+        },
+        {
+          "z1": -37,
+          "z2": -39,
+          "z3": -26,
+          "node": 84,
+          "time": 0.0410490036010742,
+          "depth": 9
+        }
+      ]
+    },
+    "xE": [
+      {
+        "x1": 1,
+        "x2": 0,
+        "x3": 1,
+        "x4": 1,
+        "x5": 1,
+        "x6": 0,
+        "x7": 1,
+        "x8": 0,
+        "x9": 1,
+        "x10": 0
+      },
+      {
+        "x1": 1,
+        "x2": 0,
+        "x3": 1,
+        "x4": 0,
+        "x5": 1,
+        "x6": 1,
+        "x7": 1,
+        "x8": 0,
+        "x9": 1,
+        "x10": 0
+      },
+      {
+        "x1": 1,
+        "x2": 0,
+        "x3": 1,
+        "x4": 1,
+        "x5": 1,
+        "x6": 1,
+        "x7": 0,
+        "x8": 0,
+        "x9": 1,
+        "x10": 0
+      },
+      {
+        "x1": 0,
+        "x2": 1,
+        "x3": 0,
+        "x4": 1,
+        "x5": 0,
+        "x6": 1,
+        "x7": 0,
+        "x8": 1,
+        "x9": 1,
+        "x10": 0
+      },
+      {
+        "x1": 1,
+        "x2": 0,
+        "x3": 1,
+        "x4": 0,
+        "x5": 1,
+        "x6": 1,
+        "x7": 0,
+        "x8": 1,
+        "x9": 1,
+        "x10": 0
+      },
+      {
+        "x1": 0,
+        "x2": 1,
+        "x3": 0,
+        "x4": 0,
+        "x5": 1,
+        "x6": 1,
+        "x7": 0,
+        "x8": 1,
+        "x9": 1,
+        "x10": 0
+      },
+      {
+        "x1": 1,
+        "x2": 0,
+        "x3": 1,
+        "x4": 0,
+        "x5": 1,
+        "x6": 0,
+        "x7": 1,
+        "x8": 1,
+        "x9": 1,
+        "x10": 0
+      }
+    ]
+  }
+}
