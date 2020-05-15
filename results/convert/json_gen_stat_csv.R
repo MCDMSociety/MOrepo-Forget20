@@ -22,7 +22,6 @@ knitr::opts_chunk$set(
 )
 options(nwarnings = 100)
 sink("results/convert/json_gen_stat_csv.log", append=F, split=T)
-now()
 
 
 #' This script is used to generate the aggregated statistics stored in `statistics.csv` in the
@@ -35,8 +34,10 @@ now()
 # remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
 library(tidyverse)
 library(jsonlite)
+library(lubridate)
 options(width = 100)
 setwd("./results/convert")
+now()
 
 resJsonFiles <- list.files("..", ".json", full.names = T)
 dat <- NULL

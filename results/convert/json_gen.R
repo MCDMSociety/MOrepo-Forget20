@@ -22,7 +22,6 @@ knitr::opts_chunk$set(
 )
 options(nwarnings = 10000)
 sink("results/convert/json_gen.log", append=F, split=T)
-now()
 
 #' This script is used to convert the program output to json result files (one for each instance).
 #' All the program output is stored in the `data` subfolder
@@ -39,6 +38,7 @@ library(fs)
 options(width = 100)
 setwd("./results/convert")
 source("functions.R")
+now()
 
 #' Get all instances
 instances <- list.files("../../instances/raw/", recursive = T) %>%

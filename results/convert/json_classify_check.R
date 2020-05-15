@@ -22,7 +22,6 @@ knitr::opts_chunk$set(
 )
 options(nwarnings = 10000)
 sink("results/convert/json_classify_check.log", append=F, split=T)
-now()
 
 
 #' This script is used to convert the program output to json result files (one for each instance).
@@ -40,6 +39,7 @@ library(fs)
 options(width = 100)
 setwd("./results/convert")
 source("functions.R")
+now()
 
 #' Read result output
 dat <- read_csv("data/stat.csv", col_types = cols()) %>% rownames_to_column()
