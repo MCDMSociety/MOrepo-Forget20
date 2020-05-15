@@ -4,9 +4,8 @@ on:
   push:
     paths:
       - .github/workflows/json_gen.yaml
-      - results/convert/install.R
-      - results/convert/json_gen.R
-      - results/convert/functions.R
+      - results/convert/*.R
+      - results/*.json
   schedule:
     - cron: '0 * * * *'
 
@@ -22,8 +21,12 @@ jobs:
         run: Rscript results/convert/install.R
         env:
           RGL_USE_NULL: TRUE
-      - name: Run R script
+      - name: Run R script json_gen.R
         run: Rscript results/convert/json_gen.R
+      - name: Run R script json_gen_stat_csv.R
+        run: Rscript results/convert/json_gen_stat_csv.R
+      - name: Run R script json_classify_check.R
+        run: Rscript results/convert/json_classify_check.R
       - name: Commit results
         run: |
           git add .

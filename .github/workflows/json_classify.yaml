@@ -2,11 +2,14 @@ name: R script classifying nd points
 
 on:
   push:
-    paths:
-      - .github/workflows/json_classify.yaml
-      - results/convert/install.R
-      - results/convert/json_classify.R
-      - results/convert/functions.R
+    branches-ignore:
+      - '**'
+#  push:
+#    paths:
+#      - .github/workflows/json_classify.yaml
+#      - results/convert/install.R
+#      - results/convert/json_classify.R
+#      - results/convert/functions.R
 #  schedule:
 #    - cron: '0 * * * *'
 

@@ -2,11 +2,15 @@ name: R script for generating statistics.csv
 
 on:
   push:
-    paths:
-      - .github/workflows/json_gen_stat_csv.yaml
-      - results/convert/install.R
-      - results/convert/json_gen_stat_csv.R
-      - results/*.json
+    branches-ignore:
+      - '**'
+#on:
+#  push:
+#    paths:
+#      - .github/workflows/json_gen_stat_csv.yaml
+#      - results/convert/install.R
+#      - results/convert/json_gen_stat_csv.R
+#      - results/*.json
 
 jobs:
   sleep:

@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
    out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
 options(nwarnings = 10000)
-
+sink("json_classify_check.log", append=F, split=T)
 
 #' This script is used to convert the program output to json result files (one for each instance).
 #' All the program output is stored in the `data` subfolder
@@ -78,5 +78,6 @@ for (iName in unique(dat$instance)) {
 }
 
 warnings()
+sink()
 
 #' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html

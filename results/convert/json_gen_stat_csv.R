@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
    out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
 options(nwarnings = 100)
+sink("json_gen_stat_csv.log", append=F, split=T)
 
 
 #' This script is used to generate the aggregated statistics stored in `statistics.csv` in the
@@ -80,5 +81,6 @@ dat
 # dat <- type_convert(dat)
 write_csv(dat, "../statistics.csv")
 warnings()
+sink()
 
 #' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html
