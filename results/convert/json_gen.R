@@ -83,7 +83,7 @@ for (iName in unique(dat$instance)) {
          next
       }
       if (nrow(tmp %>% dplyr::filter(solved == 1) %>% distinct(YN)) > 1) {
-         warning("Error: ", iName, ". Different number of nondominated points when compare exact solutions!", sep="")
+         warning("Error: ", iName, ". Different number of nondominated points when compare exact solutions for different alg. configs!", sep="")
          next
       }
       diff <- as.duration(now() - start_time)
