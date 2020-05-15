@@ -397,13 +397,14 @@ datOutput
   - `avgnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space.
   - `maxnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space.
 
-For each instance we also store the non-dominated set $\mathcal{Y}_N$ found by the algorithm and if an exact solution was found the efficiet set $\mathcal{X}_E$ both are sorted exactly in the same order, i.e. each row represent the non-dominated point and its corresponding solution. Statistics of how the non-domnated points are found are stored in `yNStat`. The statistics are the following:
+For each instance we also store the non-dominated set $\mathcal{Y}_N$ found by the algorithm and if an exact solution was found the efficiet set $\mathcal{X}_E$. Statistics of how the non-domnated points are found are stored in `yNStat`. The statistics are the following:
 
   - the $p$ first columns correspond the values of the objective functions.
   - `node`: number of the node where this point has been discovered. The higher this number is, the later the point has been discovered.
   - `time`: time (in sec) elapsed between the start of the algorithm and when this point has been found (for the first time).
   - `depth`: depth of the node where this point has been found (for the first time).
   
+`yNStat` are sorted in exactly the same order as $\mathcal{X}_E$, i.e. each row represent the non-dominated point and its corresponding solution.
   
   
 
@@ -489,21 +490,25 @@ ggplot(datPA, aes(y = YN , x = n)) +
 
 Based on the plots we may answer the research question by concluding that range have an effect. A small cofficient range gives a smaller range of possible objective values and hence fewer possible nondominated points. Note a smaller range may result in a larger amount of alternative solutions corresponding to a nondominted point. The speed of the algorithm may be affected by alternative optimal solutions.
 
-For AP scaling the cost don't affect the size of nondominated points. For UFLP there is an effect due to the way costs are generated so here scaling don't give the same results. [Missing comments for KP and IP]
+For KP and AP scaling the cost don't affect the size of nondominated points. For UFLP there is an effect due to the way costs are generated so here scaling don't give the same results (we have to choose a setting here).  [Missing comments for IP]
 
 We may conclude that further study only consider range [1,1000] and the two cases for the UFLP with this range. 
 
 Note that the number of nondominated points increase with the number of variables which is due to the total possible range of the objectives increase with `n` (there is room for more points). 
 
 ```{r}
-plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d", 
-        mode="markers", 
+plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
+        mode="markers",
         data = dat %>% dplyr::filter(pb == "AP"),
         marker = list(size=3),
         color = ~n) %>% plotly::layout(title = "AP")
-
-plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d", 
-        mode="markers", 
+plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
+        mode="markers",
+        data = dat %>% dplyr::filter(pb == "KP"),
+        marker = list(size=3),
+        color = ~n) %>% plotly::layout(title = "KP")
+plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
+        mode="markers",
         data = dat %>% dplyr::filter(pb == "UFLP"),
         marker = list(size=3),
         color = ~n) %>% plotly::layout(title = "UFLP")
@@ -514,19 +519,28 @@ plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
 ## R1b: Does the generation method of the objective coefficients (`coef`) have an effect?
 
 ```{r, fig.asp = 1}
-ggplot(datP, aes(y = YN , x = n)) +
+ggplot(datP %>% dplyr::filter(pb != "UFLP"), aes(y = YN , x = n)) +
   geom_jitter(aes(color = coef)) +
   facet_grid(rows = vars(rangeC), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Effect of generation method (|YN| for each instance)") +
+  theme(legend.position="bottom", legend.title=element_blank())
+ggplot(datP %>% dplyr::filter(pb == "UFLP"), aes(y = YN , x = n)) +
+  geom_jitter(aes(color = coef)) +
+  facet_grid(rows = vars(rangeC), cols = vars(pb), scales = "free") +
   ggtitle("Effect of generation method (|YN| for each instance)") +
   theme(legend.position="bottom", legend.title=element_blank())
 
 datPA <- datP %>%
   group_by(pb, coef, rangeC, n) %>%
   dplyr::summarise(YN = mean(YN))
-
-ggplot(datPA, aes(y = YN , x = n)) +
+ggplot(datPA %>% dplyr::filter(pb != "UFLP"), aes(y = YN , x = n)) +
   geom_jitter(aes(color = coef)) +
   facet_grid(rows = vars(rangeC), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Effect of generation method (average |YN| for each instance group)") +
+  theme(legend.position="bottom", legend.title=element_blank())
+ggplot(datPA %>% dplyr::filter(pb == "UFLP"), aes(y = YN , x = n)) +
+  geom_jitter(aes(color = coef)) +
+  facet_grid(rows = vars(rangeC), cols = vars(pb), margins = F, scales = "free") +
   ggtitle("Effect of generation method (average |YN| for each instance group)") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
@@ -538,7 +552,7 @@ Note in general the speed of the algorithm is higly correlated with the number o
 
 ## R1c: Does the proportion of objective coefficient vectors that are non-dominated (`ratioNDcoef`) have an effect?
 
-This is highly related to the objective cofficient generation method:
+This is highly related to the objective cofficient generation method (and the range):
 
 ```{r}
 tmp <- dat %>% group_by(pb, coef, rangeC) %>% summarize(ratio = mean(ratioNDcoef))
@@ -549,23 +563,33 @@ Note for the fixed `pb` and `rangeC` the ratio approx. increase in the order ran
 
 
 ```{r, fig.asp = 1}
-ggplot(datP, aes(y = YN , x = n)) +
+ggplot(datP %>% dplyr::filter(pb != "UFLP"), aes(y = YN , x = n)) +
   geom_jitter(aes(color = ratioNDcoef, shape = coef)) +
   facet_grid(rows = vars(rangeC), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Effect of ratio (|YN| for each instance)") +
+  theme(legend.position="bottom", legend.title=element_blank())
+ggplot(datP %>% dplyr::filter(pb == "UFLP"), aes(y = YN , x = n)) +
+  geom_jitter(aes(color = ratioNDcoef, shape = coef)) +
+  facet_grid(rows = vars(rangeC), cols = vars(pb), margins = F, scales = "free") +
   ggtitle("Effect of ratio (|YN| for each instance)") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
 ```{r, eval=FALSE}
-ggplot(datP, aes(y = YN , x = n)) +
+ggplot(datP %>% dplyr::filter(pb != "UFLP"), aes(y = YN , x = n)) +
   geom_jitter(aes(color = ratioNDcoef, shape = rangeC)) +
   facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Effect of ratio (|YN| for each instance)") +
+  theme(legend.position="bottom", legend.title=element_blank())
+ggplot(datP %>% dplyr::filter(pb == "UFLP"), aes(y = YN , x = n)) +
+  geom_jitter(aes(color = ratioNDcoef, shape = rangeC)) +
+  facet_grid(rows = vars(coef), cols = vars(pb), margins = F, scales = "free") +
   ggtitle("Effect of ratio (|YN| for each instance)") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
 
-Based on the plot we may answer the research question by concluding that the ratio may have a high effect on the number of non-dominated solutions. Given a fixed problem class and objective coefficient range, the ratio may have a high effect on the dificulty of the instance. 
+Based on the plot we may answer the research question by concluding that the ratio may have a high effect on the number of non-dominated solutions. Given a fixed problem class and objective coefficient range, the ratio may have a high effect on the dificulty of the instance. Note however, that if problem class and range not is known you can not guess the number of ND points. 
 
 ## R1d: Can we exclude some values of the input statistics for further study (e.g. some ranges)?
 
@@ -574,12 +598,12 @@ The above analysis may conclude that instances with a lower number of nondominat
   1. Use a narrow cost range.
   2. Use random cost generation which result in a low ratio.
   
-To have harder instances we may skip these instances and instead use instances wiht a higher number of nondominated points
+To have harder instances we may skip these instances and instead use instances with a higher number of nondominated points by
 
   1. Use a wide cost range (e.g. [1,1000]).
   2. Use a sphere generation method.
   
-Scaling the range don't have a high effect on most problem classes. 
+Scaling the range don't have a high effect on most problem classes so fix a cost range seems okay. If we want to compare agains easy problems we may use the first option too. 
 
 
 # Analysis: Research Question 2 (R2) - Which instances are hard to solve?
@@ -599,7 +623,7 @@ ggplot(dat, aes(y = tpstotal , x = n)) +
   theme(legend.position="bottom", legend.title=element_blank()) 
 ```
 
-The general picture is fuzzy due to different problem classes, ranges and generation methods. However, breadth.mof.None seems to win. Let us have a closer look:
+The general picture is fuzzy due to different problem classes, ranges, generation methods and algorithm configurations. Let us have a closer look:
 
 ```{r, fig.asp=1}
 datP <- dat %>% 
@@ -639,8 +663,8 @@ ggplot(datP, aes(y = tpstotal , x = n)) +
 Some observations
 
   - There is no clear winner among the different algorithm configurations.
-  - There seems to be a bigger difference for KP (but can't trust the results here)
-  - Hardest instances are the one generated with the sphere methods
+  - There seems to be a bigger difference for KP.
+  - Hardest instances are the one generated with the sphere methods.
 
 Let us find the winner configuration for each instance given some groupings:
 
@@ -696,9 +720,9 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-If we group by `coef`, it only have an effect for AP. 
+If we group by `coef`, we have different winners. This may have something with the hardness of the instance. 
 
-Will different methods be used for harder instances (here we use YN as a proxy for hard). Let us try to plot the cpu time for winners only:
+Will different methods be used for harder instances (here we use YN as a proxy for hard). Let us try to plot the aggegated percentage winner configuration:
 
 ```{r}
 res <- datP %>% 
@@ -714,6 +738,8 @@ ggplot(res, aes(x = YN, fill = win)) +
   ggtitle("Pct for each configuration given 10 bins") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
+
+It can be seen that for some problems the best configuration change from easy problems to hard.
 
 Finally we may plot only the winner cpu times for each instance:
 
