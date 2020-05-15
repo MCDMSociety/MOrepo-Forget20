@@ -21,7 +21,8 @@ knitr::opts_chunk$set(
    out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
 options(nwarnings = 100)
-sink("json_gen_stat_csv.log", append=F, split=T)
+sink("results/convert/json_gen_stat_csv.log", append=F, split=T)
+now()
 
 
 #' This script is used to generate the aggregated statistics stored in `statistics.csv` in the

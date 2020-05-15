@@ -21,7 +21,8 @@ knitr::opts_chunk$set(
    out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
 options(nwarnings = 10000)
-sink("json_gen.log", append=F, split=T)
+sink("results/convert/json_gen.log", append=F, split=T)
+now()
 
 #' This script is used to convert the program output to json result files (one for each instance).
 #' All the program output is stored in the `data` subfolder
