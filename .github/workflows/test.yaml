@@ -12,11 +12,13 @@ jobs:
     env:
       RGL_USE_NULL: true
     steps:
-      - name: Install XQuartz on macOS
-        if: runner.os == 'macOS'
-        run: brew cask install xquartz
-      - uses: actions/checkout@v2
+#      - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@master
+      - name: Install XQuartz on macOS
+        run: brew cask install xquartz
+      - name: Set display
+        run: |
+          export DISPLAY=:99 # for rgl
       - name: Install packages
         run: Rscript -e "install.packages('rgl')"
         env:
