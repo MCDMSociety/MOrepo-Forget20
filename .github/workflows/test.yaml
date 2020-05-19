@@ -15,8 +15,8 @@ jobs:
     steps:
 #      - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@master
-#      - name: Install XQuartz on macOS
-#        run: brew cask install xquartz
+      - name: Install XQuartz on macOS
+        run: brew cask install xquartz
 #      - name: Set display
 #        run: |
 #          export DISPLAY=:99 # for rgl
