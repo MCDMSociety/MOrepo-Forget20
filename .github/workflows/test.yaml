@@ -1,0 +1,27 @@
+name: Test RGL
+
+on:
+  push:
+    paths:
+      - .github/workflows/test.yaml
+
+jobs:
+  render:
+    name: Test
+    runs-on: macOS-latest
+    env:
+      RGL_USE_NULL: true
+    steps:
+      - name: Install XQuartz on macOS
+        if: runner.os == 'macOS'
+        run: brew cask install xquartz
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@master
+      - name: Install packages
+        run: Rscript -e "install.packages('rgl')"
+        env:
+          RGL_USE_NULL: TRUE
+      - name: Run R script
+        run: Rscript -e "library(rgl);plot3d(1,1,1)"
+        env:
+          RGL_USE_NULL: TRUE
