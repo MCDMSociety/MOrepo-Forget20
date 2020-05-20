@@ -58,7 +58,7 @@ knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
 
 
-```{r include=FALSE}
+```{r, include=FALSE, eval=FALSE}
 # Generation of stat for preliminary tests
 
   # Table for avg times
@@ -174,7 +174,9 @@ This report present the computational results for the instances. All instances a
 # Instances
 
 ```{r load instance results}
-dat <- read_csv("../statistics.csv")   #"../convert/data/stat.csv"
+dat <- read_csv("../statistics.csv") %>%   #"../convert/data/stat.csv"
+  mutate(YNsRatio = YNs/YN, YNusRatio = 1-YNs/YN, YNsneRatio = (YNs-YNse)/YN)
+
 
 datInput <- dat %>% 
   distinct(instance, .keep_all = TRUE) %>% 
@@ -219,7 +221,13 @@ A set of statistics are stored for each instance and algorithm run. The statisti
 For each instance we have the following statistics:
 
 ```{r instance table, echo=FALSE}
-datInput
+links <- str_c("instances/", datInput$instance, ".html")
+DT::datatable(
+  datInput %>%
+    mutate(instance = if_else(file.exists(links), str_c('<a href="', links, '">', instance, '</a>'), instance)),
+  escape = F,
+  caption = "Instances. A link to the results for the instance are given for some instances."
+)
 ```
 
 We have:
@@ -407,7 +415,26 @@ For each instance we also store the non-dominated set $\mathcal{Y}_N$ found by t
   
 `yNStat` are sorted in exactly the same order as $\mathcal{X}_E$, i.e. each row represent the non-dominated point and its corresponding solution.
   
-  
+
+# Detailed results for each instance
+
+Detailed results for each instance can be generated using `instance.Rmd`. The report is already generated for some of the instances (see links in the table with input statistics). Some instances that might be of interest:
+
+```{r}
+tmp <- dat %>% group_by(instance) %>% summarise_at(vars(contains(c("YN", "total"))), list(mean = mean, sd = sd, max = max), na.rm = TRUE)
+toLink <- function(inst) {
+  links <- str_c('instances/', inst, '.html')
+  if_else(file.exists(links), str_c('<a href="', links, '">', inst, '</a>'), inst)
+}
+```
+
+  * Instances with lowest number of nondominated points: `r toLink(tmp %>% top_n(-3, YN_mean) %>% pull(instance))`
+  * Instances with higest number of nondominated points: `r toLink(tmp %>% top_n(3, YN_mean) %>% pull(instance))`
+  * Instances with lowest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(-3, YNusRatio_mean)  %>% pull(instance))`
+  * Instances with higest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(3, YNusRatio_mean)  %>% pull(instance))`
+  * Instances with higest supported non-extreme nondominated points percentage: `r toLink(tmp %>% top_n(3, YNsneRatio_mean) %>% pull(instance))`
+  * Instances with higest variance in cpu time: `r toLink(tmp %>% top_n(3, tpstotal_sd) %>% pull(instance))`
+
 
 # Research questions
 

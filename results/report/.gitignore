@@ -6,3 +6,5 @@ instance.md
 instance.html
 *.gif
 *.mkv
+WebGL.*
+setup.R
