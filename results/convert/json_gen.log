@@ -1,41 +1,1004 @@
-[1] "2020-05-22 15:08:15 UTC"
+[1] "2020-05-22 22:06:58 UTC"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 
 Warning messages:
-1: Error: Forget20-AP_7_3_1-10_spheredown_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
-2: Error: Forget20-AP_8_3_1-10_sphereup_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
-3: Error: Forget20-AP_8_3_1-10_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
-4: Error: Forget20-AP_8_3_1-10_sphereup_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
-5: Error: Forget20-UFLP_12_3_1-10_11-20_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
-6: Error: Forget20-UFLP_14_3_1-10_11-20_random_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
-7: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mof_-2_UB.csv compared to UB set (solved = 1)!
-8: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_b_mof_-2_UB.csv compared to UB set (solved = 1)!
-9: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mfavg_-2_UB.csv compared to UB set (solved = 1)!
-10: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
-11: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
-12: Error: Forget20-UFLP_6_3_1-10_1-1_random_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
-13: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
-14: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_spheredown_1_8_d_mof_-2_UB.csv compared to UB set (solved = 1)!
-15: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_spheredown_1_8_b_mof_-2_UB.csv compared to UB set (solved = 1)!
-16: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_sphereup_1_1_d_mof_-2_UB.csv compared to UB set (solved = 1)!
-17: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_sphereup_1_1_b_mof_-2_UB.csv compared to UB set (solved = 1)!
-18: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_sphereup_1_1_d_mfavg_-2_UB.csv compared to UB set (solved = 1)!
-19: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_6_3_1-10_1-1_sphereup_1_10_b_mof_-2_UB.csv compared to UB set (solved = 1)!
-20: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
-21: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
-22: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
-23: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
-24: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
-25: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
-26: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_7_3_1-10_1-1_spheredown_1_8_d_mof_-2_UB.csv compared to UB set (solved = 1)!
-27: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_7_3_1-10_1-1_spheredown_1_8_b_mof_-2_UB.csv compared to UB set (solved = 1)!
-28: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
-29: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
-30: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
-31: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
-32: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
-33: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
-34: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+1: Error: Forget20-AP_6_3_1-10_random_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+2: Error: Forget20-AP_6_3_1-10_spheredown_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+3: Error: Forget20-AP_6_3_1-10_spheredown_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+4: Error: Forget20-AP_6_3_1-10_spheredown_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+5: Error: Forget20-AP_6_3_1-10_sphereup_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+6: Error: Forget20-AP_6_3_1-10_sphereup_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+7: Error: Forget20-AP_6_3_1-10_sphereup_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+8: Error: Forget20-AP_6_3_1-10_sphereup_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+9: Error: Forget20-AP_7_3_1-10_2box_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+10: Error: Forget20-AP_7_3_1-10_2box_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+11: Error: Forget20-AP_7_3_1-10_random_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+12: Error: Forget20-AP_7_3_1-10_spheredown_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+13: Error: Forget20-AP_7_3_1-10_spheredown_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+14: Error: Forget20-AP_7_3_1-10_spheredown_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+15: Error: Forget20-AP_7_3_1-10_spheredown_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+16: Error: Forget20-AP_7_3_1-10_spheredown_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+17: Error: Forget20-AP_7_3_1-10_spheredown_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+18: Error: Forget20-AP_7_3_1-10_spheredown_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+19: Error: Forget20-AP_7_3_1-10_sphereup_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+20: Error: Forget20-AP_7_3_1-10_sphereup_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+21: Error: Different number of ND points in data/details/UBrun/Forget20-AP_7_3_1-10_sphereup_1_3_b_mof_1_UB.csv compared to UB set (solved = 1)!
+22: Error: Forget20-AP_7_3_1-10_sphereup_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+23: Error: Forget20-AP_7_3_1-10_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+24: Error: Forget20-AP_7_3_1-10_sphereup_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+25: Error: Forget20-AP_7_3_1-10_sphereup_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+26: Error: Forget20-AP_7_3_1-10_sphereup_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+27: Error: Different number of ND points in data/details/UBrun/Forget20-AP_7_3_1-10_sphereup_1_9_d_mfavg_1_UB.csv compared to UB set (solved = 1)!
+28: Error: Different number of ND points in data/details/UBrun/Forget20-AP_7_3_1-10_sphereup_1_9_b_mfavg_1_UB.csv compared to UB set (solved = 1)!
+29: Error: Forget20-AP_8_3_1-10_2box_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+30: Error: Forget20-AP_8_3_1-10_2box_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+31: Error: Forget20-AP_8_3_1-10_2box_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+32: Error: Forget20-AP_8_3_1-10_2box_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+33: Error: Forget20-AP_8_3_1-10_2box_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+34: Error: Forget20-AP_8_3_1-10_random_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+35: Error: Forget20-AP_8_3_1-10_random_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+36: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1000-2000_spheredown_1_7_d_mof_-2_UB.csv!
+37: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1000-2000_spheredown_1_9_d_mof_-2_UB.csv!
+38: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1-1000_spheredown_1_10_d_mof_-2_UB.csv!
+39: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1-1000_spheredown_1_2_d_mof_-2_UB.csv!
+40: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1-1000_spheredown_1_3_d_mof_-2_UB.csv!
+41: Error: Forget20-AP_8_3_1-10_spheredown_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+42: Error: Forget20-AP_8_3_1-10_spheredown_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+43: Error: Forget20-AP_8_3_1-10_spheredown_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+44: Error: Forget20-AP_8_3_1-10_spheredown_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+45: Error: Forget20-AP_8_3_1-10_spheredown_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+46: Error: Forget20-AP_8_3_1-10_spheredown_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+47: Error: Forget20-AP_8_3_1-10_spheredown_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+48: Error: Forget20-AP_8_3_1-10_spheredown_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+49: Error: Forget20-AP_8_3_1-10_spheredown_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+50: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1000-2000_sphereup_1_2_d_mof_-2_UB.csv!
+51: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1000-2000_sphereup_1_2_b_mof_-2_UB.csv!
+52: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1000-2000_sphereup_1_2_d_mfavg_-2_UB.csv!
+53: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1000-2000_sphereup_1_6_d_mof_-2_UB.csv!
+54: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1000-2000_sphereup_1_6_d_mfavg_-2_UB.csv!
+55: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-AP_8_3_1000-2000_sphereup_1_9_d_mof_-2_UB.csv!
+56: Error: Forget20-AP_8_3_1-10_sphereup_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+57: Error: Forget20-AP_8_3_1-10_sphereup_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+58: Error: Forget20-AP_8_3_1-10_sphereup_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+59: Error: Forget20-AP_8_3_1-10_sphereup_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+60: Error: Forget20-AP_8_3_1-10_sphereup_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+61: Error: Forget20-AP_8_3_1-10_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+62: Error: Forget20-AP_8_3_1-10_sphereup_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+63: Error: Forget20-AP_8_3_1-10_sphereup_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+64: Error: Forget20-AP_8_3_1-10_sphereup_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+65: Error: Forget20-AP_8_3_1-10_sphereup_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+66: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_10_3_1-10_11-20_spheredown_1_3_d_mof_1_UB.csv compared to UB set (solved = 1)!
+67: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_10_3_1-10_11-20_spheredown_1_3_b_mof_1_UB.csv compared to UB set (solved = 1)!
+68: Error: Forget20-UFLP_10_3_1-10_11-20_sphereup_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+69: Error: Forget20-UFLP_12_3_1-10_11-20_random_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+70: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_12_3_1-10_11-20_random_1_8_d_mfavg_1_UB.csv compared to UB set (solved = 1)!
+71: Error: Forget20-UFLP_12_3_1-10_11-20_spheredown_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+72: Error: Forget20-UFLP_12_3_1-10_11-20_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+73: Error: Forget20-UFLP_12_3_1-10_11-20_sphereup_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+74: Error: Forget20-UFLP_14_3_1-10_11-20_2box_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+75: Error: Forget20-UFLP_14_3_1-10_11-20_random_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+76: Error: Forget20-UFLP_14_3_1-10_11-20_random_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+77: Error: Forget20-UFLP_14_3_1-10_11-20_random_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+78: Error: Forget20-UFLP_14_3_1-10_11-20_random_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+79: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-1000_1001-2000_spheredown_1_2_d_mfavg_-2_UB.csv compared to UB set (solved = 1)!
+80: Error: Forget20-UFLP_14_3_1-10_11-20_spheredown_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+81: Error: Forget20-UFLP_14_3_1-10_11-20_spheredown_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+82: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mof_-2_UB.csv compared to UB set (solved = 1)!
+83: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_b_mof_-2_UB.csv compared to UB set (solved = 1)!
+84: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mfavg_-2_UB.csv compared to UB set (solved = 1)!
+85: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mof_-2_UB.csv compared to UB set (solved = 1)!
+86: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_b_mof_-2_UB.csv compared to UB set (solved = 1)!
+87: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mfavg_-2_UB.csv compared to UB set (solved = 1)!
+88: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mof_1_UB.csv compared to UB set (solved = 1)!
+89: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_14_3_1-10_11-20_spheredown_1_3_d_mfavg_1_UB.csv compared to UB set (solved = 1)!
+90: Error: Forget20-UFLP_14_3_1-10_11-20_spheredown_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+91: Error: Forget20-UFLP_14_3_1-10_11-20_spheredown_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+92: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+93: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+94: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+95: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+96: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+97: Error: Forget20-UFLP_14_3_1-10_11-20_sphereup_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+98: Error: Forget20-UFLP_6_3_1-10_1-1_2box_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+99: Error: Forget20-UFLP_6_3_1-10_1-1_2box_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+100: Error: Forget20-UFLP_6_3_1-10_1-1_2box_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+101: Error: Forget20-UFLP_6_3_1-10_1-1_2box_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+102: Error: Forget20-UFLP_6_3_1-10_1-1_random_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+103: Error: Forget20-UFLP_6_3_1-10_1-1_random_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+104: Error: Forget20-UFLP_6_3_1-10_1-1_random_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+105: Error: Forget20-UFLP_6_3_1-10_1-1_random_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+106: Error: Forget20-UFLP_6_3_1-10_1-1_random_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+107: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_6_3_1-1000_1-100_spheredown_1_10_d_mof_-2_UB.csv!
+108: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_6_3_1-1000_1-100_spheredown_1_10_d_mfavg_-2_UB.csv!
+109: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_6_3_1-1000_1-100_spheredown_1_3_d_mof_-2_UB.csv!
+110: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_6_3_1-1000_1-100_spheredown_1_3_d_mfavg_-2_UB.csv!
+111: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_6_3_1-1000_1-100_spheredown_1_8_d_mof_-2_UB.csv!
+112: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_6_3_1-1000_1-100_spheredown_1_8_d_mfavg_-2_UB.csv!
+113: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_6_3_1-1000_1-100_spheredown_1_9_d_mfavg_-2_UB.csv!
+114: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+115: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+116: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+117: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+118: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+119: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+120: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+121: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+122: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+123: Error: Forget20-UFLP_6_3_1-10_1-1_spheredown_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+124: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_6_3_1-1000_1-100_sphereup_1_8_d_mof_-2_UB.csv!
+125: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+126: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+127: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+128: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+129: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+130: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+131: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+132: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+133: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+134: Error: Forget20-UFLP_6_3_1-10_1-1_sphereup_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+135: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_7_3_1-10_1-1_2box_1_1_d_mof_1_UB.csv compared to UB set (solved = 1)!
+136: Error: Forget20-UFLP_7_3_1-10_1-1_2box_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+137: Error: Forget20-UFLP_7_3_1-10_1-1_2box_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+138: Error: Forget20-UFLP_7_3_1-10_1-1_2box_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+139: Error: Forget20-UFLP_7_3_1-10_1-1_2box_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+140: Error: Forget20-UFLP_7_3_1-10_1-1_2box_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+141: Error: Forget20-UFLP_7_3_1-10_1-1_2box_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+142: Error: Forget20-UFLP_7_3_1-10_1-1_random_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+143: Error: Forget20-UFLP_7_3_1-10_1-1_random_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+144: Error: Forget20-UFLP_7_3_1-10_1-1_random_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+145: Error: Forget20-UFLP_7_3_1-10_1-1_random_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+146: Error: Forget20-UFLP_7_3_1-10_1-1_random_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+147: Error: Forget20-UFLP_7_3_1-10_1-1_random_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+148: Error: Forget20-UFLP_7_3_1-10_1-1_random_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+149: Error: Forget20-UFLP_7_3_1-10_1-1_random_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+150: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_7_3_1000-2000_100-200_spheredown_1_2_d_mof_-2_UB.csv!
+151: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_7_3_1000-2000_100-200_spheredown_1_6_d_mof_-2_UB.csv!
+152: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_7_3_1-1000_1-100_spheredown_1_1_d_mof_-2_UB.csv!
+153: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_7_3_1-1000_1-100_spheredown_1_1_b_mof_-2_UB.csv!
+154: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_7_3_1-1000_1-100_spheredown_1_1_d_mfavg_-2_UB.csv!
+155: Error: Number of nondominated points and YN are not equal in data/details/UBrun/Forget20-UFLP_7_3_1-1000_1-100_spheredown_1_1_b_mfavg_-2_UB.csv!
+156: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_1. Different number of nondominated points when compare exact solutions for different alg. configs!
+157: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+158: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+159: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+160: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+161: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+162: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+163: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+164: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+165: Error: Forget20-UFLP_7_3_1-10_1-1_spheredown_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
+166: Error: Different number of ND points in data/details/UBrun/Forget20-UFLP_7_3_1-10_1-1_sphereup_1_1_d_mfavg_1_UB.csv compared to UB set (solved = 1)!
+167: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_10. Different number of nondominated points when compare exact solutions for different alg. configs!
+168: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_2. Different number of nondominated points when compare exact solutions for different alg. configs!
+169: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_3. Different number of nondominated points when compare exact solutions for different alg. configs!
+170: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_4. Different number of nondominated points when compare exact solutions for different alg. configs!
+171: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
+172: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_6. Different number of nondominated points when compare exact solutions for different alg. configs!
+173: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_7. Different number of nondominated points when compare exact solutions for different alg. configs!
+174: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_8. Different number of nondominated points when compare exact solutions for different alg. configs!
+175: Error: Forget20-UFLP_7_3_1-10_1-1_sphereup_1_9. Different number of nondominated points when compare exact solutions for different alg. configs!
