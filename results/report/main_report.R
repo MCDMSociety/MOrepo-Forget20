@@ -32,7 +32,7 @@ inst <- unique(inst)
 for(i in inst){
   cat("File", i, "\n")
   if (file.exists(paste0("instances/", i, ".html"))) next
-  rmarkdown::render("instance.Rmd", output_file=paste0("instances/", i, ".html"),
+  rmarkdown::render("instance.Rmd", output_file = paste0(i, ".html", output_dir = "instances"),
          params=list(new_title=paste("Results for instance", i) , currentInstance = i) )
 }
 setwd(oldDir)

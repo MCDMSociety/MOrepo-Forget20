@@ -14,7 +14,7 @@ editor_options:
   chunk_output_cls: console
 params:
   new_title: 'Results for instance '
-  currentInstance: 'Forget20-AP_6_3_1-10_2box_1_10'
+  currentInstance: 'Forget20-KP_10_3_1-10_random_10_10'
 ---
  
 ```{r setup, include=FALSE}
@@ -50,7 +50,7 @@ knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
  
 ```{r read data}
-inst = params$currentInstance
+inst <- params$currentInstance
 jsonFiles <- list.files("..", str_c(inst, "_.*.json"), full.names = T)
 instFile <- list.files("../..", str_c(inst,".raw"), full.names = T, recursive = T)
 datStat <- read_csv("../statistics.csv") %>% 

@@ -49,6 +49,14 @@ instances <- list.files("../../instances/raw/", recursive = T) %>%
 dat <- read_csv("data/stat.csv", col_types = cols()) %>% rownames_to_column()
 # dat
 
+#' Remove all json files that don't have an instance
+resJsonFiles <- list.files("..", ".json", full.names = F)
+resJsonFiles <- tibble(fName = resJsonFiles, instance = str_replace(fName, "(^.*)_.+?_.+?_.+?_result.json$", "\\1")) %>% rownames_to_column()
+inst <- tibble(instance = instances)
+tmp <- inner_join(resJsonFiles, inst) %>% pull(rowname)
+inst <- resJsonFiles %>%  filter(!(rowname %in% tmp)) %>% pull(fName)
+inst <- str_c("../", inst)
+unlink(inst)
 
 
 #' ### Check if output consistent
