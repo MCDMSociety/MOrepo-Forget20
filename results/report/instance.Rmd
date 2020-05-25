@@ -33,7 +33,8 @@ loadPackages <- function(packages) {
   invisible(NULL)
 }
 loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown", "fs"))
-options(rgl.useNULL=TRUE)
+if (isTRUE(getOption('knitr.in.progress'))) options(rgl.useNULL=TRUE)
+if (isTRUE(getOption('knitr.in.progress'))) options(rgl.printRglwidget = FALSE)
 
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -41,12 +42,14 @@ knitr::opts_chunk$set(
   warning=FALSE, message=FALSE, include = TRUE, 
   # cache = TRUE, autodep = TRUE, 
   echo=FALSE,
-  out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
+  rows.print = 12,
+  out.width = "99%", 
+  fig.width = 8, fig.align = "center", fig.asp = 0.62
 )
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
  
-```{r}
+```{r read data}
 inst = params$currentInstance
 jsonFiles <- list.files("..", str_c(inst, "_.*.json"), full.names = T)
 instFile <- list.files("../..", str_c(inst,".raw"), full.names = T, recursive = T)
@@ -143,17 +146,20 @@ datStat <- datStat %>%
 
 res <- datStat %>% select(relativeSolved) %>% unnest(relativeSolved)
 ggplot(aes(x = cpu, y = pct, color = mth), data = res) + 
-  geom_line() + #geom_point() +
+  geom_line() + geom_point(size = 0.9) +
+  # geom_point(data = res %>% group_by(mth) %>% summarise_at(vars(c('pct','cpu')), max)) +
   xlab("CPU time (in sec)") + ylab("Proportion of nondominated points found") + 
   theme(legend.position="bottom", legend.title=element_blank()) 
 
 ggplot(aes(x = pctCpu, y = pct, color = mth), data = res) + 
-  geom_line() + #geom_point() +
-  xlab("Relative CPU time") + ylab("Proportion of nondominated points found") + 
+  geom_line() + geom_point(size = 0.9) +
+  xlab("Relative CPU time (all stop in 1)") + ylab("Proportion of nondominated points found") + 
   theme(legend.position="bottom", legend.title=element_blank()) 
 ```
 
-```{r}
+Animation of best and worse algorithm configuration:
+
+```{r movie ini, eval=FALSE}
 options(rgl.useNULL=FALSE)
 par3d("windowRect"= c(10,50,1010,1050))
 view <- matrix( c(0.82544869184494, -0.418245762586594, -0.379084706306458, 0, 
@@ -165,9 +171,7 @@ ini3D()
 axes3d()
 rgl.close()
 ```
-
-
-```{r, include=FALSE}
+```{r movie, include=FALSE, eval=FALSE}
 #' Create a gif and mkv movie of how the non-dominated points are found.
 #'
 #' @param pts The non-dominated points with node, depth and time info.
@@ -281,64 +285,13 @@ for (i in 1:nrow(datStat)) {
   gifFiles <- c(gifFiles, str_c("instances/", pfx, ".gif"))
 }
 ```
-
-```{r rglTest, eval=FALSE}
-devtools::install_github("relund/gMOIP")
-library(gMOIP)
-library(rgl)
-pts <- data.frame(
-          z1 = c(-54L,-48L,-51L,-38L,-15L,-22L,-32L,
-                 -38L,-27L,-18L,-18L,-27L,-40L,-44L,-33L,-28L,-34L,-47L,
-                 -43L,-40L,-52L,-45L,-33L,-35L,-39L,-41L,-45L,-40L,
-                 -39L,-41L,-31L,-29L,-43L,-30L,-28L,-39L),
-          z2 = c(-14L,-20L,-23L,-36L,-55L,-51L,-46L,
-                 -39L,-50L,-53L,-54L,-47L,-34L,-30L,-41L,-44L,-37L,-21L,
-                 -27L,-27L,-15L,-22L,-38L,-37L,-31L,-30L,-27L,-29L,
-                 -27L,-26L,-42L,-43L,-29L,-44L,-45L,-32L),
-          z3 = c(-49L,-50L,-45L,-39L,-13L,-24L,-28L,
-                 -35L,-25L,-20L,-16L,-27L,-34L,-38L,-27L,-30L,-37L,-47L,
-                 -41L,-42L,-49L,-46L,-36L,-36L,-39L,-39L,-38L,-41L,
-                 -43L,-43L,-32L,-32L,-40L,-29L,-29L,-36L),
-        time = c(0.00327706336975098,0.0032811164855957,
-                 0.00328397750854492,0.00328707695007324,0.00328993797302246,
-                 0.00329303741455078,0.0032961368560791,0.00329899787902832,
-                 0.00330305099487305,0.00330615043640137,0.00331902503967285,
-                 0.00589895248413086,0.014336109161377,0.0182859897613525,
-                 0.0271530151367188,0.0342481136322021,0.0416231155395508,
-                 0.0467269420623779,0.0481159687042236,0.0526230335235596,
-                 0.0603971481323242,0.0604031085968018,0.060405969619751,
-                 0.0604090690612793,0.0767970085144043,0.0917060375213623,0.115400075912476,
-                 0.115412950515747,0.115416049957275,0.115419149398804,
-                 0.115431070327759,0.115434169769287,0.115437030792236,
-                 0.126562118530273,0.128237009048462,0.219758033752441)
-)
-view <- matrix( c(0.82544869184494, -0.418245762586594, -0.379084706306458, 0, 
-                    -0.403665781021118, 0.0320594720542431, -0.914344727993011, 0, 
-                    0.394574046134949, 0.907767832279205, -0.142367839813232, 0, 
-                    0, 0, 0, 1), nc = 4)
-loadView(v = view, zoom = 0.75)
-ini3D(argsPlot3d = list(xlim = c(min(pts[,1])-2,max(pts[,1])+2),
-      ylim = c(min(pts[,2])-2,max(pts[,2])+2),
-      zlim = c(min(pts[,3])-2,max(pts[,3])+2)))
-axes3d()
-for (i in 1:nrow(pts)) {
-    plotCones3D(pts[i, 1:3], rectangle = T, argsPolygon3d = list(alpha = 1, color = "lightblue"), drawLines = F)
-}
-plotHull3D(pts[,1:3], addRays = TRUE, argsPolygon3d = list(alpha = 0.5), useRGLBBox = TRUE)
-```
-
-
-```{r, eval = FALSE}
+```{r gif images old, eval = FALSE}
 out <- ""
 for (s in gifFiles) {
   out <- str_c(out, " ![alt-text-1](", s, ")")
 }
 ```
-
-
-
-
-```{r, results='hide'}
+```{r gif images, results='hide', eval=FALSE}
 titleN <- str_replace_all(gifFiles, '(^.*)_(.*?_.*?_.*?)(.gif$)', '\\2')
 i <- 1
 out <- "  |  \n------------- | -------------\n"
@@ -351,8 +304,60 @@ for (r in 1:ceiling(length(gifFiles)/2)) {  # two cols
   i <- i + 1
 }
 ```
+```{r slider}  
+# out.height=1000
+dat <- datStat %>% filter(rank(tpstotal, ties.method="random")==1 | rank(tpstotal, ties.method="random")==n())
+#%>% group_by(nodesel) 
+# dat <- bind_rows(top_n(dat, 1, tpstotal), top_n(dat, -1, tpstotal))   
+ptsLst <- vector("list", nrow(dat))
+for (i in 1:nrow(dat)) {
+  ptsLst[[i]] <- dat$resUB[[i]]
+  ptsLst[[i]]$mth <- paste0(dat$nodesel[i], "_", dat$varsel[i], "_", tolower(dat$OB[i]))
+}
+loadView(v = view, zoom = 0.75)
+limits <- lapply(ptsLst, function(x) {
+   tmp <- rbind(apply(x[,c('z1', 'z2', 'z3')], 2, min),
+         apply(x[,c('z1', 'z2', 'z3')], 2, max))
+})
+limits <- limits %>% reduce(rbind)
+limits <- rbind(apply(limits, 2, min),
+      apply(limits, 2, max))
+steps <- 1000
+minUnit <- max(max(sapply(ptsLst, function(x) {max(x[,'time'])})))/steps
+limits[1,] <- limits[1,] - 2
+limits[2,] <- limits[2,] + 2
+res <- vector("list", length(ptsLst))
+mfrow3d(ceiling(length(ptsLst)/2), 2, sharedMouse = F)
+for (s in 1:length(ptsLst)) {
+   next3d()
+   ini3D(argsPlot3d = list(
+      xlim = c(limits[1,'z1'], limits[2,'z1']),
+      ylim = c(limits[1,'z2'], limits[2,'z2']),
+      zlim = c(limits[1,'z3'], limits[2,'z3'])),
+      clear = F
+   )
+   axes3d()
+   title3d(main = ptsLst[[s]]$mth[1])
+   emptyId <- min(rgl.ids()$id)
+   # res[[s]]$subId <- subsceneInfo()$id
+   lst <- as.vector(rep(emptyId, steps+1), "list")
+   for (j in 1:nrow(ptsLst[[s]])) {
+      i <- min(ceiling(ptsLst[[s]]$time[j]/minUnit), steps)
+      ids <- plotCones3D(ptsLst[[s]][j, 1:3], rectangle = T, drawPoint = T, argsPolygon3d = list(alpha = 1, color = "blue"), drawLines = T)
+      if (any(lst[[i]] == emptyId)) lst[[i]] <- ids else lst[[i]] <- c(lst[[i]], ids)
+   }
+   names(lst) <- paste0("cone", 1:length(lst))
+   lst[[i+1]] <- plotHull3D(ptsLst[[s]][,1:3], addRays = T, argsPolygon3d = list(alpha = 0.25, color = "red"), useRGLBBox = TRUE)$ids
+   # res[[s]]$lst <- lst
+   res[[s]] <- subsetControl(subsets = lst, accumulate = T, subscenes = subsceneInfo()$id)
+}
+rglwidget() %>%
+playwidget(res,
+   start = 0, stop = steps, interval = 0.05, rate = 33, loop = F,
+   components = c("Play", "Slower", "Faster", "Reset", "Slider"))
+```
 
-`r out`
+
 
 
 
