@@ -50,7 +50,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
-  # cache = TRUE, autodep = TRUE, 
+  cache = TRUE, autodep = TRUE,
   echo=FALSE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
 )
@@ -311,12 +311,13 @@ finalize3D()
 
 ## Algorithm configuration
 
-The algorithm is configurated using: 
+<!-- The algorithm is configurated using:  -->
 
-```{r instance config}
+```{r instance config, eval=FALSE}
 dat %>% 
   select(instance, nodesel:OB)
 ```
+
 
 The branch and bound algorithm will always use the linear relaxation as lower bound set and the incumbent set as upper bound set. At each nodes, the extreme points of the lower bound set are checked for integrality and possibly added to the upper bound set. Different configurations are bases on:
 
@@ -326,15 +327,15 @@ The branch and bound algorithm will always use the linear relaxation as lower bo
 
 Combinations of `nodesel`, `varsel` and `OB` gives the configuration of the algorithm:
 
-* Node selection: in the multi-objective branch and bound literature, depth first strategies are (almost) always used and are considered as better strategies than breadth first. However, if a problem with an "easy" single-objective version is solved, then many non-dominated points may be found in a node close to the root node, in the early stages of the tree. Hence, using a breadth first strategy may provide a better upper bound set earlier in the algorithm, as a larger number of points are expected to be found shallow in the tree while only a few points can be found at each node deep in the tree. 
+* Node selection (`breadth`, `depth`): in the multi-objective branch and bound literature, depth first strategies are (almost) always used and are considered as better strategies than breadth first. However, if a problem with an "easy" single-objective version is solved, then many non-dominated points may be found in a node close to the root node, in the early stages of the tree. Hence, using a breadth first strategy may provide a better upper bound set earlier in the algorithm, as a larger number of points are expected to be found shallow in the tree while only a few points can be found at each node deep in the tree. 
 
-* Variable selection: to the best of our knowledge, no extensive study for variable selection has been conducted in the literature. Sometimes, this component is even not mentioned. As it is not the main purpose of this study, only two rules that rely on the caracteristics of the lower bound set will be tested here.
+* Variable selection(`mof`, `mfavg`): to the best of our knowledge, no extensive study for variable selection has been conducted in the literature. Sometimes, this component is even not mentioned. As it is not the main purpose of this study, only two rules that rely on the caracteristics of the lower bound set will be tested here.
 
   + mof: Most Often Fractional. The branching is operated on the variable that is the most often fractional among the extreme points of the lower bound set.
   
-  + mfavg: Most Fractional in AVeraGe. The branching is operated on the variable such that its average value among the extreme points of the lower bound set is the most fractional, i.e. the closest to 0.5.
+  + mfavg: Most Fractional on AVeraGe. The branching is operated on the variable such that its average value among the extreme points of the lower bound set is the most fractional, i.e. the closest to 0.5.
   
-* Branching scheme: in a regular branch and bound, branching is operated (i.e. sub-problems are created) in the decision space. In the bi-objective case, it has been shown that creating additional sub-problems in the objective space (procedure called objective branching in this study) leads to better computational times. Three versions of the branch and bound will be tested:
+* Branching scheme (`none`, `exact`, `cone`): in a regular branch and bound, branching is operated (i.e. sub-problems are created) in the decision space. In the bi-objective case, it has been shown that creating additional sub-problems in the objective space (procedure called objective branching in this study) leads to better computational times. Three versions of the branch and bound will be tested:
 
   + None: no objective branching is performed. Hence, this version is just a regular branch and bound.
   
@@ -345,11 +346,11 @@ Combinations of `nodesel`, `varsel` and `OB` gives the configuration of the algo
 
 ## Output statistics
 
-For each algorithm run we have the following statistics.
+For each algorithm run we have the following statistics:
 
-```{r instance output}
+```{r instance output, eval = FALSE}
 datOutput <- dat %>% 
-  select(instance, solved:maxnbpbOB)
+  select(instance, nodesel:maxnbpbOB)
 datOutput
 ```
 
@@ -530,11 +531,11 @@ plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
         data = dat %>% dplyr::filter(pb == "AP"),
         marker = list(size=3),
         color = ~n) %>% plotly::layout(title = "AP")
-plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
-        mode="markers",
-        data = dat %>% dplyr::filter(pb == "KP"),
-        marker = list(size=3),
-        color = ~n) %>% plotly::layout(title = "KP")
+# plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
+#         mode="markers",
+#         data = dat %>% dplyr::filter(pb == "KP"),
+#         marker = list(size=3),
+#         color = ~n) %>% plotly::layout(title = "KP")
 plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
         mode="markers",
         data = dat %>% dplyr::filter(pb == "UFLP"),
@@ -587,7 +588,7 @@ tmp <- dat %>% group_by(pb, coef, rangeC) %>% summarize(ratio = mean(ratioNDcoef
 tmp %>% arrange(pb, rangeC, ratio)
 ```
 
-Note for the fixed `pb` and `rangeC` the ratio approx. increase in the order random, 2box, spheredown and sphereup (with random and 2box (spheredown and sphereup) often close to each other). However it is important to keep in mind that the ratio is highly dependent on the problem class (how variables are linked together). The UFLP have much smaller ratios due to that the costs relate to different aspects of the problem. 
+Note for fixed `pb` and `rangeC` the ratio approx. increase in the order random, 2box, spheredown and sphereup (with random and 2box (spheredown and sphereup) often close to each other). However it is important to keep in mind that the ratio is highly dependent on the problem class (how variables are linked together). The UFLP have much smaller ratios due to that the costs relate to different aspects of the problem. 
 
 
 ```{r, fig.asp = 1}
@@ -631,7 +632,7 @@ To have harder instances we may skip these instances and instead use instances w
   1. Use a wide cost range (e.g. [1,1000]).
   2. Use a sphere generation method.
   
-Scaling the range don't have a high effect on most problem classes so fix a cost range seems okay. If we want to compare agains easy problems we may use the first option too. 
+Scaling the range don't have a high effect on most problem classes so fixing a cost range seems okay. If we want to compare agains easy problems we may use the first option too. 
 
 
 # Analysis: Research Question 2 (R2) - Which instances are hard to solve?
@@ -640,52 +641,51 @@ We focus on cpu time (`tpstotal`) and try to get an overview over difficulty of 
 
 ## R2a: What is the cpu for each instance?
 
-First let us have a general look:
+<!-- First let us have a general look: -->
 
-```{r}
-ggplot(dat, aes(y = tpstotal , x = n)) + 
-  stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
-  geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 1, height = 0, size = 0.7) +
-  # facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
-  ggtitle("Cpu time for all instances (lines are means)") +
-  theme(legend.position="bottom", legend.title=element_blank()) 
-```
+<!-- ```{r} -->
+<!-- ggplot(dat, aes(y = tpstotal , x = n)) +  -->
+<!--   stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) + -->
+<!--   geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 1, height = 0, size = 0.7) + -->
+<!--   # facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") + -->
+<!--   ggtitle("Cpu time for all instances (lines are means)") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank())  -->
+<!-- ``` -->
 
-The general picture is fuzzy due to different problem classes, ranges, generation methods and algorithm configurations. Let us have a closer look:
+<!-- The general picture is fuzzy due to different problem classes, ranges, generation methods and algorithm configurations.  -->
 
-```{r, fig.asp=1}
-datP <- dat %>% 
-  dplyr::filter(pb == "AP") 
-ggplot(datP, aes(y = tpstotal , x = n)) + 
-  stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
-  geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 3, height = 0, size = 0.7) +
-  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "free") +
-  ggtitle("Cpu time for AP (note scale free)") +
-  theme(legend.position="bottom", legend.title=element_blank())
-```
-
+Let us have a look:
 
 ```{r, fig.asp=1}
-datP <- dat %>% 
-  dplyr::filter(pb == "KP") 
-ggplot(datP, aes(y = tpstotal , x = n)) + 
-  stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
-  geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 1, height = 0, size = 0.7) +
-  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
-  ggtitle("Cpu time for KP") +
-  theme(legend.position="bottom", legend.title=element_blank())
+plotCPUFacet <- function(pb) {
+  datP <- dat %>% 
+    dplyr::filter(pb == !!pb) 
+  plt <- ggplot(datP, aes(y = tpstotal , x = n)) + 
+    stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
+    geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 3, height = 0, size = 0.7) +
+    facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "free") +
+    ggtitle(str_c("Cpu time for ", pb, " (note scale free)")) +
+    theme(legend.position="bottom", legend.title=element_blank())
+  print(plt)
+}
+for (pb in unique(dat$pb)) plotCPUFacet(pb)
 ```
 
+Finally we may plot only the winner cpu times for each instance:
 
 ```{r, fig.asp=1}
-datP <- dat %>% 
-  dplyr::filter(pb == "UFLP") 
-ggplot(datP, aes(y = tpstotal , x = n)) + 
-  stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
-  geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 4, height = 0, size = 0.7) +
-  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
-  ggtitle("Cpu time for UFLP") +
-  theme(legend.position="bottom", legend.title=element_blank()) 
+plotCPUWinner <- function(pb) {
+  datPP <- datP %>% 
+    dplyr::filter(pb == !!pb) 
+  plt <- ggplot(datPP, aes(y = tpstotal , x = n)) + 
+    # stat_summary(fun=mean, geom="line", aes(color = win)) +
+    geom_jitter(aes(color = win), width = 3, height = 0, size = 0.7) +
+    facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
+    ggtitle("Cpu time for AP") +
+    theme(legend.position="bottom", legend.title=element_blank())
+  print(plt)
+}
+for (pb in unique(datP$pb)) plotCPUWinner(pb)
 ```
 
 Some observations
@@ -693,6 +693,8 @@ Some observations
   - There is no clear winner among the different algorithm configurations.
   - There seems to be a bigger difference for KP.
   - Hardest instances are the one generated with the sphere methods.
+
+## R2b: Which algorithm configuration is best?
 
 Let us find the winner configuration for each instance given some groupings:
 
@@ -709,14 +711,14 @@ res <- datP %>%
   mutate(count = nrow(.)) %>% 
   group_by(win) %>% summarize(pct = n()/mean(count)) %>% 
   arrange(desc(pct))
-ggplot(res, aes(y = pct, x = win, fill = win)) + 
+ggplot(res, aes(y = pct, x = reorder(win, -pct), fill = win)) + 
   # stat_summary(fun=mean, geom="line", aes(color = win)) +
   geom_col() + 
   ggtitle("Winner pct (all instances)") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-Overall breadth methods win.
+Overall ``r res$win[1]`` win. Note this result is affected by the number of problems in each problem class and the difficulty. For instance if we have many easy instances the winner will be the config that solve the easy instances best. Let us have a look at the problem classes:
 
 ```{r}
 res <- datP %>% 
@@ -732,7 +734,7 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-Note if we look at different problem classes different variable selection methods win. 
+Note if we look at different problem classes different variable selection methods may win. Do the generation method affect the winner:
 
 ```{r}
 res <- datP %>% 
@@ -748,7 +750,7 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-If we group by `coef`, we have different winners. This may have something with the hardness of the instance. 
+If we group by `coef`, we have different winners. This may have something to do with the hardness of the instance (generation method is highly correlated with number of nondominated points). 
 
 Will different methods be used for harder instances (here we use YN as a proxy for hard). Let us try to plot the aggegated percentage winner configuration:
 
@@ -763,48 +765,12 @@ ggplot(res, aes(x = YN, fill = win)) +
   stat_bin(bins = 10, geom="text", colour="white", size=3.5,
             aes(label=..count.., group = win), position=position_fill(vjust=0.5)) +
   facet_grid(rows = vars(pb), margins = T, scales = "fixed") +
-  ggtitle("Pct for each configuration given 10 bins") +
+  ggtitle("Pct for each configuration given 10 bins (numbers indicate instance counts)") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-It can be seen that for some problems the best configuration change from easy problems to hard.
+It can be seen that for some problem classes the best configuration change from easy instances to hard.
 
-Finally we may plot only the winner cpu times for each instance:
-
-```{r, fig.asp=1}
-datPP <- datP %>% 
-  dplyr::filter(pb == "AP") 
-ggplot(datPP, aes(y = tpstotal , x = n)) + 
-  # stat_summary(fun=mean, geom="line", aes(color = win)) +
-  geom_jitter(aes(color = win), width = 3, height = 0, size = 0.7) +
-  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
-  ggtitle("Cpu time for AP") +
-  theme(legend.position="bottom", legend.title=element_blank())
-```
-
-
-```{r, fig.asp=1}
-datPP <- datP %>% 
-  dplyr::filter(pb == "KP") 
-ggplot(datPP, aes(y = tpstotal , x = n)) + 
-  # stat_summary(fun=mean, geom="line", aes(color = win)) +
-  geom_jitter(aes(color = win), width = 1, height = 0, size = 0.7) +
-  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
-  ggtitle("Cpu time for KP") +
-  theme(legend.position="bottom", legend.title=element_blank())
-```
-
-
-```{r, fig.asp=1}
-datPP <- datP %>% 
-  dplyr::filter(pb == "UFLP") 
-ggplot(datPP, aes(y = tpstotal , x = n)) + 
-  # stat_summary(fun=mean, geom="line", aes(color = win)) +
-  geom_jitter(aes(color = win), width = 4, height = 0, size = 0.7) +
-  facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
-  ggtitle("Cpu time for UFLP") +
-  theme(legend.position="bottom", legend.title=element_blank()) 
-```
 
 
 
