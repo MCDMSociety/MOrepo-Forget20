@@ -49,6 +49,7 @@ instances <- list.files("../../instances/raw/", recursive = T) %>%
 dat <- read_csv("data/stat.csv", col_types = cols()) %>% rownames_to_column()
 # dat
 
+#' ### Check if output consistent
 #' Remove all json files that don't have an instance
 resJsonFiles <- list.files("..", ".json", full.names = F)
 resJsonFiles <- tibble(fName = resJsonFiles, instance = str_replace(fName, "(^.*)_.+?_.+?_.+?_result.json$", "\\1")) %>% rownames_to_column()
@@ -56,25 +57,9 @@ inst <- tibble(instance = instances)
 tmp <- inner_join(resJsonFiles, inst) %>% pull(rowname)
 inst <- resJsonFiles %>%  filter(!(rowname %in% tmp)) %>% pull(fName)
 inst <- str_c("../", inst)
-unlink(inst)
-
-
-#' ### Check if output consistent
-#' #### Different tests on each instance?
-# tmp <- dat %>% group_by(instance) %>% summarise(count = n())
-# unique(tmp$count)
-#' An example:
-# dat %>% dplyr::filter(instance == tmp$instance[1])
-#' That is the tests differ in `nodesel` and `varsel`.
-
-#' #### Do all results have an instance file?
-# tmp <- tibble(instance = instances)
-# nrow(dat) == nrow(dat %>% full_join(tmp))
-
-#' #### Do all methods find exact solution?
-# tmp <- dat %>% group_by(instance, solved) %>% nest() %>% dplyr::filter(solved == 0)
-# nrow(tmp) == 0
-
+cat("Json files that don't have a corresponding instance:\n")
+print(inst)
+# unlink(inst)
 
 
 #' ### Create json files with classification of points
@@ -83,6 +68,7 @@ resFiles <- list.files(recursive = T)
 start_time <- now()
 for (iName in unique(dat$instance)) {
    tmp <- dat %>% dplyr::filter(instance == iName)
+   if (!(iName %in% instances)) warning("Instance file is missing for ", iName, "!")
    resFilesTmp <- grep(iName, resFiles, value = T)
    if (length(resFilesTmp) > 0) {
       # message(iName,": ")
