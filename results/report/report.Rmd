@@ -452,6 +452,11 @@ We first consider
      b) Which sphere generation instances are hardest to solve?
      c) What is the std.dev. within each instance group?
      d) In which subprocedures are the cpu time used?
+     
+  3. Which algorithm configuration is best?
+     a) Is there a clear winner?
+     b)
+  
 
 Next, we study how some components of the branch and bound influences the behaviour of the algorithm:
 
@@ -674,6 +679,14 @@ for (pb in unique(dat$pb)) plotCPUFacet(pb)
 Finally we may plot only the winner cpu times for each instance:
 
 ```{r, fig.asp=1}
+datP <- 
+  dat %>% 
+  group_by(instance) %>% 
+  nest() %>% 
+  mutate(data = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
+  mutate(win = map(data, function(df) {str_c(df$nodesel[1], ".", df$varsel[1], ".", df$OB[1])})) %>% 
+  unnest(c(win, data)) 
+
 plotCPUWinner <- function(pb) {
   datPP <- datP %>% 
     dplyr::filter(pb == !!pb) 
@@ -681,7 +694,7 @@ plotCPUWinner <- function(pb) {
     # stat_summary(fun=mean, geom="line", aes(color = win)) +
     geom_jitter(aes(color = win), width = 3, height = 0, size = 0.7) +
     facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "fixed") +
-    ggtitle("Cpu time for AP") +
+    ggtitle(str_c("Cpu time for ", pb)) +
     theme(legend.position="bottom", legend.title=element_blank())
   print(plt)
 }
@@ -694,7 +707,145 @@ Some observations
   - There seems to be a bigger difference for KP.
   - Hardest instances are the one generated with the sphere methods.
 
-## R2b: Which algorithm configuration is best?
+## R2b: Which sphere generation instances are hardest to solve?
+
+Let us look at ranges [1,1000] and [1,1000][1,100] and the winner configurations:
+
+```{r, fig.asp=1}
+res <- datP %>% 
+  dplyr::filter(grepl("sphere", coef) & grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>% 
+  group_by(pb, coef) %>% 
+  summarize_at(vars(contains("YN") | contains("tpstotal")), mean) %>% 
+  arrange(pb, desc(tpstotal))
+res
+# ggplot(res, aes(y = pct, x = win, fill = win)) + 
+#   # stat_summary(fun=mean, geom="line", aes(color = win)) +
+#   geom_col() + 
+#   facet_grid(rows = vars(pb), cols = vars(coef), scales = "fixed") +
+#   ggtitle("Winner pct") +
+#   theme(legend.position="bottom", legend.title=element_blank())
+# 
+# 
+# ggplot(datPP, aes(y = tpstotal , x = n)) + 
+#   # stat_summary(fun=mean, geom="line", aes(color = win)) +
+#   geom_jitter(aes(color = win), width = 4, height = 0, size = 0.7) +
+#   facet_grid(rows = vars(coef), cols = vars(rangeC), scales = "fixed") +
+#   ggtitle("Cpu time for UFLP") +
+#   theme(legend.position="bottom", legend.title=element_blank()) 
+```
+
+There is no clear winner. Moreover, the shape of the nondominated set is not affected much by the generation method.
+
+## R2c: Is the cpu time the same within each instance group?
+
+By instance group we mean a set of instances with the same constraint. That is, an unique combination of `namePrefix`, and `constId`. We consider each instance group given algorithm configuration (`nodesel`, `varsel`, `OB`). Let us look at ranges [1,1000] and [1,1000][1,100]:
+
+```{r}
+datP <- dat %>% 
+  dplyr::filter(grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>% 
+  select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal, YN) %>% 
+  group_by(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB) %>% nest()
+
+datPSd <- datP %>% 
+  mutate(
+    stdDevV = map(data, function(df) {
+      df %>% summarise_if(is.numeric, sd)
+    }),
+    # meanV = map(data, function(df) {
+    #   df %>% summarise_if(is.numeric, mean)
+    # }),
+    cvV = map(data, function(df) {
+      df %>% summarise_if(is.numeric, function(x) {sd(x)/mean(x)})
+    }),
+    maxV = map(data, function(df) {
+      df %>% summarise_if(is.numeric, max)
+    })
+  ) %>% unnest(c(stdDevV, cvV, maxV), names_sep = "_")
+
+datPSdYN <- datPSd %>% group_by(nodesel, varsel, OB) %>% nest() %>% ungroup() 
+datPSdYN <- datPSdYN[1,] %>% unnest(data)
+```
+
+
+```{r, fig.asp=1}
+ggplot(datPSd, aes(y = stdDevV_tpstotal, x = n)) + 
+  geom_jitter(aes(color = interaction(nodesel, varsel, OB))) + 
+  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Std. dev.") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+```{r, fig.asp=1}
+ggplot(datPSd, aes(y = cvV_tpstotal, x = n)) + 
+  geom_jitter(aes(color = interaction(nodesel, varsel, OB))) + 
+  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Coeff of variation (sd/mean)") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+```{r, fig.asp=1}
+ggplot(datPSdYN, aes(y = stdDevV_YN, x = n)) + 
+  geom_jitter(aes()) + 
+  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Std. dev.") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+```{r, fig.asp=1}
+ggplot(datPSdYN, aes(y = cvV_YN, x = n)) + 
+  geom_jitter(aes()) + 
+  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Coeff of variation (sd/mean)") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+```{r, fig.asp=1}
+ggplot(datPSd, aes(y = maxV_tpstotal, x = n)) + 
+  geom_jitter(aes(color = interaction(nodesel, varsel, OB))) + 
+  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
+  ggtitle("Max values") +
+  theme(legend.position="bottom", legend.title=element_blank()) 
+```
+
+Some observations:
+
+ - The cpu time may vary for some algorithm configurations.
+ - This is due to that the variation in YN.
+ - In general we may have high variation within instance groups.
+
+
+## R2d: In which subprocedures are the cpu time used?
+
+```{r}
+res <- dat %>% 
+  select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, contains("pcttps")) %>% 
+  mutate(pcttpsmisc = 100 - pcttpsLB + pcttpsdomi + pcttpsUB + pcttpsnodesel + pcttpsvarsel + pcttpsOB + pcttpsSLUB + pcttpsdomiLUB) %>% 
+  group_by(pb) %>% 
+  nest()
+
+res <- res %>% 
+  mutate(
+    meanV = map(data, function(df) {
+      df %>% summarise_if(is.numeric, mean)
+    }),
+  ) %>% unnest(c(meanV), names_sep = "_")
+res <- res %>% pivot_longer(contains("pcttps"))
+ggplot(res, aes(y = value, x = name, fill = name)) +
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col() +
+  facet_grid(rows = vars(pb), scales = "fixed") +
+  ggtitle("Cpu usage") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+Observe that:
+
+  - Most of the time is used for finding lower bounds (Bensolve).
+  - The second most activitiy is for miscilannious activitites. 
+
+# Analysis: Research Question 3 (R3) - Which algorithm configuration is best?
+
+## R3a: Is there a clear winner? 
 
 Let us find the winner configuration for each instance given some groupings:
 
@@ -772,125 +923,54 @@ ggplot(res, aes(x = YN, fill = win)) +
 It can be seen that for some problem classes the best configuration change from easy instances to hard.
 
 
+## R3b: Are the best node selection strategy affected by the algorithm config?
 
+We consider all instances:
 
-## R2b: Which sphere generation instances are hardest to solve?
-
-```{r, fig.asp=1}
+```{r}
 res <- datP %>% 
-  dplyr::filter(grepl("sphere", coef), grepl("[1,1000]", rangeC)) %>% 
-  group_by(pb, coef) %>% 
-  summarize(avgCpu = mean(tpstotal)) %>% 
-  arrange(pb, desc(avgCpu))
-res
-# ggplot(res, aes(y = pct, x = win, fill = win)) + 
-#   # stat_summary(fun=mean, geom="line", aes(color = win)) +
-#   geom_col() + 
-#   facet_grid(rows = vars(pb), cols = vars(coef), scales = "fixed") +
-#   ggtitle("Winner pct") +
-#   theme(legend.position="bottom", legend.title=element_blank())
-# 
-# 
-# ggplot(datPP, aes(y = tpstotal , x = n)) + 
-#   # stat_summary(fun=mean, geom="line", aes(color = win)) +
-#   geom_jitter(aes(color = win), width = 4, height = 0, size = 0.7) +
-#   facet_grid(rows = vars(coef), cols = vars(rangeC), scales = "fixed") +
-#   ggtitle("Cpu time for UFLP") +
-#   theme(legend.position="bottom", legend.title=element_blank()) 
-```
-
-WE NEED INFO ABOUT SUPPORTED VS UNSUPPORTED
-
-## R2c: Is the cpu time the same within each instance group?
-
-By instance group we mean an unique combination of `namePrefix`, `constId`, `pb`, `n`, `coef`, `rangeC`, `nodesel`, `varsel`, `OB`
-
-```{r}
-# datP <- dat %>% 
-#   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal) %>% #contains("tps")
-#   mutate(iG = str_c(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB, sep = "."))
-datP <- dat %>% 
-  select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal) %>% #contains("tps")
-  group_by(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB) %>% nest()
-
-datPSd <- datP %>% 
-  mutate(
-    stdDevV = map(data, function(df) {
-      df %>% summarise_if(is.numeric, sd)
-    }),
-    # meanV = map(data, function(df) {
-    #   df %>% summarise_if(is.numeric, mean)
-    # }),
-    cvV = map(data, function(df) {
-      df %>% summarise_if(is.numeric, function(x) {sd(x)/mean(x)})
-    }),
-    maxV = map(data, function(df) {
-      df %>% summarise_if(is.numeric, max)
-    })
-  ) %>% unnest(c(stdDevV, cvV, maxV), names_sep = "_")
-
-# ggplot(datPSd, aes(y = meanV_tpstotal, x = n)) + 
-#   geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) + 
-#   facet_grid(rows = vars(coef), cols = vars(pb), margins = T) +
-#   ggtitle("Means") +
-#   theme(legend.position="bottom", legend.title=element_blank())
-```
-
-
-```{r, fig.asp=1}
-ggplot(datPSd, aes(y = stdDevV_tpstotal, x = n)) + 
-  geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) + 
-  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
-  ggtitle("Std. dev.") +
-  theme(legend.position="bottom", legend.title=element_blank())
-```
-
-
-```{r, fig.asp=1}
-ggplot(datPSd, aes(y = cvV_tpstotal, x = n)) + 
-  geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) + 
-  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
-  ggtitle("Coeff of variation (sd/mean)") +
-  theme(legend.position="bottom", legend.title=element_blank())
-```
-
-
-```{r, fig.asp=1}
-ggplot(datPSd, aes(y = maxV_tpstotal, x = n)) + 
-  geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) + 
-  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
-  ggtitle("Max values") +
-  theme(legend.position="bottom", legend.title=element_blank()) 
-```
-
-In general we may have high variation within instance groups.
-
-
-
-
-
-## R2d: In which subprocedures are the cpu time used?
-
-```{r}
-res <- dat %>% 
-  select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, contains("pcttps")) %>% 
-  mutate(pcttpsmisc = 100 - pcttpsLB + pcttpsdomi + pcttpsUB + pcttpsnodesel + pcttpsvarsel + pcttpsOB + pcttpsSLUB + pcttpsdomiLUB) %>% 
-  group_by(pb) %>% 
-  nest()
-
-res <- res %>% 
-  mutate(
-    meanV = map(data, function(df) {
-      df %>% summarise_if(is.numeric, mean)
-    }),
-  ) %>% unnest(c(meanV), names_sep = "_")
-res <- res %>% pivot_longer(contains("pcttps"))
-ggplot(res, aes(y = value, x = name, fill = name)) +
+  group_by(varsel, OB) %>% 
+  mutate(count = n(), win = nodesel) %>% 
+  group_by(varsel, OB, win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(varsel, OB, desc(pct))
+ggplot(res, aes(y = pct, x = win, fill = win)) + 
   # stat_summary(fun=mean, geom="line", aes(color = win)) +
-  geom_col() +
-  facet_grid(rows = vars(pb), scales = "fixed") +
-  ggtitle("Cpu usage") +
+  geom_col() + 
+  facet_grid(rows = vars(varsel), cols = vars(OB), scales = "fixed") +
+  ggtitle("Winner pct") +
   theme(legend.position="bottom", legend.title=element_blank())
-
 ```
 
+There seems to be no effect. Let us have a look at the hard instances (ranges [1,1000] and [1,1000][1,100]) and the winner configurations:
+
+```{r}
+res <- datP %>% 
+  dplyr::filter(grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>% 
+  group_by(varsel, OB) %>% 
+  mutate(count = n(), win = nodesel) %>% 
+  group_by(varsel, OB, win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(varsel, OB, desc(pct))
+ggplot(res, aes(y = pct, x = win, fill = win)) + 
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col() + 
+  facet_grid(rows = vars(varsel), cols = vars(OB), scales = "fixed") +
+  ggtitle("Winner pct") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+Moreover if we filter further and only look at the sphere generation methods:
+
+```{r}
+res <- datP %>% 
+  dplyr::filter(grepl("sphere", coef) & grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>% 
+  group_by(varsel, OB) %>% 
+  mutate(count = n(), win = nodesel) %>% 
+  group_by(varsel, OB, win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(varsel, OB, desc(pct))
+ggplot(res, aes(y = pct, x = win, fill = win)) + 
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col() + 
+  facet_grid(rows = vars(varsel), cols = vars(OB), scales = "fixed") +
+  ggtitle("Winner pct") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
