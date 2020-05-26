@@ -8,8 +8,8 @@ on:
       - results/*.json
       - results/report/*.Rmd
       - results/report/*.R
-#  schedule:
-#    - cron: '0 * * * *'
+  schedule:
+    - cron: '20 * * * *'
 
 jobs:
   render:
