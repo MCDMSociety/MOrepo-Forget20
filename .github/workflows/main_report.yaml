@@ -9,7 +9,7 @@ on:
       - results/report/*.Rmd
       - results/report/*.R
   schedule:
-    - cron: '20 * * * *'
+    - cron: '0 */6 * * *'
 
 jobs:
   render:

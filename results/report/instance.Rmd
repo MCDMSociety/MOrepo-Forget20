@@ -14,7 +14,7 @@ editor_options:
   chunk_output_cls: console
 params:
   new_title: 'Results for instance '
-  currentInstance: 'Forget20-KP_10_3_1-10_random_10_10'
+  currentInstance: 'Forget20-UFLP_10_3_1000-2000_3000-4000_random_1_3'
 ---
  
 ```{r setup, include=FALSE}
@@ -327,7 +327,7 @@ minUnit <- max(max(sapply(ptsLst, function(x) {max(x[,'time'])})))/steps
 limits[1,] <- limits[1,] - 2
 limits[2,] <- limits[2,] + 2
 res <- vector("list", length(ptsLst))
-mfrow3d(ceiling(length(ptsLst)/2), 2, sharedMouse = F)
+mfrow3d(ceiling(length(ptsLst)/2), 2, sharedMouse = T)
 for (s in 1:length(ptsLst)) {
    next3d()
    ini3D(argsPlot3d = list(
@@ -357,6 +357,9 @@ playwidget(res,
    components = c("Play", "Slower", "Faster", "Reset", "Slider"))
 ```
 
+```{r, include=FALSE}
+rgl.close()
+```
 
 
 
