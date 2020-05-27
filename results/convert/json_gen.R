@@ -52,6 +52,7 @@ datJson <- read_csv("../statistics.csv")
 
 
 #' ### Check if output consistent
+
 #' Remove all json files that don't have an instance
 resJsonFiles <- list.files("..", ".json", full.names = F)
 resJsonFiles <- tibble(fName = resJsonFiles, instance = str_replace(fName, "(^.*)_.+?_.+?_.+?_result.json$", "\\1")) %>% rownames_to_column()
@@ -63,6 +64,32 @@ cat("Delete json files that don't have a corresponding instance:\n")
 print(inst)
 unlink(inst)
 
+# File name functions
+fNameYN <- function(instance) {
+   str_c("data/details/", instance, "_UB.txt")
+}
+fNameXE <- function(instance) {
+   str_c("data/details/", instance, "_XE.txt")
+}
+fNameUB <- function(instance, nodesel, varsel, ob) {
+   mth <- paste0(nodesel, "_", varsel, "_", tolower(ob)) %>%
+      str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
+   str_c("data/details/UBrun/", instance, "_", mth, "_UB.csv")
+}
+fNameJson <- function(instance, nodesel, varsel, ob) {
+   mth <- paste0(nodesel, "_", varsel, "_", tolower(ob))
+   str_c("../", instance, "_", mth, "_results.json")
+}
+
+#' Check cpu times in data folder
+for (i in 1:nrow(dat)) {
+   fileN <- fNameUB(dat$instance[i], dat$nodesel[i], dat$varsel[i], dat$OB[i])
+   if (file.exists(fileN)) pts <- read_csv(fileN, col_types = cols())
+   else return(warning("Error: File ", fileN, " doesn't exist but has a row in stat.csv! Old results?"))
+   if (dat$tpstotal[i] < pts$time[nrow(pts)])
+      warning("Error: Last cpu time in UB set is higher than tpstotal (file: ", fileN, ")!")
+}
+
 
 #' ### Create json files with classification of points
 #' All result files are in csv format with comma delimitor and dot as decimal mark.
@@ -71,7 +98,7 @@ start_time <- now()
 for (iName in unique(dat$instance)) {
    tmp <- dat %>% dplyr::filter(instance == iName)
    if (!(iName %in% instances)) warning("Instance file is missing for ", iName, "!")
-   resFilesTmp <- grep(iName, resFiles, value = T)
+   resFilesTmp <- grep(str_c(iName, "_"), resFiles, value = T)
    if (length(resFilesTmp) > 0) {
       # message(iName,": ")
       # cat(iName, ": ", sep="")
@@ -87,11 +114,12 @@ for (iName in unique(dat$instance)) {
       diff <- as.duration(now() - start_time)
       message("\nDuration: ", diff,"\n")
       if (diff > 60*60) {warning("\nStop script. Max time obtained."); break}
-      if (length(grep(str_c(iName,"_UB"), resFiles, value = T)) == 0) {
-         warning("Error: ", iName, "_UB don't exists!", sep = "")
+      fileNYN <- fNameYN(iName)
+      if (!file.exists(YN)) {
+         warning("Error: ", fileNYN, " don't exists!", sep = "")
          next
       }
-      pts0 <- read_csv(grep(str_c(iName,"_UB"), resFiles, value = T), col_types = cols())[,1:tmp$p[1]] %>%
+      pts0 <- read_csv(fileNYN, col_types = cols())[,1:tmp$p[1]] %>%
          mutate(rowId = 1:nrow(.))
       # pts <- pts0 %>% mutate(type = NA) %>% select(contains("z"), type)
       pts <- classifyNDSet(pts0[,1:(ncol(pts0)-1)]) %>%
@@ -103,18 +131,20 @@ for (iName in unique(dat$instance)) {
       # coeffRatio <- sum(coeff$nondominated)/nrow(coeff)
       for (i in 1:nrow(tmp)) {
          message("File ", tmp$rowname[i], "/", nrow(dat), " | ")
-         mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
-         mth <- mth1 %>%
-            str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
+         # mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
+         # mth <- mth1 %>%
+            # str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
          # cat(tmp$rowname[i],": ", mth, "  ", sep="")
-         if (file_exists(paste0("../", iName, "_", mth1, "_result.json"))) {
-            cpu <- datJson %>% dplyr::filter(instance == iName, nodesel == tmp$nodesel[i], varsel == tmp$varsel[i], OB == tmp$OB[i]) %>% pull(tpstotal)
-            if (tmp$tpstotal[i] == cpu) next  # use cpu time as indicator for old reslut
-            warning("Delete old ", iName, "_", mth1, "_result.json file (cpu not equal)!")
-            unlink(paste0("../", iName, "_", mth1, "_result.json"))
-         }
+         fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
+         # if (file_exists(fileNJson)) {
+         #    cpu <- datJson %>% dplyr::filter(instance == iName, nodesel == tmp$nodesel[i], varsel == tmp$varsel[i], OB == tmp$OB[i]) %>% pull(tpstotal)
+         #    if (tmp$tpstotal[i] == cpu) next  # use cpu time as indicator for old reslut
+         #    warning("Delete old ", iName, "_", mth1, "_result.json file (cpu not equal)!")
+         #    unlink(paste0("../", iName, "_", mth1, "_result.json"))
+         # }
          # if (round(coeffRatio,3) != round(tmp$ratioNDcoef[i], 3)) warning("Tjeck error: Ratio not the same!", coeffRatio, "!>", tmp$ratioNDcoef)
-         pts1 <- read_csv(grep(str_c(iName, "_", mth), resFilesTmp, value = T), col_types = cols())
+         fileNUB <- fNameUB(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
+         pts1 <- read_csv(fileNUB, col_types = cols())
          pts2 <- full_join(pts,pts1, by = c("z1", "z2", "z3"))
          pts3 <- pts %>% slice(0)
          if (nrow(pts) != nrow(pts2) & tmp$solved[i] == 1) {
@@ -139,7 +169,7 @@ for (iName in unique(dat$instance)) {
                n = tmp$n[i], coeffNDRatio = tmp$ratioNDcoef[i], coeffGenMethod = tmp$coef[i],
                coeffRange = c(tmp$rangemin[i], tmp$rangemax[i])),
             outputStat = tmp %>% select(nbnodes:maxnbpbOB) %>% slice(i) %>% as.list())
-         if (tmp$solved[i] == 1) misc$xE = read_csv(grep(str_c(iName,"_XE"), resFiles, value = T), col_types = cols())
+         if (tmp$solved[i] == 1) misc$xE = read_csv(fNameXE(iName), col_types = cols())
          misc$outputStat$yNStat <- pts1
          try(createResultFile(
             instanceName = iName,
