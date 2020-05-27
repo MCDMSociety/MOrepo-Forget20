@@ -46,8 +46,10 @@ instances <- list.files("../../instances/raw/", recursive = T) %>%
 # str(instances)
 
 #' Read result output
-dat <- read_csv("data/stat.csv", col_types = cols()) %>% rownames_to_column()
-# dat
+dat <- read_csv("data/stat.csv", col_types = cols()) %>% arrange(instance, nodesel, varsel, OB) %>% rownames_to_column()
+#' Read statistics from json files
+datJson <- read_csv("../statistics.csv")
+
 
 #' ### Check if output consistent
 #' Remove all json files that don't have an instance
@@ -74,17 +76,17 @@ for (iName in unique(dat$instance)) {
       # message(iName,": ")
       # cat(iName, ": ", sep="")
       mth1 <- paste0(tmp$nodesel, "_", tmp$varsel, "_", tolower(tmp$OB))
-      if (all(file_exists(paste0("../", iName, "_", mth1, "_result.json")))) {
-         # cat("Already generated for all methods!\n")
-         next
-      }
+      # if (all(file_exists(paste0("../", iName, "_", mth1, "_result.json")))) {
+      #    # cat("Already generated for all methods!\n")
+      #    next
+      # }
       if (nrow(tmp %>% dplyr::filter(solved == 1) %>% distinct(YN)) > 1) {
          warning("Error: ", iName, ". Different number of nondominated points when compare exact solutions for different alg. configs!", sep="")
          next
       }
       diff <- as.duration(now() - start_time)
       message("\nDuration: ", diff,"\n")
-      if (diff > 60*60) {message("\nStop script. Max time obtained."); break}
+      if (diff > 60*60) {warning("\nStop script. Max time obtained."); break}
       if (length(grep(str_c(iName,"_UB"), resFiles, value = T)) == 0) {
          warning("Error: ", iName, "_UB don't exists!", sep = "")
          next
@@ -106,8 +108,10 @@ for (iName in unique(dat$instance)) {
             str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
          # cat(tmp$rowname[i],": ", mth, "  ", sep="")
          if (file_exists(paste0("../", iName, "_", mth1, "_result.json"))) {
-            # cat("Already generated! ")
-            next
+            cpu <- datJson %>% dplyr::filter(instance == iName, nodesel == tmp$nodesel[i], varsel == tmp$varsel[i], OB == tmp$OB[i]) %>% pull(tpstotal)
+            if (tmp$tpstotal[i] == cpu) next  # use cpu time as indicator for old reslut
+            warning("Delete old ", iName, "_", mth1, "_result.json file (cpu not equal)!")
+            unlink(paste0("../", iName, "_", mth1, "_result.json"))
          }
          # if (round(coeffRatio,3) != round(tmp$ratioNDcoef[i], 3)) warning("Tjeck error: Ratio not the same!", coeffRatio, "!>", tmp$ratioNDcoef)
          pts1 <- read_csv(grep(str_c(iName, "_", mth), resFilesTmp, value = T), col_types = cols())
