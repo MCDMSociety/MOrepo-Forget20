@@ -50,7 +50,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
-  cache = TRUE, autodep = TRUE,
+  # cache = TRUE, autodep = TRUE,
   echo=FALSE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
 )
@@ -474,6 +474,8 @@ We first consider
      d) In which subprocedures are the cpu time used?
      
   3. Which algorithm configuration is best?
+     a) Is there a clear winner?
+     b) Is the best node selection strategy affected by other algorithm configurations?
   
 
 Next, we study how some components of the branch and bound influences the behaviour of the algorithm:
@@ -943,7 +945,7 @@ ggplot(res, aes(x = YN, fill = win)) +
 
 It can be seen that for some problem classes the best configuration change from easy instances to hard.
 
-## R3b: Are the best node selection strategy affected by the algorithm config?
+## R3b: Is the best node selection strategy affected by other algorithm configurations?
 
 We consider all instances:
 

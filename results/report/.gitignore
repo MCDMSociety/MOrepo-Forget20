@@ -2,10 +2,11 @@
 report_cache
 *_cache
 report_json*
-instance.md
+*.md
 instance.html
 *.gif
 *.mkv
 WebGL.*
 setup.R
 instances_w_gif
+report_old.html
