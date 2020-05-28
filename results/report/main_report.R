@@ -9,7 +9,7 @@ loadPackages(c("tidyverse", "rmarkdown"))
 # options(rgl.useNULL=TRUE)
 
 oldDir <- setwd("./results/report")
-## Some sepecial instances
+## Some special instances
 tmp <- read_csv("../statistics.csv") %>%
    mutate(YNsRatio = YNs/YN, YNusRatio = 1-YNs/YN, YNsneRatio = (YNs-YNse)/YN) %>%
    group_by(instance) %>%
@@ -29,12 +29,13 @@ tmp <- read_csv("../statistics.csv") %>%
 inst <- c(inst, tmp)
 inst <- unique(inst)
 # Generate instance reports
+reset <- TRUE
 for(i in inst){
   cat("File", i, "\n")
-  if (file.exists(paste0("instances/", i, ".html"))) next
-  rmarkdown::render("instance.Rmd", output_file = paste0(i, ".html"),
+  if (file.exists(paste0("instances/", i, ".html")) & !reset) next
+  try(rmarkdown::render("instance.Rmd", output_file = paste0(i, ".html"),
                     output_dir = "instances", quiet = T, #envir = new.env(),
-         params=list(new_title=paste("Results for instance", i) , currentInstance = i) )
+         params=list(new_title=paste("Results for instance", i) , currentInstance = i) ))
 }
 setwd(oldDir)
 

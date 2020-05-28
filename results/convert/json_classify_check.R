@@ -58,7 +58,7 @@ for (iName in unique(dat$instance)) {
       message("File ", tmp$rowname[i], "/", nrow(dat), "", sep="", appendLF = F)
       mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
       mth <- mth1 %>%
-         str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
+         str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "2"))
       fileNJson <- paste0("../", iName, "_", mth1, "_result.json")
       if (!file_exists(fileNJson)) next
       lst <- jsonlite::fromJSON(fileNJson)

@@ -50,7 +50,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
-  cache = TRUE, autodep = TRUE,
+  # cache = TRUE, autodep = TRUE,
   echo=FALSE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
 )
@@ -177,10 +177,9 @@ This report present the computational results for the instances. All instances a
 dat <- read_csv("../statistics.csv") %>%   #"../convert/data/stat.csv"
   mutate(YNsRatio = YNs/YN, YNusRatio = 1-YNs/YN, YNsneRatio = (YNs-YNse)/YN)
 
-
 datInput <- dat %>% 
   distinct(instance, .keep_all = TRUE) %>% 
-  select(instance, pb, n, p, coef, rangeC, ratioNDcoef)
+  select(instance, pb, n, p, coef, contains("range"), ratioNDcoef)
 ```
 
 We consider a total of `r nrow(datInput)` instances named 
@@ -232,20 +231,22 @@ DT::datatable(
 
 We have:
 
+  - `instance`: Instance name
   - `pb`: Problem class 
     * KP = Knapsack Problem
     * AP = Assignment Problem
     * UFLP = Uncapacited Facility Location Problem
   - `n`: Number of variables.
   - `p`: Number of objectives.
-  - `rangeC`: the range the objective coefficients are generated within. For the facility location problems, two sets of costs are generated: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. In this case `rangeC` defines two ranges: the assignment costs in $[a,b]$ and the facility opening costs which will be divided into two categories of instances:
-    * facility location easy: $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier.
-    * facility location hard: $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harder.
   - `coef`: The method used for the generation of the objective coefficients (see section Research questions). We have:
     * random = random coefficient generation
     * 2box = two-boxes generation
     * spheredown = generation on the lower part of a sphere (in minimisation)
     * sphereup = generation on the upper part of a sphere (in minimisation)
+  - `rangeC`: the range the objective coefficients are generated within. For the facility location problems, two sets of costs are generated: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. In this case `rangeC` defines two ranges: the assignment costs in $[a,b]$ and the facility opening costs which will be divided into two categories of instances:
+    * facility location easy: $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier.
+    * facility location hard: $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harder.
+    `rangeGapC`: Gap of the objective coefficients. 
   - `ratioNDcoef`: Proportion of objective coefficient vectors (here considered as a vector in $\mathbb{R}^p$, one for each variable, defining the objective coefficient for all the objective for this variable) that are non-dominated (with respect to the other objective coefficient vectors). Examples of the four ways of generating the objective coefficients are given:
   
 **Random**
@@ -349,13 +350,17 @@ Combinations of `nodesel`, `varsel` and `OB` gives the configuration of the algo
 For each algorithm run we have the following statistics:
 
 ```{r instance output, eval = FALSE}
-datOutput <- dat %>% 
-  select(instance, nodesel:maxnbpbOB)
+datOutput <- dat #%>% select(instance, nodesel:maxnbpbOB)
 datOutput
 ```
 
   - `solved`: 1 if the instance is solved within 3600 sec, 0 otherwise.
   - `YN`: size of YN. If `solved` = 0, it represent the size of the upper bound set at 3600 sec, when the algorithm stops.
+  - `YNse`: Number of supported extreme nondominated points.
+  - `YNs`: Number of supported nondominated points.
+  - `YNsRatio`: Ratio of supported nondominated points.
+  - `YNusRatio`: Ratio of unsupported nondominated points.
+  - `YNsneRatio`: Ratio of supported non-extreme nondominated points.
   - `nbnodes`: number of nodes explored.
   - `mindepthT`: minimal depth of a leaf node.
   - `maxdepthT`: maximal depth of a leaf node (and thus of the tree).
@@ -437,6 +442,21 @@ toLink <- function(inst) {
   * Instances with higest variance in cpu time: `r toLink(tmp %>% top_n(3, tpstotal_sd) %>% pull(instance))`
 
 
+# Numerical instablities
+
+[Explain what kind of numerical instabilities we have and what can be done]
+
+Currently we have instabilities with instances:
+
+```{r}
+tmp <- read_csv("../convert/data/stat.csv", col_types = cols()) %>% 
+  group_by(instance) %>% 
+  distinct(YN) %>% 
+  summarise(ctr = n()) %>% 
+  dplyr::filter(ctr > 1)
+tmp$instance
+```
+
 # Research questions
 
 We first consider 
@@ -455,7 +475,7 @@ We first consider
      
   3. Which algorithm configuration is best?
      a) Is there a clear winner?
-     b)
+     b) Is the best node selection strategy affected by other algorithm configurations?
   
 
 Next, we study how some components of the branch and bound influences the behaviour of the algorithm:
@@ -709,15 +729,31 @@ Some observations
 
 ## R2b: Which sphere generation instances are hardest to solve?
 
-Let us look at ranges [1,1000] and [1,1000][1,100] and the winner configurations:
+Let us consider ranges [1,1000] and [1,1000][1,100]:
 
 ```{r, fig.asp=1}
 res <- datP %>% 
   dplyr::filter(grepl("sphere", coef) & grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>% 
   group_by(pb, coef) %>% 
-  summarize_at(vars(contains("YN") | contains("tpstotal")), mean) %>% 
-  arrange(pb, desc(tpstotal))
-res
+  summarize_at(vars(contains("YN") | tpstotal), mean) 
+# ggplot(res, aes(y = avgCpu , x = n)) + 
+#   geom_jitter(aes(color = coef), width = 3, height = 0, size = 0.7) +
+#   facet_grid(rows = vars(interaction(nodesel,varsel,OB)), cols = vars(pb), margins = T, scales = "free")
+#   
+#   
+#     geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 3, height = 0, size = 0.7) 
+# +
+#     facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "free") +
+#     ggtitle(str_c("Cpu time for ", pb, " (note scale free)")) +
+#     theme(legend.position="bottom", legend.title=element_blank())
+# 
+# res <- datP %>% 
+#   dplyr::filter(grepl("sphere", coef), grepl("[1,1000]", rangeC)) %>% 
+#   group_by(pb, coef) %>% 
+#   summarize(avgCpu = mean(tpstotal)) %>% 
+#   arrange(pb, desc(avgCpu))
+# res
+
 # ggplot(res, aes(y = pct, x = win, fill = win)) + 
 #   # stat_summary(fun=mean, geom="line", aes(color = win)) +
 #   geom_col() + 
@@ -738,12 +774,14 @@ There is no clear winner. Moreover, the shape of the nondominated set is not aff
 
 ## R2c: Is the cpu time the same within each instance group?
 
-By instance group we mean a set of instances with the same constraint. That is, an unique combination of `namePrefix`, and `constId`. We consider each instance group given algorithm configuration (`nodesel`, `varsel`, `OB`). Let us look at ranges [1,1000] and [1,1000][1,100]:
+By instance group we mean an unique combination of `namePrefix`, `constId`, `pb`, `n`, `coef`, `rangeC`, `nodesel`, `varsel`, `OB`
 
 ```{r}
+# datP <- dat %>% 
+#   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal) %>% #contains("tps")
+#   mutate(iG = str_c(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB, sep = "."))
 datP <- dat %>% 
-  dplyr::filter(grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>% 
-  select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal, YN) %>% 
+  select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal) %>% #contains("tps")
   group_by(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB) %>% nest()
 
 datPSd <- datP %>% 
@@ -762,56 +800,44 @@ datPSd <- datP %>%
     })
   ) %>% unnest(c(stdDevV, cvV, maxV), names_sep = "_")
 
-datPSdYN <- datPSd %>% group_by(nodesel, varsel, OB) %>% nest() %>% ungroup() 
-datPSdYN <- datPSdYN[1,] %>% unnest(data)
+# ggplot(datPSd, aes(y = meanV_tpstotal, x = n)) + 
+#   geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) + 
+#   facet_grid(rows = vars(coef), cols = vars(pb), margins = T) +
+#   ggtitle("Means") +
+#   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
 
 ```{r, fig.asp=1}
 ggplot(datPSd, aes(y = stdDevV_tpstotal, x = n)) + 
-  geom_jitter(aes(color = interaction(nodesel, varsel, OB))) + 
+  geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) + 
   facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
   ggtitle("Std. dev.") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
+
 
 ```{r, fig.asp=1}
 ggplot(datPSd, aes(y = cvV_tpstotal, x = n)) + 
-  geom_jitter(aes(color = interaction(nodesel, varsel, OB))) + 
+  geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) + 
   facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
   ggtitle("Coeff of variation (sd/mean)") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-```{r, fig.asp=1}
-ggplot(datPSdYN, aes(y = stdDevV_YN, x = n)) + 
-  geom_jitter(aes()) + 
-  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
-  ggtitle("Std. dev.") +
-  theme(legend.position="bottom", legend.title=element_blank())
-```
-
-```{r, fig.asp=1}
-ggplot(datPSdYN, aes(y = cvV_YN, x = n)) + 
-  geom_jitter(aes()) + 
-  facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
-  ggtitle("Coeff of variation (sd/mean)") +
-  theme(legend.position="bottom", legend.title=element_blank())
-```
 
 ```{r, fig.asp=1}
 ggplot(datPSd, aes(y = maxV_tpstotal, x = n)) + 
-  geom_jitter(aes(color = interaction(nodesel, varsel, OB))) + 
+  geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) + 
   facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") +
   ggtitle("Max values") +
   theme(legend.position="bottom", legend.title=element_blank()) 
 ```
 
-Some observations:
+In general we may have high variation within instance groups.
 
- - The cpu time may vary for some algorithm configurations.
- - This is due to that the variation in YN.
- - In general we may have high variation within instance groups.
+
+
 
 
 ## R2d: In which subprocedures are the cpu time used?
@@ -836,16 +862,13 @@ ggplot(res, aes(y = value, x = name, fill = name)) +
   facet_grid(rows = vars(pb), scales = "fixed") +
   ggtitle("Cpu usage") +
   theme(legend.position="bottom", legend.title=element_blank())
+
 ```
 
-Observe that:
-
-  - Most of the time is used for finding lower bounds (Bensolve).
-  - The second most activitiy is for miscilannious activitites. 
 
 # Analysis: Research Question 3 (R3) - Which algorithm configuration is best?
 
-## R3a: Is there a clear winner? 
+## R3a: Is there a clear winner?
 
 Let us find the winner configuration for each instance given some groupings:
 
@@ -922,8 +945,7 @@ ggplot(res, aes(x = YN, fill = win)) +
 
 It can be seen that for some problem classes the best configuration change from easy instances to hard.
 
-
-## R3b: Are the best node selection strategy affected by the algorithm config?
+## R3b: Is the best node selection strategy affected by other algorithm configurations?
 
 We consider all instances:
 
@@ -940,6 +962,7 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
   ggtitle("Winner pct") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
+
 
 There seems to be no effect. Let us have a look at the hard instances (ranges [1,1000] and [1,1000][1,100]) and the winner configurations:
 
@@ -974,3 +997,9 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
   ggtitle("Winner pct") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
+
+# Conclusions 
+
+[Sum up]
+
+## Experiments to include in the article
