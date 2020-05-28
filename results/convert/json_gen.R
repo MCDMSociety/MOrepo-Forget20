@@ -133,8 +133,8 @@ for (iName in unique(dat$instance)) {
       for (i in 1:nrow(tmp)) {
          message("File ", tmp$rowname[i], "/", nrow(dat), " | ")
          mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
-         # mth <- mth1 %>%
-            # str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
+         mth <- mth1 %>%
+            str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
          # cat(tmp$rowname[i],": ", mth, "  ", sep="")
          # fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
          # if (file_exists(fileNJson)) {
