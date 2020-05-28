@@ -64,6 +64,17 @@ cat("Delete json files that don't have a corresponding instance:\n")
 print(inst)
 unlink(inst)
 
+#' Remove all json files that don't have results
+resJsonFiles <- list.files("..", ".json", full.names = F) %>% str_remove("_result.json")
+statFiles <- dat %>% mutate(fileN = str_c(instance, "_", nodesel, "_", varsel, "_", tolower(OB))) %>% pull(fileN)
+if (length(resJsonFiles[!(resJsonFiles %in% statFiles)]) > 0) {
+   files <- str_c("../", resJsonFiles[!(resJsonFiles %in% statFiles)], "_result.json")
+   cat("Delete old json files with no row in stat.csv:\n")
+   print(files)
+   unlink(files)
+}
+
+
 # File name functions
 fNameYN <- function(instance) {
    str_c("data/details/", instance, "_UB.txt")
@@ -73,7 +84,7 @@ fNameXE <- function(instance) {
 }
 fNameUB <- function(instance, nodesel, varsel, ob) {
    mth <- paste0(nodesel, "_", varsel, "_", tolower(ob)) %>%
-      str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
+      str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "2"))
    str_c("data/details/UBrun/", instance, "_", mth, "_UB.csv")
 }
 fNameJson <- function(instance, nodesel, varsel, ob) {
@@ -82,12 +93,14 @@ fNameJson <- function(instance, nodesel, varsel, ob) {
 }
 
 #' Check cpu times in data folder
-for (i in 1:nrow(dat)) {
-   fileN <- fNameUB(dat$instance[i], dat$nodesel[i], dat$varsel[i], dat$OB[i])
+tmp <- read_csv("data/stat.csv", col_types = cols())
+for (i in 1:nrow(tmp)) {
+   fileN <- fNameUB(tmp$instance[i], tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
    if (file.exists(fileN)) pts <- read_csv(fileN, col_types = cols())
    else return(warning("Error: File ", fileN, " doesn't exist but has a row in stat.csv! Old results?"))
-   if (dat$tpstotal[i] < pts$time[nrow(pts)])
-      warning("Error: Last cpu time in UB set is higher than tpstotal (file: ", fileN, ")!")
+   tmp %>% slice(i) %>% select(instance, nodesel, varsel, OB, tpstotal)
+   if (tmp$tpstotal[i] < pts$time[nrow(pts)] - 0.1)
+      warning("Error: Last cpu time in UB set is higher than tpstotal in stat.csv (file: ", fileN, ", row: ", i, ")!")
 }
 
 
@@ -134,7 +147,7 @@ for (iName in unique(dat$instance)) {
          message("File ", tmp$rowname[i], "/", nrow(dat), " | ")
          mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
          mth <- mth1 %>%
-            str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
+            str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "2"))
          # cat(tmp$rowname[i],": ", mth, "  ", sep="")
          # fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
          # if (file_exists(fileNJson)) {
