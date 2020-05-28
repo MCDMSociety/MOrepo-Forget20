@@ -91,6 +91,7 @@ for (i in 1:nrow(dat)) {
 }
 
 
+
 #' ### Create json files with classification of points
 #' All result files are in csv format with comma delimitor and dot as decimal mark.
 resFiles <- list.files(recursive = T)
@@ -115,7 +116,7 @@ for (iName in unique(dat$instance)) {
       message("\nDuration: ", diff,"\n")
       if (diff > 60*60) {warning("\nStop script. Max time obtained."); break}
       fileNYN <- fNameYN(iName)
-      if (!file.exists(YN)) {
+      if (!file.exists(fileNYN)) {
          warning("Error: ", fileNYN, " don't exists!", sep = "")
          next
       }
@@ -131,11 +132,11 @@ for (iName in unique(dat$instance)) {
       # coeffRatio <- sum(coeff$nondominated)/nrow(coeff)
       for (i in 1:nrow(tmp)) {
          message("File ", tmp$rowname[i], "/", nrow(dat), " | ")
-         # mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
+         mth1 <- paste0(tmp$nodesel[i], "_", tmp$varsel[i], "_", tolower(tmp$OB[i]))
          # mth <- mth1 %>%
             # str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "-2"))
          # cat(tmp$rowname[i],": ", mth, "  ", sep="")
-         fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
+         # fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
          # if (file_exists(fileNJson)) {
          #    cpu <- datJson %>% dplyr::filter(instance == iName, nodesel == tmp$nodesel[i], varsel == tmp$varsel[i], OB == tmp$OB[i]) %>% pull(tpstotal)
          #    if (tmp$tpstotal[i] == cpu) next  # use cpu time as indicator for old reslut
@@ -193,7 +194,7 @@ for (iName in unique(dat$instance)) {
          file_move(jsonF, paste0("../",jsonF))
       }
    } else warning("Error: Can't find result files for ", iName, "!", sep="")
-   cat("\n")
+   # cat("\n")
 }
 
 warnings()
