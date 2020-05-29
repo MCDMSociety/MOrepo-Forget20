@@ -431,7 +431,7 @@ tmp <- dat %>% group_by(instance) %>% summarise_at(vars(contains(c("YN", "total"
 toLink <- function(inst) {
   links <- str_c('../../docs/instances/', inst, '.html')
   url <- str_c('instances/', inst, '.html')
-  if_else(file.exists(links), str_c('<a href="', links, '">', inst, '</a>'), inst)
+  if_else(file.exists(links), str_c('<a href="', url, '">', inst, '</a>'), inst)
 }
 ```
 
