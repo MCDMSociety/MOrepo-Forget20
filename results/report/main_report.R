@@ -39,7 +39,7 @@ oldDir <- setwd("./results/report")
 # }
 
 ## Generate result report
-rmarkdown::render("report.Rmd", output_file="report.html", output_dir = "../../docs/instances")
+rmarkdown::render("report.Rmd", output_file="report.html", output_dir = "../../docs/")
 
 setwd(oldDir)
 ## That's it :-)
