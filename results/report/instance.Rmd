@@ -14,7 +14,7 @@ editor_options:
   chunk_output_cls: console
 params:
   new_title: 'Results for instance '
-  currentInstance: 'Forget20-UFLP_14_3_1-1000_1001-2000_spheredown_1_5'
+  currentInstance: 'Forget20-KP_20_3_1000-2000_random_1_5'
 ---
  
 ```{r setup, include=FALSE}
@@ -139,24 +139,27 @@ datStat <- datStat %>%
   mutate(relativeSolved = 
     pmap(list(resUB, tpstotal, str_c(nodesel, "_", varsel, "_", tolower(OB))), 
          function(df = ..1, cpuT = ..2, mth = ..3) {
-            res <- tibble(mth = mth, pct = c(nrow(df), rep(nrow(df), nrow(df)), nrow(df)), cpu = c(0, df$time, cpuT), rowname = 1:(nrow(df)+2)) 
-            res <- res %>% mutate(pct = (rowname-1)/pct) %>% select(-rowname)
-            res[nrow(res),"pct"] <- 1
-            # print(mth)
-            # print(res %>% filter(pct == 1))
-            res <- bind_rows(res, tibble(mth = mth, pct = res$pct[1:(nrow(res)-1)], cpu = res$cpu[2:nrow(res)])) %>% arrange(pct, cpu)
+            if (nrow(df) > 1) {
+               res <- tibble(mth = mth, pct = c(nrow(df), rep(nrow(df), nrow(df)), nrow(df)), cpu = c(0, df$time, cpuT), rowname = 1:(nrow(df)+2))
+               res <- res %>% mutate(pct = (rowname-1)/pct) %>% select(-rowname)
+               res[nrow(res),"pct"] <- 1
+               res <- bind_rows(res, tibble(mth = mth, pct = res$pct[1:(nrow(res)-1)], cpu = res$cpu[2:nrow(res)])) %>% arrange(pct, cpu)
+            } else {
+               res <- tibble(mth = mth, pct = c(1, 1), cpu = c(df$time, cpuT), rowname = 1:2)
+            }
             res %>% mutate(pctCpu = cpu/cpuT)
           }))
 
 res <- datStat %>% select(relativeSolved) %>% unnest(relativeSolved)
+height <- if_else(max(res$cpu) < 10, 0, 0.1)
 ggplot(aes(x = cpu, y = pct, color = mth), data = res ) + # | mth == "depth_mof_none" %>% filter(mth == "depth_mof_exact")
-  geom_line() + geom_jitter(size = 0.9) +
+  geom_line() + geom_jitter(size = 0.9, width = 0, height = height) +
   # geom_point(data = res %>% group_by(mth) %>% summarise_at(vars(c('pct','cpu')), max)) +
   xlab("CPU time (in sec)") + ylab("Proportion of nondominated points found") + 
   theme(legend.position="bottom", legend.title=element_blank()) 
 
 ggplot(aes(x = pctCpu, y = pct, color = mth), data = res) + 
-  geom_line() + geom_jitter(size = 0.9) +
+  geom_line() + geom_jitter(size = 0.9, width = 0, height = height) +
   xlab("Relative CPU time (all stop in 1)") + ylab("Proportion of nondominated points found") + 
   theme(legend.position="bottom", legend.title=element_blank()) 
 ```
@@ -354,7 +357,7 @@ for (s in 1:length(ptsLst)) {
       if (any(lst[[i]] == emptyId)) lst[[i]] <- ids else lst[[i]] <- c(lst[[i]], ids)
    }
    names(lst) <- paste0("cone", 1:length(lst))
-   i <- min(ceiling(ptsLst[[s]]$cpu/stepLgt), steps)
+   i <- max(1, min(ceiling(ptsLst[[s]]$cpu/stepLgt), steps))
    lst[[i]] <- plotHull3D(ptsLst[[s]]$pts[,1:3], addRays = T, argsPolygon3d = list(alpha = 0.25, color = "red"), useRGLBBox = TRUE)$ids
    # res[[s]]$lst <- lst
    res[[s]] <- subsetControl(subsets = lst, accumulate = T, subscenes = subsceneInfo()$id)

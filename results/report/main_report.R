@@ -5,7 +5,7 @@ loadPackages <- function(packages) {
    lapply(packages, library, character.only = TRUE)
    invisible(NULL)
 }
-loadPackages(c("tidyverse", "rmarkdown"))
+loadPackages(c("tidyverse", "rmarkdown", "fs"))
 # options(rgl.useNULL=TRUE)
 
 oldDir <- setwd("./results/report")
@@ -32,14 +32,14 @@ inst <- unique(inst)
 reset <- TRUE
 for(i in inst){
   cat("File", i, "\n")
-  if (file.exists(paste0("instances/", i, ".html")) & !reset) next
+  if (file.exists(paste0("../../docs/instances/", i, ".html")) & !reset) next
   try(rmarkdown::render("instance.Rmd", output_file = paste0(i, ".html"),
-                    output_dir = "instances", quiet = T, #envir = new.env(),
+                    output_dir = "../../docs/instances", quiet = T, #envir = new.env(),
          params=list(new_title=paste("Results for instance", i) , currentInstance = i) ))
 }
-setwd(oldDir)
 
 ## Generate result report
-rmarkdown::render("results/report/report.Rmd", output_file="report.html")
+rmarkdown::render("report.Rmd", output_file="report.html", output_dir = "../../docs/instances")
 
+setwd(oldDir)
 ## That's it :-)
