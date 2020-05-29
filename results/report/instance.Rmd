@@ -151,7 +151,7 @@ datStat <- datStat %>%
           }))
 
 res <- datStat %>% select(relativeSolved) %>% unnest(relativeSolved)
-height <- if_else(max(res$cpu) < 10, 0, 0.1)
+height <- if_else(max(res$cpu) < 10, 0, 0.01)
 ggplot(aes(x = cpu, y = pct, color = mth), data = res ) + # | mth == "depth_mof_none" %>% filter(mth == "depth_mof_exact")
   geom_line() + geom_jitter(size = 0.9, width = 0, height = height) +
   # geom_point(data = res %>% group_by(mth) %>% summarise_at(vars(c('pct','cpu')), max)) +
