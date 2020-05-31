@@ -225,6 +225,7 @@ DT::datatable(
   datInput %>%
     mutate(instance = if_else(file.exists(links), str_c('<a href="', links, '">', instance, '</a>'), instance)),
   escape = F,
+  options = list(scrollX = T),
   caption = "Instances. A link to the results for the instance are given for some instances."
 )
 ```
@@ -736,6 +737,7 @@ res <- datP %>%
   dplyr::filter(grepl("sphere", coef) & grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>% 
   group_by(pb, coef) %>% 
   summarize_at(vars(contains("YN") | tpstotal), mean) 
+res
 # ggplot(res, aes(y = avgCpu , x = n)) + 
 #   geom_jitter(aes(color = coef), width = 3, height = 0, size = 0.7) +
 #   facet_grid(rows = vars(interaction(nodesel,varsel,OB)), cols = vars(pb), margins = T, scales = "free")
@@ -843,12 +845,11 @@ In general we may have high variation within instance groups.
 ## R2d: In which subprocedures are the cpu time used?
 
 ```{r}
-res <- dat %>% 
-  select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, contains("pcttps")) %>% 
-  mutate(pcttpsmisc = 100 - pcttpsLB + pcttpsdomi + pcttpsUB + pcttpsnodesel + pcttpsvarsel + pcttpsOB + pcttpsSLUB + pcttpsdomiLUB) %>% 
-  group_by(pb) %>% 
+res <- dat %>%
+  select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, contains("pcttps")) %>%
+  mutate(pcttpsmisc = 100 - (pcttpsLB + pcttpsdomi + pcttpsUB + pcttpsnodesel + pcttpsvarsel + pcttpsSLUB + pcttpsdomiLUB)) %>%
+  group_by(pb) %>%
   nest()
-
 res <- res %>% 
   mutate(
     meanV = map(data, function(df) {
@@ -862,7 +863,6 @@ ggplot(res, aes(y = value, x = name, fill = name)) +
   facet_grid(rows = vars(pb), scales = "fixed") +
   ggtitle("Cpu usage") +
   theme(legend.position="bottom", legend.title=element_blank())
-
 ```
 
 

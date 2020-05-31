@@ -30,11 +30,12 @@ inst <- c(inst, tmp)
 inst <- unique(inst)
 # Generate instance reports
 reset <- FALSE
-for(i in inst){
-  cat("File", i, "\n")
+for(j in 1:length(inst)){
+  i <- inst[j]
+  cat("File", i, " (", j, "/", length(inst), ")\n")
   if (file.exists(paste0("../../docs/instances/", i, ".html")) & !reset) next
   try(rmarkdown::render("instance.Rmd", output_file = paste0(i, ".html"),
-                    output_dir = "../../docs/instances", quiet = T, #envir = new.env(),
+                    output_dir = "../../docs/instances", quiet = T, envir = new.env(),
          params=list(new_title=paste("Results for instance", i) , currentInstance = i) ))
 }
 
