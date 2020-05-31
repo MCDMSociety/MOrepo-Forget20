@@ -40,7 +40,7 @@ loadPackages <- function(packages) {
   lapply(packages, library, character.only = TRUE)
   invisible(NULL)
 }
-loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown", "ggplot2", "plotly"))
+loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown", "ggplot2", "plotly", "DT"))
 
 library(knitr)
 library(rgl)
