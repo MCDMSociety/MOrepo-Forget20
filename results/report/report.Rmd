@@ -57,119 +57,7 @@ knitr::opts_chunk$set(
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
 
-
-```{r, include=FALSE, eval=FALSE}
-# Generation of stat for preliminary tests
-
-  # Table for avg times
-
-    gen_table_times <- function(tab){
-      
-      t <- tab %>%
-        group_by(pb,n,varsel,nodesel) %>%
-          summarize(avg = mean(tpstotal))
-
-      t <- pivot_wider(t,names_from = nodesel, values_from = avg)
-      t <- pivot_wider(t,names_from = varsel, values_from = c("breadth","depth"))
-      t
-    }
-    
-  # Plot of avg times
-    
-    gen_plot_times <- function(tab){
-      
-      t <- tab %>%
-        group_by(pb,n,varsel,nodesel) %>%
-          summarize(avg = mean(tpstotal))
-      t <- pivot_wider(t,names_from = nodesel, values_from = avg)
-      t <- pivot_wider(t,names_from = varsel, values_from = c("breadth","depth"))
-      
-      t %>% ggplot( aes(x=n)) + geom_line(aes(y=breadth_mfavg,colour="breadth-mfavg")) + geom_line(aes(y=depth_mfavg,colour="depth_mfavg")) + geom_line(aes(y=breadth_mof,colour="breadth_mof")) + geom_line(aes(y=depth_mof,colour="depth_mof")) + ylab("average time (sec)") + xlab("Number of variables") + ggtitle("Average computational time")
-    }
-    
-  # Tables for nb nodes
-    
-    gen_table_nodes <- function(tab){
-      
-      t <- tab %>%
-        group_by(pb,n,varsel,nodesel) %>%
-          summarize(avg = mean(nbnodes))
-
-      t <- pivot_wider(t,names_from = nodesel, values_from = avg)
-      t <- pivot_wider(t,names_from = varsel, values_from = c("breadth","depth"))
-      t
-    }
-
-  # Plot for nb nodes
-    
-    gen_plot_nodes <- function(tab){
-      
-      t <- tab %>%
-        group_by(pb,n,varsel,nodesel) %>%
-          summarize(avg = mean(nbnodes))
-      t <- pivot_wider(t,names_from = nodesel, values_from = avg)
-      t <- pivot_wider(t,names_from = varsel, values_from = c("breadth","depth"))
-      
-      t %>% ggplot( aes(x=n)) + geom_line(aes(y=breadth_mfavg,colour="breadth-mfavg")) + geom_line(aes(y=depth_mfavg,colour="depth_mfavg")) + geom_line(aes(y=breadth_mof,colour="breadth_mof")) + geom_line(aes(y=depth_mof,colour="depth_mof")) + ylab("Number of nodes") + xlab("Number of variables") + ggtitle("Average number of nodes explored")
-    }
-    
-# Coefficient analysis
-    
-    # Plot relation Cn - |YN|
-    
-    gen_plot_correl_coef <- function(dat,pbb){
-      
-      datcoef <- dplyr::filter(dat,solved==1,pb==pbb)
-      datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
-
-      datcoef %>% ggplot( aes(x=YN , y=ratioNDcoef, colour=n)) + geom_point() +     ggtitle("Relation between the number of non-dominated coefficients and |YN|")
-    }
-    
-    # Plot |YN| & CPU time
-    
-    gen_plot_YN_cpu <- function(dat,pbb,nodemeth,varmeth,obmeth){
-      
-      datcoef <- dplyr::filter(dat,solved==1,pb==pbb,nodesel==nodemeth,varsel==varmeth,OB==obmeth)
-      #datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
-
-      datcoef %>% ggplot( aes(x=YN , y=tpstotal, colour=n)) + geom_point() +     ggtitle("Relation between |YN| and the cpu time")
-    }
-    
-    # Plot complexity per range
-    
-    gen_plot_range <- function(dat,pbb,coeff){
-      
-      datcoef <- dplyr::filter(dat,solved==1,pb==pbb,coef==coeff)
-      datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
-      
-      datcoef <- datcoef %>% group_by(n,rangemin,rangemax) %>% summarise(avg = mean(YN))
-      plt <- datcoef %>% ggplot(aes(x=n , y=avg, group=interaction(rangemin,rangemax) , colour=interaction(rangemin,rangemax))) + geom_line() + xlab("Number of variables") + ylab("Average size of YN") + ggtitle(paste("Tri-objective",pbb,"problems with",coeff,"generation for the coefficients"))
-      show(plt)
-    }
-    
-    gen_plot_range_full <- function(dat,pbb,coeff){
-      
-      datcoef <- dplyr::filter(dat,solved==1,pb==pbb,coef==coeff)
-      datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
-      
-      datcoef %>% ggplot(aes(x=n, y=YN, group=interaction(rangemin,rangemax), colour=interaction(rangemin,rangemax))) + geom_point() + xlab("Number of variables") + ylab("Average size of YN") + ggtitle(paste("Tri-objective",pbb,"problems with",coeff,"generation for the coefficients"))
-    }
-    
-    # Plot complexity per coef
-    
-    gen_plot_coef <- function(dat,pbb,rmin,rmax){
-      
-      datcoef <- dplyr::filter(dat, solved==1, pb==pbb, rangemin==rmin, rangemax==rmax)
-      datcoef <- distinct(datcoef,instance,.keep_all = TRUE)
-      
-      datcoef <- datcoef %>% group_by(n,coef) %>% summarise(avg = mean(YN))
-      plt <- datcoef %>% ggplot(aes(x=n , y=avg, group=coef , colour=coef)) + geom_line() + xlab("Number of variables") + ylab("Average size of YN") +  ggtitle(paste("Tri-objective",pbb,"problems with coefficients in the range [",rmin,",",rmax,"]"))
-      show(plt)
-    }
-
-```
-
-This report present the computational results for the instances. All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimise $-z(x)$ instead. Note that in all instances only binary variables are considered.
+This report present the computational results for the instances. All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.
 
 # Instances
 
@@ -201,9 +89,9 @@ where
 
 The cost generation method for generating the coefficients of the objective functions are (given in column `coef`):
 
-* `random`: the coefficient are generated randomly in the inerval [a,b].
-* `spheredown`: the coefficient are generated on the non-dominated part of a sphere in minimisation in the interval [a,b].
-* `sphereup`: the coefficient are generated on the non-dominated part of a sphere in maximisation in the interval [a,b].
+* `random`: the coefficient are generated randomly in the interval [a,b].
+* `spheredown`: the coefficient are generated on the non-dominated part of a sphere in minimization in the interval [a,b].
+* `sphereup`: the coefficient are generated on the non-dominated part of a sphere in maximization in the interval [a,b].
 * `2box`: the coefficients are generated randomly in two small boxes of R^3.
 
 For further details see the documentation function `genSample` in the R package
@@ -242,8 +130,8 @@ We have:
   - `coef`: The method used for the generation of the objective coefficients (see section Research questions). We have:
     * random = random coefficient generation
     * 2box = two-boxes generation
-    * spheredown = generation on the lower part of a sphere (in minimisation)
-    * sphereup = generation on the upper part of a sphere (in minimisation)
+    * spheredown = generation on the lower part of a sphere (in minimization)
+    * sphereup = generation on the upper part of a sphere (in minimization)
   - `rangeC`: the range the objective coefficients are generated within. For the facility location problems, two sets of costs are generated: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. In this case `rangeC` defines two ranges: the assignment costs in $[a,b]$ and the facility opening costs which will be divided into two categories of instances:
     * facility location easy: $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier.
     * facility location hard: $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harder.
@@ -313,7 +201,7 @@ finalize3D()
 
 ## Algorithm configuration
 
-<!-- The algorithm is configurated using:  -->
+<!-- The algorithm is configured using:  -->
 
 ```{r instance config, eval=FALSE}
 dat %>% 
@@ -331,7 +219,7 @@ Combinations of `nodesel`, `varsel` and `OB` gives the configuration of the algo
 
 * Node selection (`breadth`, `depth`): in the multi-objective branch and bound literature, depth first strategies are (almost) always used and are considered as better strategies than breadth first. However, if a problem with an "easy" single-objective version is solved, then many non-dominated points may be found in a node close to the root node, in the early stages of the tree. Hence, using a breadth first strategy may provide a better upper bound set earlier in the algorithm, as a larger number of points are expected to be found shallow in the tree while only a few points can be found at each node deep in the tree. 
 
-* Variable selection(`mof`, `mfavg`): to the best of our knowledge, no extensive study for variable selection has been conducted in the literature. Sometimes, this component is even not mentioned. As it is not the main purpose of this study, only two rules that rely on the caracteristics of the lower bound set will be tested here.
+* Variable selection(`mof`, `mfavg`): to the best of our knowledge, no extensive study for variable selection has been conducted in the literature. Sometimes, this component is even not mentioned. As it is not the main purpose of this study, only two rules that rely on the characteristics of the lower bound set will be tested here.
 
   + mof: Most Often Fractional. The branching is operated on the variable that is the most often fractional among the extreme points of the lower bound set.
   
@@ -403,8 +291,8 @@ datOutput
   - `pcttpsOB`: proportion (in %) of the total CPU time spend in computing objective branching.
   - `tpsSLUB`: CPU time (in sec) used to compute the super local upper bounds.
   - `pcttpsSLUB`: proportion (in %) of the total CPU time spend in computing the super local upper bounds.
-  - `tpsdomiLUB`: CPU time (in sec) used to do the additionnal dominance tests to get the dominance status of EACH local upper bound.
-  - `pcttpsdomiLUB`: proportion (in %) of the total CPU time spend in doing the additionnal dominance tests on the local upper bounds.
+  - `tpsdomiLUB`: CPU time (in sec) used to do the additional dominance tests to get the dominance status of EACH local upper bound.
+  - `pcttpsdomiLUB`: proportion (in %) of the total CPU time spend in doing the additional dominance tests on the local upper bounds.
   - `nbOB`: number of nodes where two or more sub-problems are created in the objective space. When using the exact objective branching (`OB` = exact), it in particular shows how often it is actually possible to split the objective space with the definition of the sub-problems that we used ($z(x) \leqq \bar{z}$, $\bar{z} \in \mathbb{R}^p$).
   - `pctnbOB`: proportion (in %) of the nodes explored that where split in two or more sub-problems in the objective space.
   - `avgdepthOB`: [relevant only if `OB` = exact] average depth of the nodes split in two or more sub-problems in the objective space.
@@ -413,7 +301,7 @@ datOutput
   - `avgnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space.
   - `maxnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space.
 
-For each instance we also store the non-dominated set $\mathcal{Y}_N$ found by the algorithm and if an exact solution was found the efficiet set $\mathcal{X}_E$. Statistics of how the non-domnated points are found are stored in `yNStat`. The statistics are the following:
+For each instance we also store the non-dominated set $\mathcal{Y}_N$ found by the algorithm and if an exact solution was found the efficient set $\mathcal{X}_E$. Statistics of how the nondominated points are found are stored in `yNStat`. The statistics are the following:
 
   - the $p$ first columns correspond the values of the objective functions.
   - `node`: number of the node where this point has been discovered. The higher this number is, the later the point has been discovered.
@@ -437,11 +325,11 @@ toLink <- function(inst) {
 ```
 
   * Instances with lowest number of nondominated points: `r toLink(tmp %>% top_n(-3, YN_mean) %>% pull(instance))`
-  * Instances with higest number of nondominated points: `r toLink(tmp %>% top_n(3, YN_mean) %>% pull(instance))`
+  * Instances with highest number of nondominated points: `r toLink(tmp %>% top_n(3, YN_mean) %>% pull(instance))`
   * Instances with lowest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(-3, YNusRatio_mean)  %>% pull(instance))`
-  * Instances with higest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(3, YNusRatio_mean)  %>% pull(instance))`
-  * Instances with higest supported non-extreme nondominated points percentage: `r toLink(tmp %>% top_n(3, YNsneRatio_mean) %>% pull(instance))`
-  * Instances with higest variance in cpu time: `r toLink(tmp %>% top_n(3, tpstotal_sd) %>% pull(instance))`
+  * Instances with highest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(3, YNusRatio_mean)  %>% pull(instance))`
+  * Instances with highest supported non-extreme nondominated points percentage: `r toLink(tmp %>% top_n(3, YNsneRatio_mean) %>% pull(instance))`
+  * Instances with highest variance in cpu time: `r toLink(tmp %>% top_n(3, tpstotal_sd) %>% pull(instance))`
 
 
 # Numerical instablities
@@ -481,16 +369,16 @@ We first consider
         * Are 'easy' problems solved best with one node selection strategy compared to others?
      c) Does different `OB` strategies affect the node selection strategy?
   
-  4. How are nodes phantomed?
+  4. How are nodes pruned?
   
 
 
 
-<!-- The primary focus is on computational time and number of nodes explored the size of the brancing -->
+<!-- The primary focus is on computational time and number of nodes explored the size of the branching -->
 <!-- tree before the algorithm ends. -->
 
-<!-- The second purpose of this study is to learn how the caracteristics of an instance can affect its -->
-<!-- difficulty. The difficulty will be here mesured by the *size of the non-dominated set*, and the -->
+<!-- The second purpose of this study is to learn how the characteristics of an instance can affect its -->
+<!-- difficulty. The difficulty will be here measured by the *size of the non-dominated set*, and the -->
 <!-- *computational time* required to solve the instance. The computational time will be determined -->
 <!-- using the branch and bound algorithm previously described. Note that the complexity of an objective -->
 <!-- space search algorithm is positively correlated to the size of the non-dominated set as the more -->
@@ -537,7 +425,7 @@ ggplot(datPA, aes(y = YN , x = n)) +
   theme(legend.position="bottom", legend.title=element_blank()) 
 ```
 
-Based on the plots we may answer the research question by concluding that range have an effect. A small cofficient range gives a smaller range of possible objective values and hence fewer possible nondominated points. Note a smaller range may result in a larger amount of alternative solutions corresponding to a nondominted point. The speed of the algorithm may be affected by alternative optimal solutions.
+Based on the plots we may answer the research question by concluding that range have an effect. A small coefficient range gives a smaller range of possible objective values and hence fewer possible nondominated points. Note a smaller range may result in a larger amount of alternative solutions corresponding to a nondominated point. The speed of the algorithm may be affected by alternative optimal solutions.
 
 For KP and AP scaling the cost don't affect the size of nondominated points. For UFLP there is an effect due to the way costs are generated so here scaling don't give the same results (we have to choose a setting here).  [Missing comments for IP]
 
@@ -594,14 +482,14 @@ ggplot(datPA %>% dplyr::filter(pb == "UFLP"), aes(y = YN , x = n)) +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-Based on the plots we may answer the research question by concluding that the objective cofficient generation method have a high effect on the number of solutions. Random generation on average produce the lowest amount, then 2box. The two sphere methods seems to give approx. the same results. 
+Based on the plots we may answer the research question by concluding that the objective coefficient generation method have a high effect on the number of solutions. Random generation on average produce the lowest amount, then 2box. The two sphere methods seems to give approx. the same results. 
 
-Note in general the speed of the algorithm is higly correlated with the number of non-dominated points. That is, instances with a high number of nondominated points are harder to solve. Based on this we may conclude that using one of the sphere methods for further study seems a good choice. We may also consider comparing it against the easiest method.  
+Note in general the speed of the algorithm is highly correlated with the number of non-dominated points. That is, instances with a high number of nondominated points are harder to solve. Based on this we may conclude that using one of the sphere methods for further study seems a good choice. We may also consider comparing it against the easiest method.  
 
 
 ## R1c: Does the proportion of objective coefficient vectors that are non-dominated (`ratioNDcoef`) have an effect?
 
-This is highly related to the objective cofficient generation method (and the range):
+This is highly related to the objective coefficient generation method (and the range):
 
 ```{r}
 tmp <- dat %>% group_by(pb, coef, rangeC) %>% summarize(ratio = mean(ratioNDcoef))
@@ -638,7 +526,7 @@ ggplot(datP %>% dplyr::filter(pb == "UFLP"), aes(y = YN , x = n)) +
 ```
 
 
-Based on the plot we may answer the research question by concluding that the ratio may have a high effect on the number of non-dominated solutions. Given a fixed problem class and objective coefficient range, the ratio may have a high effect on the dificulty of the instance. Note however, that if problem class and range not is known you can not guess the number of ND points. 
+Based on the plot we may answer the research question by concluding that the ratio may have a high effect on the number of non-dominated solutions. Given a fixed problem class and objective coefficient range, the ratio may have a high effect on the difficulty of the instance. Note however, that if problem class and range not is known you can not guess the number of ND points. 
 
 ## R1d: Can we exclude some values of the input statistics for further study (e.g. some ranges)?
 
@@ -652,7 +540,7 @@ To have harder instances we may skip these instances and instead use instances w
   1. Use a wide cost range (e.g. [1,1000]).
   2. Use a sphere generation method.
   
-Scaling the range don't have a high effect on most problem classes so fixing a cost range seems okay. If we want to compare agains easy problems we may use the first option too. 
+Scaling the range don't have a high effect on most problem classes so fixing a cost range seems okay. If we want to compare against easy problems we may use the first option too. 
 
 
 # Analysis: Research Question 2 (R2) - Which instances are hard to solve?
@@ -886,7 +774,7 @@ ggplot(res, aes(y = pct, x = reorder(win, -pct), fill = win)) +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
-Overall ``r res$win[1]`` win. Note this result is affected by the number of problems in each problem class and the difficulty. For instance if we have many easy instances the winner will be the config that solve the easy instances best. Let us have a look at the problem classes:
+Overall ``r res$win[1]`` win. Note this result is affected by the number of problems in each problem class and the difficulty. For instance if we have many easy instances the winner will be the configuration that solve the easy instances best. Let us have a look at the problem classes:
 
 ```{r}
 res <- datP %>% 
@@ -920,7 +808,7 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
 
 If we group by `coef`, we have different winners. This may have something to do with the hardness of the instance (generation method is highly correlated with number of nondominated points). 
 
-Will different methods be used for harder instances (here we use YN as a proxy for hard). Let us try to plot the aggegated percentage winner configuration:
+Will different methods be used for harder instances (here we use YN as a proxy for hard). Let us try to plot the aggregated percentage winner configuration:
 
 ```{r}
 res <- datP %>% 
@@ -1031,18 +919,6 @@ ggplot(res1, aes(y = value, x = name, fill = interaction(nodesel, varsel, OB))) 
   ggtitle("Avg. time to prune a node") + ylab("msec") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
-
-	<!-- nbinfeas,	pctinfeas, tpsinfeas,	nbopt, pctopt, tpsopt, nbdomi, pctdomi,	avgdomi -->
-
-	<!-- nbinfeas: number of nodes pruned by infeasibility. -->
-	<!-- pctinfeas: proportion (in %) of leaf nodes pruned by infeasibility. -->
-	<!-- tpsinfeas: average time spend to prune a node by infeasibility (in msec). -->
-	<!-- nbopt: number of nodes pruned by optimality. -->
-	<!-- pctopt: proportion (in %) of leaf nodes pruned by optimality. -->
-	<!-- tpsopt: average time spend to prune a node by optimality (in msec). -->
-	<!-- nbdomi: number of nodes pruned by dominance. -->
-	<!-- pctdomi: proportion (in %) of leaf nodes pruned by dominance. -->
-	<!-- avgdomi: average time spend to prune a node by dominance (in msec). -->
 
 
 # Conclusions 
