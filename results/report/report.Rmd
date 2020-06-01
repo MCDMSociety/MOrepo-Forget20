@@ -50,7 +50,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
-  # cache = TRUE, autodep = TRUE,
+  cache = TRUE, autodep = TRUE,
   echo=FALSE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
 )
@@ -477,21 +477,17 @@ We first consider
   3. Which algorithm configuration is best?
      a) Is there a clear winner?
      b) Is the best node selection strategy affected by other algorithm configurations?
+        * Are some problem classes solved best with one node selection strategy compared to others?
+        * Are 'easy' problems solved best with one node selection strategy compared to others?
+     c) Does different `OB` strategies affect the node selection strategy?
+  
+  4. How are nodes phantomed?
   
 
-Next, we study how some components of the branch and bound influences the behaviour of the algorithm:
 
-  2. How does depth and breadth first strategies affects the behaviour of the algorithm? That is,
-  we consider `nodesel` for fixed `varsel` and `OB`.
-      a) Are some problem classes solved best with one node selection strategy compared to others?
-      b) Are 'easy' problems solved best with one node selection strategy compared to others?
-      c) Does different `OB` strategies affect the node selection strategy?
 
-The primary focus is on computational time and number of nodes explored the size of the brancing
-tree before the algorithm ends.
-
-  
-
+<!-- The primary focus is on computational time and number of nodes explored the size of the brancing -->
+<!-- tree before the algorithm ends. -->
 
 <!-- The second purpose of this study is to learn how the caracteristics of an instance can affect its -->
 <!-- difficulty. The difficulty will be here mesured by the *size of the non-dominated set*, and the -->
@@ -500,15 +496,13 @@ tree before the algorithm ends.
 <!-- space search algorithm is positively correlated to the size of the non-dominated set as the more -->
 <!-- non-dominated there are, the more integer programs have to be solved. -->
 
-<!-- The focus will be here on the objective function coefficients. The first research question here is: **does the range of the objective function coefficient has an impact on the difficulty of the problem ?**. In order to answer that, three different ranges will be tested: -->
-
-<!-- * $[1,10]$: a small range of values. -->
-<!-- * $[1,1000]$: a large range of values -->
-<!-- * $[1000,2000]$: a large range of values, but shifted to larger values. -->
 
 
 
-<!-- The second research question related to that topic is: **does the method used to generate the coefficients of the objective function has an impact on the difficulty of the problem ?**. Indeed, the usual procedure to generate objective function is to generate the coefficients randomly in a given range $[a,b]$. However, one could imagine other way to generate coefficient. Four methods will be studied here. -->
+
+
+
+ 
 
 
 # Analysis: Research Question 1 (R1) - How do input statistics affect the number of nondominated solutions?
@@ -997,6 +991,58 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
   ggtitle("Winner pct") +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
+
+# Analysis: Research Question 4 (R4) - How are nodes phantomed?
+
+```{r}
+res <- dat %>%
+  select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, nbinfeas,	pctinfeas, tpsinfeas,	nbopt, pctopt, tpsopt, nbdomi, pctdomi,	avgdomi) %>%
+  # mutate(pcttpsmisc = 100 - (pcttpsLB + pcttpsdomi + pcttpsUB + pcttpsnodesel + pcttpsvarsel + pcttpsSLUB + pcttpsdomiLUB)) %>%
+  group_by(pb, coef, nodesel, varsel, OB) %>%
+  nest()
+res <- res %>% 
+  mutate(
+    meanV = map(data, function(df) {
+      df %>% summarise_if(is.numeric, mean)
+    }),
+  ) %>% unnest(c(meanV), names_sep = "_")
+res1 <- res %>% pivot_longer(contains("pct"))
+ggplot(res1, aes(y = value, x = name, fill = interaction(nodesel, varsel, OB))) +
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col(position = "dodge") +
+  facet_grid(rows = vars(pb), cols = vars(coef), scales = "fixed") +
+  ggtitle("Relative number of leaf nodes pruned") + ylab("pct") +
+  theme(legend.position="bottom", legend.title=element_blank())
+
+res1 <- res %>% pivot_longer(contains("nb"))
+ggplot(res1, aes(y = value, x = name, fill = interaction(nodesel, varsel, OB))) +
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col(position = "dodge") +
+  facet_grid(rows = vars(pb), cols = vars(coef), scales = "fixed") +
+  ggtitle("Number of leaf nodes pruned") + ylab("count") +
+  theme(legend.position="bottom", legend.title=element_blank())
+
+res1 <- res %>% pivot_longer(contains("tps"))
+ggplot(res1, aes(y = value, x = name, fill = interaction(nodesel, varsel, OB))) +
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col(position = "dodge") +
+  facet_grid(rows = vars(pb), cols = vars(coef), scales = "fixed") +
+  ggtitle("Avg. time to prune a node") + ylab("msec") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+	<!-- nbinfeas,	pctinfeas, tpsinfeas,	nbopt, pctopt, tpsopt, nbdomi, pctdomi,	avgdomi -->
+
+	<!-- nbinfeas: number of nodes pruned by infeasibility. -->
+	<!-- pctinfeas: proportion (in %) of leaf nodes pruned by infeasibility. -->
+	<!-- tpsinfeas: average time spend to prune a node by infeasibility (in msec). -->
+	<!-- nbopt: number of nodes pruned by optimality. -->
+	<!-- pctopt: proportion (in %) of leaf nodes pruned by optimality. -->
+	<!-- tpsopt: average time spend to prune a node by optimality (in msec). -->
+	<!-- nbdomi: number of nodes pruned by dominance. -->
+	<!-- pctdomi: proportion (in %) of leaf nodes pruned by dominance. -->
+	<!-- avgdomi: average time spend to prune a node by dominance (in msec). -->
+
 
 # Conclusions 
 
