@@ -15,6 +15,9 @@ jobs:
     runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install V8
+        if: runner.os == 'macOS'
+        run: brew install V8
       - uses: r-lib/actions/setup-r@master
       - uses: r-lib/actions/setup-pandoc@master
       - name: Install packages
