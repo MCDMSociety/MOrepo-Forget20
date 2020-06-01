@@ -1006,6 +1006,7 @@ res <- res %>%
       df %>% summarise_if(is.numeric, mean)
     }),
   ) %>% unnest(c(meanV), names_sep = "_")
+colnames(res) <- str_remove(colnames(res), "meanV_")
 res1 <- res %>% pivot_longer(contains("pct"))
 ggplot(res1, aes(y = value, x = name, fill = interaction(nodesel, varsel, OB))) +
   # stat_summary(fun=mean, geom="line", aes(color = win)) +
