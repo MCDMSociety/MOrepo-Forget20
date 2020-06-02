@@ -911,7 +911,7 @@ ggplot(res1, aes(y = value, x = name, fill = interaction(nodesel, varsel, OB))) 
   ggtitle("Number of leaf nodes pruned") + ylab("count") +
   theme(legend.position="bottom", legend.title=element_blank())
 
-res1 <- res %>% pivot_longer(contains("tps"))
+res1 <- res %>% pivot_longer(contains("tps") | contains("avg"))
 ggplot(res1, aes(y = value, x = name, fill = interaction(nodesel, varsel, OB))) +
   # stat_summary(fun=mean, geom="line", aes(color = win)) +
   geom_col(position = "dodge") +
