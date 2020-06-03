@@ -334,7 +334,19 @@ toLink <- function(inst) {
 
 # Numerical instablities
 
-[Explain what kind of numerical instabilities we have and what can be done]
+In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used. To avoid parsing a lot a files at each node in our implementation, a wrapper that calls bensolve, retrieve some outputs and introduce them directly in our code as matrices, has been made.
+
+The retrieved outputs are the extreme rays, the extreme points (in the objective space), their pre-image (in the decision space) and a list of extreme points and rays that constitute each facet of the lower bound set.
+
+To proceed the dominance test in the branch and bound, the normal vector of each facet of the lower bound set is required. At this point, as only a description using extreme points is available, the normal vectors will be computed using linear algebra. From the extreme points and extreme rays of a facet $f$ given by Bensolve, it is always possible to determine $p$ linearly independant points $x^1,...,x^p$ of this facet. To obtain the normal vector of $f$, the system $M \cdot n^f = 0$ is solved, where $n^f$ is the normal vector of $f$ and $M$ is a matrix such that each row $M_i = x^1 - x^p$, $\forall i \in \{1,...,p-1\}$ and $M_p = (1,...,1)$.
+
+However, this system is sometimes close to be singular, leading to numerical instabilities in the components of the normal vectors. This imply that occasionally, a facet may be slightly not correctly oriented, which may be a problem in the dominance test (e.g. considering a local upper bound as non-dominated while it is dominated, and the other way around).
+
+Two equivalent epsilons can be introduced here in order to overcome these numerical instabilities. First, the facet such that the determinant of their matrix $M$ is too close to 0 are discarded. In other words, if $det(M) \leq \epsilon$, the facet is deleted. The other possibility is to move down the whole lower bound set by reducing from an epsilon the right-hand side of the equations of the facets, i.e. the equation of each facet $f \in \mathcal{L}(\eta)$ becomes $n^fy = d - \epsilon$ instead of $n^fy = d$. Both method produce weaker lower bound set, leading to greater computational times, but reducing the chances of missing a non-dominated point due to numerical instabilities.
+
+Very rarely, GLPK, the single-objective LP solver used by Bensolve, rises a warning for numerical instabilities as well. Unfortunately, there is no way for us to avoid these, but fortunately, these cases occur much less often.
+
+The list of instances where a different number of non-dominated points in some of the configurations has been found due to numerical instabilities can be found below:
 
 ```{r}
 tmp <- read_csv("../convert/data/stat.csv", col_types = cols()) %>% 
