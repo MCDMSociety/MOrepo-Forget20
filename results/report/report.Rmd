@@ -880,6 +880,63 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
   theme(legend.position="bottom", legend.title=element_blank())
 ```
 
+## R3c: Is the best variable selection strategy affected by other algorithm configurations?
+
+We consider all instances:
+
+```{r}
+res <- dat %>% group
+
+
+res <- datP %>% 
+  group_by(nodesel, OB) %>% 
+  mutate(count = n(), win = varsel) %>% 
+  group_by(nodesel, OB, win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(nodesel, OB, desc(pct))
+ggplot(res, aes(y = pct, x = win, fill = win)) + 
+  # stat_summary(fun=mean, geom="line", aes(color = win)) +
+  geom_col() + 
+  facet_grid(rows = vars(nodesel), cols = vars(OB), scales = "fixed") +
+  ggtitle("Winner pct") +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+
+<!-- There seems to be no effect. Let us have a look at the hard instances (ranges [1,1000] and [1,1000][1,100]) and the winner configurations: -->
+
+<!-- ```{r} -->
+<!-- res <- datP %>%  -->
+<!--   dplyr::filter(grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>%  -->
+<!--   group_by(varsel, OB) %>%  -->
+<!--   mutate(count = n(), win = nodesel) %>%  -->
+<!--   group_by(varsel, OB, win) %>% summarize(pct = n()/mean(count)) %>%  -->
+<!--   arrange(varsel, OB, desc(pct)) -->
+<!-- ggplot(res, aes(y = pct, x = win, fill = win)) +  -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col() +  -->
+<!--   facet_grid(rows = vars(varsel), cols = vars(OB), scales = "fixed") + -->
+<!--   ggtitle("Winner pct") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- ``` -->
+
+<!-- Moreover if we filter further and only look at the sphere generation methods: -->
+
+<!-- ```{r} -->
+<!-- res <- datP %>%  -->
+<!--   dplyr::filter(grepl("sphere", coef) & grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>%  -->
+<!--   group_by(varsel, OB) %>%  -->
+<!--   mutate(count = n(), win = nodesel) %>%  -->
+<!--   group_by(varsel, OB, win) %>% summarize(pct = n()/mean(count)) %>%  -->
+<!--   arrange(varsel, OB, desc(pct)) -->
+<!-- ggplot(res, aes(y = pct, x = win, fill = win)) +  -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col() +  -->
+<!--   facet_grid(rows = vars(varsel), cols = vars(OB), scales = "fixed") + -->
+<!--   ggtitle("Winner pct") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- ``` -->
+
+
 # Analysis: Research Question 4 (R4) - How are nodes phantomed?
 
 ```{r}
@@ -926,3 +983,10 @@ ggplot(res1, aes(y = value, x = name, fill = interaction(nodesel, varsel, OB))) 
 [Sum up]
 
 ## Experiments to include in the article
+
+Focus on research questions:
+
+
+
+  * Use ranges [1,1000] and [1,1000][1,100]
+  * Use spheredown
