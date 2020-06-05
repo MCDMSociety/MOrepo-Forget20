@@ -57,15 +57,38 @@ knitr::opts_chunk$set(
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
 
-This report present the computational results for the instances. All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.
+This report present the computational results for the instances in this repo. All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.  
 
 # Instances
 
 ```{r load instance results}
-dat <- read_csv("../statistics.csv") %>%   #"../convert/data/stat.csv"
-  mutate(YNsRatio = YNs/YN, YNusRatio = 1-YNs/YN, YNsneRatio = (YNs-YNse)/YN)
+limSec <- c(0, 30*60)  # computation time limits (exclude instances with max cpu < limSec[1] or  min cpu > limSec[2])
+datAll <- read_csv("../statistics.csv") %>%   #"../convert/data/stat.csv"
+  mutate(YNsRatio = YNs/YN, 
+         YNusRatio = 1-YNs/YN, 
+         YNsneRatio = (YNs-YNse)/YN,
+         algConfig = tolower(str_c(nodesel, varsel, OB, sep="_")),
+         resultName = str_c(instance, algConfig, sep="_")) 
+algConfigs <- length(unique(datAll$algConfig))
 
-datInput <- dat %>% 
+tmp <- datAll %>% 
+  group_by(instance) %>% 
+  summarise(minCpu = min(tpstotal), maxCpu = max(tpstotal)) %>% 
+  filter(maxCpu < limSec[1] | minCpu > limSec[2]) %>% 
+  pull(instance)
+
+datAll <- datAll %>% 
+  filter(!(instance %in% tmp)) %>% 
+  mutate(solved = if_else(tpstotal >= limSec[2] | solved == 0, 0, 1)) %>% 
+  group_by(instance) %>% 
+  filter(n() == algConfigs) %>% 
+  ungroup() %>% 
+  mutate(tpstotal = if_else(tpstotal >= limSec[2], limSec[2], tpstotal))
+# View(datAll %>% group_by(instance) %>% summarise(ctr = n()))
+
+datNotSolved <- datAll %>% filter(solved == 0) 
+datSolved <- datAll %>% filter(solved == 1)
+datInput <- datAll %>% 
   distinct(instance, .keep_all = TRUE) %>% 
   select(instance, pb, n, p, coef, contains("range"), ratioNDcoef)
 ```
@@ -97,13 +120,21 @@ The cost generation method for generating the coefficients of the objective func
 For further details see the documentation function `genSample` in the R package
 [gMOIP](https://CRAN.R-project.org/package=gMOIP).
 
-More detailed results for each instance can be seen in the files named `[instanceName]_results.html` ([see for instance this example](instance.html)).
+This report only consider instances with cpu time within the interval [`r limSec[1]`, `r limSec[2]`]. For instances with a longer cpu time the algorithm is terminated and only a subset of the nondominated points are calculated. 
+<!-- More detailed results for each instance can be seen in the files named `[instanceName]_results.html` ([see for instance this example](instance.html)). -->
 
 # Input and output statistics
 
 A set of statistics are stored for each instance and algorithm run. The statistics are stored in a [json result file (v1.0)](https://github.com/MCDMSociety/MOrepo/blob/master/contribute.md) for each instance and algorithm configuration named `[Instance name]_[Algorithm config]_result.json`. Most statistics are aggregated in file `stat.csv`.
 
 ## Input statistics
+
+The number of instances for each problem class and variable size are:
+
+```{r}
+tmp <- datInput %>% group_by(pb) %>% summarise(count = n()) %>% ungroup()
+bind_cols(tmp, datInput %>% group_by(pb) %>% distinct(n) %>% arrange(n) %>% nest() %>% mutate(`variable sizes` = map_chr(data, function(df) {str_c(df %>% pull(n), collapse = ", ")})) %>% ungroup() %>%  select(`variable sizes`))
+```
 
 For each instance we have the following statistics:
 
@@ -199,12 +230,13 @@ finalize3D()
 ```
 
 
+
 ## Algorithm configuration
 
 <!-- The algorithm is configured using:  -->
 
 ```{r instance config, eval=FALSE}
-dat %>% 
+datAll %>% 
   select(instance, nodesel:OB)
 ```
 
@@ -239,7 +271,7 @@ Combinations of `nodesel`, `varsel` and `OB` gives the configuration of the algo
 For each algorithm run we have the following statistics:
 
 ```{r instance output, eval = FALSE}
-datOutput <- dat #%>% select(instance, nodesel:maxnbpbOB)
+datOutput <- datAll #%>% select(instance, nodesel:maxnbpbOB)
 datOutput
 ```
 
@@ -316,20 +348,22 @@ For each instance we also store the non-dominated set $\mathcal{Y}_N$ found by t
 Detailed results for each instance can be generated using `instance.Rmd`. The report is already generated for some of the instances (see links in the table with input statistics). Some instances that might be of interest:
 
 ```{r}
-tmp <- dat %>% group_by(instance) %>% summarise_at(vars(contains(c("YN", "total"))), list(mean = mean, sd = sd, max = max), na.rm = TRUE)
+tmp <- datAll %>% group_by(instance) %>% summarise_at(vars(contains(c("YN", "total", "solved"))), list(mean = mean, sd = sd, max = max), na.rm = TRUE)
 toLink <- function(inst) {
+  if (length(inst) == 0) return("")
   links <- str_c('../../docs/instances/', inst, '.html')
   url <- str_c('instances/', inst, '.html')
   if_else(file.exists(links), str_c('<a href="', url, '">', inst, '</a>'), inst)
 }
 ```
 
-  * Instances with lowest number of nondominated points: `r toLink(tmp %>% top_n(-3, YN_mean) %>% pull(instance))`
-  * Instances with highest number of nondominated points: `r toLink(tmp %>% top_n(3, YN_mean) %>% pull(instance))`
-  * Instances with lowest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(-3, YNusRatio_mean)  %>% pull(instance))`
-  * Instances with highest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(3, YNusRatio_mean)  %>% pull(instance))`
-  * Instances with highest supported non-extreme nondominated points percentage: `r toLink(tmp %>% top_n(3, YNsneRatio_mean) %>% pull(instance))`
-  * Instances with highest variance in cpu time: `r toLink(tmp %>% top_n(3, tpstotal_sd) %>% pull(instance))`
+  * Instances with lowest number of nondominated points: `r toLink(tmp %>% top_n(-3, YN_max) %>% slice(1:3) %>% pull(instance))`
+  * Instances with highest number of nondominated points (solved): `r toLink(tmp %>% filter(solved_max == 1) %>% top_n(3, YN_mean) %>% slice(1:3) %>% pull(instance))`
+  * Instances with lowest number of nondominated points (not solved): `r toLink(tmp %>% filter(solved_max < 1) %>% top_n(3, YN_mean) %>% slice(1:3) %>% pull(instance))`
+  * Instances with lowest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(-3, YNusRatio_max) %>% slice(1:3)%>% pull(instance))`
+  * Instances with highest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(3, YNusRatio_max) %>% slice(1:3)%>% pull(instance))`
+  * Instances with highest supported non-extreme nondominated points percentage: `r toLink(tmp %>% top_n(3, YNsneRatio_max) %>% slice(1:3) %>% pull(instance))`
+  * Instances with highest variance in cpu time: `r toLink(tmp %>% top_n(3, tpstotal_sd) %>% slice(1:3) %>% pull(instance))`
 
 
 # Numerical instablities
@@ -413,7 +447,7 @@ statistics affect the number of nondominated solutions?
 ## R1a: Does the cost range have an effect?
 
 ```{r}
-datP <- dat %>%  
+datP <- datAll %>%  
   dplyr::filter(solved==1) %>% 
   select(instance, pb, n, p, coef, rangeC, ratioNDcoef, YN) %>% 
   distinct() 
@@ -448,17 +482,17 @@ Note that the number of nondominated points increase with the number of variable
 ```{r}
 plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
         mode="markers",
-        data = dat %>% dplyr::filter(pb == "AP"),
+        data = datAll %>% dplyr::filter(pb == "AP"),
         marker = list(size=3),
         color = ~n) %>% plotly::layout(title = "AP")
 # plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
 #         mode="markers",
-#         data = dat %>% dplyr::filter(pb == "KP"),
+#         data = datAll %>% dplyr::filter(pb == "KP"),
 #         marker = list(size=3),
 #         color = ~n) %>% plotly::layout(title = "KP")
 plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
         mode="markers",
-        data = dat %>% dplyr::filter(pb == "UFLP"),
+        data = datAll %>% dplyr::filter(pb == "UFLP"),
         marker = list(size=3),
         color = ~n) %>% plotly::layout(title = "UFLP")
 ```
@@ -504,7 +538,7 @@ Note in general the speed of the algorithm is highly correlated with the number 
 This is highly related to the objective coefficient generation method (and the range):
 
 ```{r}
-tmp <- dat %>% group_by(pb, coef, rangeC) %>% summarize(ratio = mean(ratioNDcoef))
+tmp <- datAll %>% group_by(pb, coef, rangeC) %>% summarize(ratio = mean(ratioNDcoef))
 tmp %>% arrange(pb, rangeC, ratio)
 ```
 
@@ -561,24 +595,38 @@ We focus on cpu time (`tpstotal`) and try to get an overview over difficulty of 
 
 ## R2a: What is the cpu for each instance?
 
-<!-- First let us have a general look: -->
+First let us have a general look of the performance:
 
-<!-- ```{r} -->
-<!-- ggplot(dat, aes(y = tpstotal , x = n)) +  -->
-<!--   stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) + -->
-<!--   geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 1, height = 0, size = 0.7) + -->
-<!--   # facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") + -->
-<!--   ggtitle("Cpu time for all instances (lines are means)") + -->
-<!--   theme(legend.position="bottom", legend.title=element_blank())  -->
-<!-- ``` -->
+```{r}
+ggplot(datAll %>% 
+         group_by(algConfig) %>% 
+         arrange(tpstotal) %>% 
+         mutate(count = row_number())) + 
+  geom_step(aes(x=tpstotal, y=count, color = algConfig)) +    
+  ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
 
-<!-- The general picture is fuzzy due to different problem classes, ranges, generation methods and algorithm configurations.  -->
+Grouped by problem class:
 
-Let us have a look:
+```{r, fig.asp=1}
+ggplot(datAll %>% 
+         group_by(algConfig, pb) %>% 
+         arrange(tpstotal) %>% 
+         mutate(count = row_number())) + 
+  geom_step(aes(x=tpstotal, y=count, color = algConfig)) +
+  facet_grid(rows = vars(pb), scales = "free") +    
+  ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  theme(legend.position="bottom", legend.title=element_blank())
+```
+
+<!-- The general picture is fuzzy due to different problem classes, ranges, generation methods and algorithm configurations. -->
+
+Let us have a look for different problem classes, ranges, generation methods and algorithm configurations:
 
 ```{r, fig.asp=1}
 plotCPUFacet <- function(pb) {
-  datP <- dat %>% 
+  datP <- datAll %>% 
     dplyr::filter(pb == !!pb) 
   plt <- ggplot(datP, aes(y = tpstotal , x = n)) + 
     stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
@@ -588,14 +636,14 @@ plotCPUFacet <- function(pb) {
     theme(legend.position="bottom", legend.title=element_blank())
   print(plt)
 }
-for (pb in unique(dat$pb)) plotCPUFacet(pb)
+for (pb in unique(datAll$pb)) plotCPUFacet(pb)
 ```
 
 Finally we may plot only the winner cpu times for each instance:
 
 ```{r, fig.asp=1}
 datP <- 
-  dat %>% 
+  datAll %>% 
   group_by(instance) %>% 
   nest() %>% 
   mutate(data = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
@@ -673,10 +721,10 @@ There is no clear winner. Moreover, the shape of the nondominated set is not aff
 By instance group we mean an unique combination of `namePrefix`, `constId`, `pb`, `n`, `coef`, `rangeC`, `nodesel`, `varsel`, `OB`
 
 ```{r}
-# datP <- dat %>% 
+# datP <- datAll %>% 
 #   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal) %>% #contains("tps")
 #   mutate(iG = str_c(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB, sep = "."))
-datP <- dat %>% 
+datP <- datAll %>% 
   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal) %>% #contains("tps")
   group_by(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB) %>% nest()
 
@@ -739,7 +787,7 @@ In general we may have high variation within instance groups.
 ## R2d: In which subprocedures are the cpu time used?
 
 ```{r}
-res <- dat %>%
+res <- datAll %>%
   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, contains("pcttps")) %>%
   mutate(pcttpsmisc = 100 - (pcttpsLB + pcttpsdomi + pcttpsUB + pcttpsnodesel + pcttpsvarsel + pcttpsSLUB + pcttpsdomiLUB)) %>%
   group_by(pb) %>%
@@ -768,7 +816,7 @@ Let us find the winner configuration for each instance given some groupings:
 
 ```{r}
 datP <- 
-  dat %>% 
+  datAll %>% 
   group_by(instance) %>% 
   nest() %>% 
   mutate(data = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
@@ -896,9 +944,8 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
 
 We consider all instances:
 
-```{r}
-res <- dat %>% group
-
+```{r, eval = FALSE}
+res <- datAll %>% group
 
 res <- datP %>% 
   group_by(nodesel, OB) %>% 
@@ -952,7 +999,7 @@ ggplot(res, aes(y = pct, x = win, fill = win)) +
 # Analysis: Research Question 4 (R4) - How are nodes phantomed?
 
 ```{r}
-res <- dat %>%
+res <- datAll %>%
   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, nbinfeas,	pctinfeas, tpsinfeas,	nbopt, pctopt, tpsopt, nbdomi, pctdomi,	avgdomi) %>%
   # mutate(pcttpsmisc = 100 - (pcttpsLB + pcttpsdomi + pcttpsUB + pcttpsnodesel + pcttpsvarsel + pcttpsSLUB + pcttpsdomiLUB)) %>%
   group_by(pb, coef, nodesel, varsel, OB) %>%
