@@ -1,0 +1,1010 @@
+---
+title: "Computational results (included in the paper)"
+author: "Nicolas Forget, Lars Relund Nielsen, Sune Lauth Gadegaard"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document: 
+    df_print: paged
+    number_sections: no
+    toc: true
+    toc_float: false
+    theme: united #cosmo
+    highlight: tango
+    code_folding: show
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+<style type="text/css">
+table {  /* Table  */
+  font-size: 10px;
+}
+</style>
+
+
+
+
+```{r setup, include=FALSE}
+#' Function for loading missing packages that install them if not already installed.
+#'
+#' @param packages String vector with package names
+#'
+#' @return NULL (invisible)
+#' @export
+#'
+#' @examples loadPackages(c("MASS", "ggplot2", "tikzDevice"))
+loadPackages <- function(packages) {
+  newP <- packages[!(packages %in% installed.packages()[,"Package"])]
+  if(length(newP)) install.packages(newP, repos = "http://cran.rstudio.com/")
+  lapply(packages, library, character.only = TRUE)
+  invisible(NULL)
+}
+loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown", "ggplot2", "plotly", "DT", "RColorBrewer", "wesanderson", "kableExtra"))
+
+if (isTRUE(getOption('knitr.in.progress'))) options(rgl.useNULL=TRUE)
+rgl::setupKnitr()
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning=FALSE, message=FALSE, include = TRUE, 
+  cache = TRUE, autodep = TRUE,
+  echo=FALSE,
+  out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
+)
+knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
+```
+
+*This report contains a preliminary version of the computational results for the instances included in the paper. All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.*
+
+In this section we report on the computational experiments conducted with the tri–objective
+branch–and–bound algorithm. All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz processor and 32GB of RAM memory.
+
+The algorithm can be run using *algorithm configuration* parameters `nS`, `vS`, `oB` and `eps` where
+
+[explanation of the different configurations with refs to paper]
+
+<!-- The branch and bound algorithm will always use the linear relaxation as lower bound set and the incumbent set as upper bound set. At each nodes, the extreme points of the lower bound set are checked for integrality and possibly added to the upper bound set. Different configurations are bases on: -->
+
+<!--   - `nodesel`: node selection strategy. -->
+<!--   - `varsel`: variable selection strategy. -->
+<!--   - `OB`: objective branching strategy. -->
+
+<!-- Combinations of `nodesel`, `varsel` and `OB` gives the configuration of the algorithm: -->
+
+<!-- * Node selection (`breadth`, `depth`): in the multi-objective branch and bound literature, depth first strategies are (almost) always used and are considered as better strategies than breadth first. However, if a problem with an "easy" single-objective version is solved, then many non-dominated points may be found in a node close to the root node, in the early stages of the tree. Hence, using a breadth first strategy may provide a better upper bound set earlier in the algorithm, as a larger number of points are expected to be found shallow in the tree while only a few points can be found at each node deep in the tree.  -->
+
+<!-- * Variable selection(`mof`, `mfavg`): to the best of our knowledge, no extensive study for variable selection has been conducted in the literature. Sometimes, this component is even not mentioned. As it is not the main purpose of this study, only two rules that rely on the characteristics of the lower bound set will be tested here. -->
+
+<!--   + mof: Most Often Fractional. The branching is operated on the variable that is the most often fractional among the extreme points of the lower bound set. -->
+
+<!--   + mfavg: Most Fractional on AVeraGe. The branching is operated on the variable such that its average value among the extreme points of the lower bound set is the most fractional, i.e. the closest to 0.5. -->
+
+<!-- * Branching scheme (`none`, `exact`, `cone`): in a regular branch and bound, branching is operated (i.e. sub-problems are created) in the decision space. In the bi-objective case, it has been shown that creating additional sub-problems in the objective space (procedure called objective branching in this study) leads to better computational times. Three versions of the branch and bound will be tested: -->
+
+<!--   + None: no objective branching is performed. Hence, this version is just a regular branch and bound. -->
+
+<!--   + exact: objective branching is performed using the algorithm from [master thesis paper]. -->
+
+<!--   + unique cone: a unique sub-problem is created at each node. In this case, objective branching is applied on the nadir point of the local upper bounds dominated by the lower bound set. See [master thesis paper] for more details. -->
+
+The purpose of the computational study is to answer the following questions:
+  
+[Just some ideas for the moment. Add/modify as you like]  
+  
+  1) What is the performance of the different algorithm configurations?
+  1) Which algorithm configurations perform the best?
+  1) Do integer rounding improve the performance?
+  1) Is it worth doing objective branching?
+  1) How often is LP tight ????
+  1) How do node selection, variable selection and objective branching affect the performance of the algorithm?
+  1) In which subprocedures are the cpu time used?
+  1) How are nodes pruned?
+  1) How is the performance of the tri-objective B&B algorithm compared to objective branching algorithms?
+
+
+<!-- ### Old questions -->
+<!-- We first consider  -->
+
+<!--   2. Which instances are hard to solve? -->
+<!--      a) What is the cpu for each instance? -->
+<!--      b) Which sphere generation instances are hardest to solve? -->
+<!--      c) What is the std.dev. within each instance group? -->
+<!--      d) In which subprocedures are the cpu time used? -->
+
+<!--   3. Which algorithm configuration is best? -->
+<!--      a) Is there a clear winner? -->
+<!--      b) Is the best node selection strategy affected by other algorithm configurations? -->
+<!--         * Are some problem classes solved best with one node selection strategy compared to others? -->
+<!--         * Are 'easy' problems solved best with one node selection strategy compared to others? -->
+<!--      c) Does different `OB` strategies affect the node selection strategy? -->
+
+<!--   4. How are nodes pruned? -->
+
+
+# Test instances
+
+```{r load instance results}
+toLink <- function(inst) {
+  if (length(inst) == 0) return("")
+  links <- str_c('../../docs/instances/', inst, '.html')
+  url <- str_c('instances/', inst, '.html')
+  if_else(file.exists(links), str_c('<a href="', url, '">', inst, '</a>'), inst)
+}
+
+limSec <- c(0, 30*60)  # computation time limits (exclude instances with max cpu < limSec[1] or  min cpu > limSec[2])
+abbrv <- function(str) {
+  str_replace_all(str, 
+    c("breadth" = "B", "depth" = "D", "mof" = "F", "mfavg" = "A", "exact" = "E", 
+      "cone" = "C", "none" = "N", "None" = "N", "spheredown" = "down", "sphereup" = "up"))
+}
+datAll <- read_csv("../statistics.csv") %>%   #"../convert/data/stat.csv"
+  filter(coef == "spheredown", rangeC == "[1,1000]" | rangeC == "[1,1000]|[1,100]") %>% #| coef == "sphereup"
+  mutate(YNsRatio = YNs/YN, 
+         YNusRatio = 1-YNs/YN, 
+         YNsneRatio = (YNs-YNse)/YN,
+         algConfig = tolower(str_c(nodesel, varsel, OB, sep="|")),
+         nodeselVarsel = tolower(str_c(nodesel, varsel, sep="|")),
+         resultName = str_c(instance, algConfig, sep="_")) 
+algConfigsN <- length(unique(datAll$algConfig))
+
+tmp <- datAll %>% 
+  group_by(instance) %>% 
+  summarise(minCpu = min(tpstotal), maxCpu = max(tpstotal)) %>% 
+  filter(maxCpu < limSec[1] | minCpu > limSec[2]) %>% 
+  pull(instance)
+
+datAll <- datAll %>% 
+  filter(!(instance %in% tmp)) %>% 
+  mutate(solved = if_else(tpstotal >= limSec[2] | solved == 0, 0, 1)) %>% 
+  group_by(instance) %>% 
+  filter(n() == algConfigsN) %>% 
+  ungroup() %>% 
+  mutate(tpstotal = if_else(tpstotal >= limSec[2], limSec[2], tpstotal),
+         algConfig = abbrv(algConfig),
+         coef = abbrv(coef),
+         nodeselVarsel = abbrv(nodeselVarsel),
+         OB = abbrv(OB))
+# View(datAll %>% group_by(instance) %>% summarise(ctr = n()))
+algConfigs <- unique(datAll$algConfig)
+nodeselVarselConfigs <- unique(datAll$nodeselVarsel)
+datNotSolved <- datAll %>% filter(solved == 0) 
+datSolved <- datAll %>% filter(solved == 1)
+datInput <- datAll %>% 
+  distinct(instance, .keep_all = TRUE) %>% 
+  select(instance, pb, n, p, coef, contains("range"), ratioNDcoef)
+datWin <- 
+  datAll %>% 
+  group_by(instance) %>% 
+  nest() %>% 
+  mutate(data = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
+  mutate(win = map(data, function(df) {df$algConfig})) %>% 
+  unnest(c(win, data)) 
+
+datNotStable <- read_csv("../convert/data/stat.csv", col_types = cols()) %>%
+  filter(coef == "spheredown", rangemax == 1000) %>% #| coef == "sphereup"
+  group_by(instance) %>%
+  distinct(YN) %>%
+  summarise(ctr = n()) %>%
+  dplyr::filter(ctr > 1)
+```
+
+```{r Define color scales}
+# display.brewer.pal(n = 11, name = "RdYlBu")
+pal <- brewer.pal(n = 11, name = "RdYlBu")
+algConfigs <- algConfigs[c(2,5, 3,6, 1,4, 8,11, 9,12, 7,10)]
+palAlgConfigs <- wes_palette("Zissou1", 12, type = "continuous")
+palAlgConfigs <- c(brewer.pal(n = 6, name = "Reds"), brewer.pal(n = 6, name = "Blues"))
+# display.brewer.pal(n = 9, name = "Blues")
+# brewer.pal(n = 6, name = "Greens")
+
+scale_color_algConfig <- scale_color_manual(
+  values = setNames(palAlgConfigs, algConfigs),
+  drop = F)
+scale_fill_algConfig <- scale_fill_manual(
+  values = setNames(palAlgConfigs, algConfigs),
+  drop = F)
+
+scale_color_nodesel_varsel <- scale_color_manual(
+  values = setNames(pal[c(1,3,9,11)], nodeselVarselConfigs),
+  drop = F)
+
+scale_color_nodesel <- scale_color_manual(
+  values = c("breadth" = "red", "depth" = "green"),
+  drop = F)
+
+scale_alpha_varsel <- scale_alpha_manual(
+  values = c("mof" = 1, "mfavg" = 0.75),
+  drop = F)
+
+scale_linetype_valsel <- scale_linetype_manual(
+  values = c("mof" = 1, "mfavg" = 2),
+  drop = F)
+  
+scale_linetype_ob <- scale_linetype_manual(
+  values = c("cone" = 1, "exact" = 2, "None" = 3, "C" = 1, "E" = 2, "N" = 3),
+  drop = F)
+```
+
+We consider a total of `r nrow(datInput)` instances:
+
+```{r Input table}
+tabInput <- datInput %>% 
+  group_by(pb, n, coef) %>% 
+  summarise(instances = n(), rangeCoef = rangeC[1], gapO = mean(c(rangeGapZ1, rangeGapZ2, rangeGapZ3)), ratioNDCoef = mean(ratioNDcoef)) %>% 
+  ungroup()
+tabInput %>% 
+  select(-pb) %>% 
+  kable(digits = c(0,0,0,0,0,2), col.names = c("n", "gen", "#", "range", "gapO", "ratio")) %>% 
+  kable_styling(full_width = T) %>% 
+  pack_rows("AP", min(which(tabInput$pb == "AP")), max(which(tabInput$pb == "AP"))) %>% 
+  pack_rows("KP", min(which(tabInput$pb == "KP")), max(which(tabInput$pb == "KP"))) %>% 
+  pack_rows("UFLP", min(which(tabInput$pb == "UFLP")), max(which(tabInput$pb == "UFLP"))) 
+```
+
+[Description of instances, generations method and rep to other report + repo]
+
+<!-- named  -->
+
+<!-- ``` -->
+<!-- Forget20_[problemClass]_[n]_[p]_[rangeOfCosts]_[costGenerationMethod]_[constaintId]_[id].raw -->
+<!-- ```  -->
+
+<!-- where  -->
+
+<!--    - `problemClass` is either KP (knapsack problem), AP (assignment problem) or UFLP  -->
+<!--       (uncapacitated facility location problem)  -->
+<!--    - `n` is the size of the problem.  -->
+<!--    - `p` is the number of objectives. -->
+<!--    - `rangeOfCosts`: Objective coefficient range e.g. 1-1000. -->
+<!--    - `costGenerationMethod`: Either random, spheredown, sphereup or 2box (see below).  -->
+<!--    - `constaintId`: Same id if constraints are the same. -->
+<!--    - `id`: Instance id running within the constraint id. -->
+
+<!-- The cost generation method for generating the coefficients of the objective functions are (given in column `coef`): -->
+
+<!-- * `random`: the coefficient are generated randomly in the interval [a,b]. -->
+<!-- * `spheredown`: the coefficient are generated on the non-dominated part of a sphere in minimization in the interval [a,b]. -->
+<!-- * `sphereup`: the coefficient are generated on the non-dominated part of a sphere in maximization in the interval [a,b]. -->
+<!-- * `2box`: the coefficients are generated randomly in two small boxes of R^3. -->
+
+<!-- For further details see the documentation function `genSample` in the R package -->
+<!-- [gMOIP](https://CRAN.R-project.org/package=gMOIP). -->
+
+<!-- For each instance we have the following statistics: -->
+
+<!-- ```{r instance table, echo=FALSE} -->
+<!-- links <- str_c("instances/", datInput$instance, ".html") -->
+<!-- DT::datatable( -->
+<!--   datInput %>% -->
+<!--     mutate(instance = if_else(file.exists(links), str_c('<a href="', links, '">', instance, '</a>'), instance)), -->
+<!--   escape = F, -->
+<!--   options = list(scrollX = T), -->
+<!--   caption = "Instances. A link to the results for the instance are given for some instances." -->
+<!-- ) -->
+<!-- ``` -->
+
+<!-- We have: -->
+
+<!--   - `instance`: Instance name -->
+<!--   - `pb`: Problem class  -->
+<!--     * KP = Knapsack Problem -->
+<!--     * AP = Assignment Problem -->
+<!--     * UFLP = Uncapacited Facility Location Problem -->
+<!--   - `n`: Number of variables. -->
+<!--   - `p`: Number of objectives. -->
+<!--   - `coef`: The method used for the generation of the objective coefficients (see section Research questions). We have: -->
+<!--     * spheredown = generation on the lower part of a sphere (in minimization) -->
+<!--     * sphereup = generation on the upper part of a sphere (in minimization) -->
+<!--   - `rangeC`: the range the objective coefficients are generated within. For the facility location problems, two sets of costs are generated: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. In this case `rangeC` defines two ranges: the assignment costs in $[a,b]$ and the facility opening costs which will be divided into two categories of instances: -->
+<!--     * facility location easy: $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier. -->
+<!--     * facility location hard: $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harder. -->
+<!--     `rangeGapC`: Gap of the objective coefficients.  -->
+<!--   - `ratioNDcoef`: Proportion of objective coefficient vectors (here considered as a vector in $\mathbb{R}^p$, one for each variable, defining the objective coefficient for all the objective for this variable) that are non-dominated (with respect to the other objective coefficient vectors). Examples of the four ways of generating the objective coefficients are given: -->
+
+<!-- **Sphere down** -->
+
+<!-- The coefficients are generated on the lower part of a sphere (see next picture). Note that the sphere is adjusted such that the coefficients are in the range $[a,b]$, i.e. the sphere is not necessarily included in $[a,b]^p$. -->
+
+<!-- ```{r, webgl = TRUE, echo = FALSE, cache=FALSE} -->
+<!-- cent <- c(1000,1000,1000) -->
+<!-- r <- 750 -->
+<!-- planeC <- c(cent-r/3) -->
+<!-- planeC <- c(planeC, -sum(planeC^2)) -->
+<!-- pts <- genSample(3, 500, -->
+<!--   argsSphere = list(center = cent, radius = r, below = TRUE, plane = planeC, factor = 6)) -->
+<!-- ini3D() -->
+<!-- rgl::spheres3d(cent, radius=r, color = "grey100", alpha=0.1) -->
+<!-- plotPoints3D(pts) -->
+<!-- rgl::planes3d(planeC[1],planeC[2],planeC[3],planeC[4], alpha = 0.5, col = "red") -->
+<!-- finalize3D() -->
+<!-- ``` -->
+
+<!-- **Sphere up** -->
+
+<!-- The coefficients are generated on the upper part of a sphere (see next picture). Note that the sphere is adjusted such that the coefficients are in the range $[a,b]$, i.e. the sphere is not necessarily included in $[a,b]^p$. -->
+
+<!-- ```{r, webgl = TRUE, echo = FALSE, cache=FALSE} -->
+<!-- cent <- c(1000,1000,1000) -->
+<!-- r <- 750 -->
+<!-- planeC <- c(cent+r/3) -->
+<!-- planeC <- c(planeC, -sum(planeC^2)) -->
+<!-- pts <- genSample(3, 500, -->
+<!--   argsSphere = list(center = cent, radius = r, below = FALSE, plane = planeC, factor = 6)) -->
+<!-- ini3D() -->
+<!-- rgl::spheres3d(cent, radius=r, color = "grey100", alpha=0.1) -->
+<!-- plotPoints3D(pts) -->
+<!-- rgl::planes3d(planeC[1],planeC[2],planeC[3],planeC[4], alpha = 0.5, col = "red") -->
+<!-- finalize3D() -->
+<!-- ``` -->
+
+
+# Output statistics
+
+[Explanation of output statistics]
+
+<!-- This report only consider instances with cpu time within the interval [`r limSec[1]`, `r limSec[2]`]. For instances with a longer cpu time the algorithm is terminated and only a subset of the nondominated points are calculated.  -->
+<!-- <!-- More detailed results for each instance can be seen in the files named `[instanceName]_results.html` ([see for instance this example](instance.html)). --> -->
+
+<!-- A set of statistics are stored for each instance and algorithm run. The statistics are stored in a [json result file (v1.0)](https://github.com/MCDMSociety/MOrepo/blob/master/contribute.md) for each instance and algorithm configuration named `[Instance name]_[Algorithm config]_result.json`. Most statistics are aggregated in file `stat.csv`. -->
+
+
+
+
+
+
+
+
+
+<!-- For each algorithm run we have the following statistics: -->
+
+<!-- ```{r instance output, eval = FALSE} -->
+<!-- datOutput <- datAll #%>% select(instance, nodesel:maxnbpbOB) -->
+<!-- datOutput -->
+<!-- ``` -->
+
+<!--   - `solved`: 1 if the instance is solved within 3600 sec, 0 otherwise. -->
+<!--   - `YN`: size of YN. If `solved` = 0, it represent the size of the upper bound set at 3600 sec, when the algorithm stops. -->
+<!--   - `YNse`: Number of supported extreme nondominated points. -->
+<!--   - `YNs`: Number of supported nondominated points. -->
+<!--   - `YNsRatio`: Ratio of supported nondominated points. -->
+<!--   - `YNusRatio`: Ratio of unsupported nondominated points. -->
+<!--   - `YNsneRatio`: Ratio of supported non-extreme nondominated points. -->
+<!--   - `nbnodes`: number of nodes explored. -->
+<!--   - `mindepthT`: minimal depth of a leaf node. -->
+<!--   - `maxdepthT`: maximal depth of a leaf node (and thus of the tree). -->
+<!--   - `avgdepthT`: average depth of the leaf nodes. -->
+<!--   - `avgdepthYN`: average depth of the nodes where the non-dominated points were found. -->
+<!--   - `nbleaf`: number of leaf nodes. -->
+<!--   - `nbinfeas`: number of nodes pruned by infeasibility. -->
+<!--   - `pctinfeas`: proportion (in %) of leaf nodes pruned by infeasibility. -->
+<!--   - `tpsinfeas`: average time spend to prune a node by infeasibility (in msec). -->
+<!--   - `nbopt`: number of nodes pruned by optimality. -->
+<!--   - `pctopt`: proportion (in %) of leaf nodes pruned by optimality. -->
+<!--   - `tpsopt`: average time spend to prune a node by optimality (in msec). -->
+<!--   - `nbdomi`: number of nodes pruned by dominance. -->
+<!--   - `pctdomi`: proportion (in %) of leaf nodes pruned by dominance. -->
+<!--   - `avgdomi`: average time spend to prune a node by dominance (in msec). -->
+<!--   - `nbLB`: number of lower bound set computed. -->
+<!--   - `avgfacets`: average number of facets in the lower bound set (i.e. in $\mathcal{L} + \mathbb{R}^p$). -->
+<!--   - `avgNDf`: average number of strictly non-dominated facets. -->
+<!--   - `pctavgNDf`: proportion (in %) of facets that are strictly non-dominated. -->
+<!--   - `avgWNDf`: average number of weekly non-dominated facets. -->
+<!--   - `pctavgWNDf`: proportion (in %) of facets that are weekly non-dominated. -->
+<!--   - `maxfacets`: maximal number of facets a lower bound set had in the tree. -->
+<!--   - `maxNDf`: number of strictly non-dominated facets in the lower bound set with the maximal number of facets. -->
+<!--   - `pctmaxNDf`: proportion (in %) of facets that are strictly non-dominated in the lower bound set with the maximal number of facets. -->
+<!--   - `maxWNDf`: number of weekly non-dominated facets in the lower bound set with the maximal number of facets. -->
+<!--   - `pctmaxWNDf`: proportion (in %) of facets that are weekly non-dominated in the lower bound set with the maximal number of facets. -->
+<!--   - `tpstotal`: CPU time (in sec) used to solve the instance. 3600 if the instance is not solved. -->
+<!--   - `tpsLB`: CPU time (in sec) used to compute lower bound sets. -->
+<!--   - `pcttpsLB`: proportion (in %) of the total CPU time spend in the computation of lower bound sets. -->
+<!--   - `tpsdomi`: CPU time (in sec) used to dominance test when the algorithm has to determine whether a node can be pruned by dominance or not. -->
+<!--   - `pcttpsdomi`: proportion (in %) of the total CPU time spend in the dominance test when the algorithm has to determine whether a node can be pruned by dominance or not. -->
+<!--   - `tpsUB`: CPU time (in sec) used to update the upper bound set. -->
+<!--   - `pcttpsUB`: proportion (in %) of the total CPU time spend in updating the upper bound set. -->
+<!--   - `tpsnodesel`: CPU time (in sec) used to choose the next node to develop. -->
+<!--   - `pcttpsnodesel`: proportion (in %) of the total CPU time spend in choosing the next node to develop. -->
+<!--   - `tpsvarsel`: CPU time (in sec) used to choose the variable to branch on. -->
+<!--   - `pcttpsvarsel`: proportion (in %) of the total CPU time spend in choosing the variable to branch on. -->
+<!--   - `tpsOB`: CPU time (in sec) used to create the sub-problems in the objective space, i.e. to compute objective branching. (/!\ it requires two different steps in total: computing the SLUBs but also do additional dominance test to determine the dominance status of each local upper bounds ! This number take into account the two steps.) -->
+<!--   - `pcttpsOB`: proportion (in %) of the total CPU time spend in computing objective branching. -->
+<!--   - `tpsSLUB`: CPU time (in sec) used to compute the super local upper bounds. -->
+<!--   - `pcttpsSLUB`: proportion (in %) of the total CPU time spend in computing the super local upper bounds. -->
+<!--   - `tpsdomiLUB`: CPU time (in sec) used to do the additional dominance tests to get the dominance status of EACH local upper bound. -->
+<!--   - `pcttpsdomiLUB`: proportion (in %) of the total CPU time spend in doing the additional dominance tests on the local upper bounds. -->
+<!--   - `nbOB`: number of nodes where two or more sub-problems are created in the objective space. When using the exact objective branching (`OB` = exact), it in particular shows how often it is actually possible to split the objective space with the definition of the sub-problems that we used ($z(x) \leqq \bar{z}$, $\bar{z} \in \mathbb{R}^p$). -->
+<!--   - `pctnbOB`: proportion (in %) of the nodes explored that where split in two or more sub-problems in the objective space. -->
+<!--   - `avgdepthOB`: [relevant only if `OB` = exact] average depth of the nodes split in two or more sub-problems in the objective space. -->
+<!--   - `mindepthOB`: [relevant only if `OB` = exact] minimal depth of the nodes split in two or more sub-problems in the objective space. -->
+<!--   - `maxdepthOB`: [relevant only if `OB` = exact] maximal depth of the nodes split in two or more sub-problems in the objective space. -->
+<!--   - `avgnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space. -->
+<!--   - `maxnbpbOB`: [relevant only if `OB` = exact] average number of sub-problems created in the objective space in the nodes split in two or more sub-problems in the objective space. -->
+
+<!-- For each instance we also store the non-dominated set $\mathcal{Y}_N$ found by the algorithm and if an exact solution was found the efficient set $\mathcal{X}_E$. Statistics of how the nondominated points are found are stored in `yNStat`. The statistics are the following: -->
+
+<!--   - the $p$ first columns correspond the values of the objective functions. -->
+<!--   - `node`: number of the node where this point has been discovered. The higher this number is, the later the point has been discovered. -->
+<!--   - `time`: time (in sec) elapsed between the start of the algorithm and when this point has been found (for the first time). -->
+<!--   - `depth`: depth of the node where this point has been found (for the first time). -->
+
+<!-- `yNStat` are sorted in exactly the same order as $\mathcal{X}_E$, i.e. each row represent the non-dominated point and its corresponding solution. -->
+
+
+# What is the performance of the different algorithm configurations?
+
+```{r Perf plot by pb, fig.asp=1}
+ggplot(datAll %>%
+         group_by(algConfig, pb) %>%
+         arrange(tpstotal) %>%
+         mutate(count = row_number())) +
+  geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
+  facet_grid(rows = vars(pb), scales = "free") +
+  ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  labs(color = "nS | vS:", linetype = "oB:") +
+  theme(legend.position="bottom") + xlab("cpu") +
+  scale_color_nodesel_varsel + scale_linetype_ob
+```
+
+[Explain results and drop exact results in the remaining]
+
+
+
+# Which algorithm configurations perform the best?
+
+[Discussion based on a table where drop the exact columns]
+
+```{r Results table}
+datYN <- datAll %>% 
+  group_by(instance, pb, n, coef) %>% 
+  summarise(YN = max(YN), YNse = max(YNse), YNs = max(YNs)) %>% 
+  group_by(pb, n, coef) %>% 
+  summarise(YN = mean(YN), YNse = mean(YNse), YNs = mean(YNs)) 
+
+winSeq <- datWin %>% group_by(algConfig) %>% summarise(cpu = mean(tpstotal)) %>% arrange(cpu) %>% pull(algConfig)
+winSeq <- c(winSeq, algConfigs[!(algConfigs %in% winSeq)])
+winAlgConfigSeq <- winSeq
+winSeq <- c(str_c("cpu_", winSeq), str_c("nodes_", winSeq))
+winSeq <- winSeq[as.vector(sapply(1:12, FUN = function(i) {c(i,i+12)}))]
+digits <- c(0,0,0,rep(c(1,0),12))
+tabResults <- datAll %>% 
+  group_by(pb, n, coef, algConfig) %>% 
+  summarise(cpu = mean(tpstotal), nodes = mean(nbnodes), solved = min(solved)) %>% 
+  ungroup() %>% 
+  full_join(datYN) %>% 
+  mutate(cpu = if_else(solved == 1, str_c(round(cpu, 1)), str_c(round(cpu, 1), "*")),
+         YN = str_c(round(YN), " (", round(100*YNse/YN), "/", round(100*(YNs-YNse)/YN), "/", round(100*(YN-YNs)/YN), ")")) %>%
+  select(-solved) %>% 
+  pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes)) %>% 
+  select(pb, n, coef, YN, !!winSeq)
+tabResults %>% 
+  select(-pb) %>% 
+  kable(digits = digits, col.names = c("n", "gen", "YN (se, sne, us)", rep(c("cpu", "nodes"), length(winAlgConfigSeq)))) %>% 
+  kable_styling() %>% 
+  add_header_above(c(" " = 3, setNames(rep(2, length(winAlgConfigSeq)), winAlgConfigSeq))) %>% 
+  pack_rows("AP", min(which(tabResults$pb == "AP")), max(which(tabResults$pb == "AP"))) %>% 
+  pack_rows("KP", min(which(tabResults$pb == "KP")), max(which(tabResults$pb == "KP"))) %>% 
+  pack_rows("UFLP", min(which(tabResults$pb == "UFLP")), max(which(tabResults$pb == "UFLP"))) 
+# View(tabResults)
+```
+
+[What more need to be included in the table?]
+
+# ToDo
+
+Based on the above:
+
+  - Consider the input table for UFLP we have only one instance for n = 56. Maybe we should drop n = 56 since to hard.
+  - Consider the performance plot. Instances for AP are okay. We need harder instances for KP (i.e drop n = 10 in the paper and add n = 25). We need easier instances for UFLP (e.g. n = 42 highest n value and add two lower n values).
+  - We still have instabilities. Experiment with and eps that remove these.
+  - Add epsilon as column til stat.csv and add new tests for different eps as new rows. 
+  - Should we generate multi-dim KP also?
+  - Research questions and sequence?
+
+[OLD STUFF]
+
+# Numerical instabilities
+
+In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used. To avoid parsing a lot a files at each node in our implementation, a wrapper that calls bensolve, retrieve some outputs and introduce them directly in our code as matrices, has been made.
+
+The retrieved outputs are the extreme rays, the extreme points (in the objective space), their pre-image (in the decision space) and a list of extreme points and rays that constitute each facet of the lower bound set.
+
+To proceed the dominance test in the branch and bound, the normal vector of each facet of the lower bound set is required. At this point, as only a description using extreme points is available, the normal vectors will be computed using linear algebra. From the extreme points and extreme rays of a facet $f$ given by Bensolve, it is always possible to determine $p$ linearly independant points $x^1,...,x^p$ of this facet. To obtain the normal vector of $f$, the system $M \cdot n^f = 0$ is solved, where $n^f$ is the normal vector of $f$ and $M$ is a matrix such that each row $M_i = x^1 - x^p$, $\forall i \in \{1,...,p-1\}$ and $M_p = (1,...,1)$.
+
+However, this system is sometimes close to be singular, leading to numerical instabilities in the components of the normal vectors. This imply that occasionally, a facet may be slightly not correctly oriented, which may be a problem in the dominance test (e.g. considering a local upper bound as non-dominated while it is dominated, and the other way around).
+
+Two equivalent epsilons can be introduced here in order to overcome these numerical instabilities. First, the facet such that the determinant of their matrix $M$ is too close to 0 are discarded. In other words, if $det(M) \leq \epsilon$, the facet is deleted. The other possibility is to move down the whole lower bound set by reducing from an epsilon the right-hand side of the equations of the facets, i.e. the equation of each facet $f \in \mathcal{L}(\eta)$ becomes $n^fy = d - \epsilon$ instead of $n^fy = d$. Both method produce weaker lower bound set, leading to greater computational times, but reducing the chances of missing a non-dominated point due to numerical instabilities.
+
+Very rarely, GLPK, the single-objective LP solver used by Bensolve, rises a warning for numerical instabilities as well. Unfortunately, there is no way for us to avoid these, but fortunately, these cases occur much less often.
+
+The list of instances where a different number of non-dominated points in some of the configurations has been found due to numerical instabilities can be found below:
+
+Currently we have instabilities with instances: `r datNotStable$instance`.
+
+
+
+  
+
+
+
+<!-- The primary focus is on computational time and number of nodes explored the size of the branching -->
+<!-- tree before the algorithm ends. -->
+
+<!-- The second purpose of this study is to learn how the characteristics of an instance can affect its -->
+<!-- difficulty. The difficulty will be here measured by the *size of the non-dominated set*, and the -->
+<!-- *computational time* required to solve the instance. The computational time will be determined -->
+<!-- using the branch and bound algorithm previously described. Note that the complexity of an objective -->
+<!-- space search algorithm is positively correlated to the size of the non-dominated set as the more -->
+<!-- non-dominated there are, the more integer programs have to be solved. -->
+
+
+
+
+
+
+
+ 
+
+
+<!-- # Analysis: Research Question 1 (R1) - How do input statistics affect the number of nondominated solutions? -->
+
+<!-- In this section, relations between |YN| (`YN`) and various input statistics. How do input -->
+<!-- statistics affect the number of nondominated solutions? -->
+
+<!-- ## R1a: Does the cost range have an effect? -->
+
+<!-- Note that the number of nondominated points increase with the number of variables which is due to the total possible range of the objectives increase with `n` (there is room for more points).  -->
+
+<!-- ```{r} -->
+<!-- plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d", -->
+<!--         mode="markers", -->
+<!--         data = datAll %>% dplyr::filter(pb == "AP"), -->
+<!--         marker = list(size=3), -->
+<!--         color = ~n) %>% plotly::layout(title = "AP") -->
+<!-- plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d", -->
+<!--         mode="markers", -->
+<!--         data = datAll %>% dplyr::filter(pb == "KP"), -->
+<!--         marker = list(size=3), -->
+<!--         color = ~n) %>% plotly::layout(title = "KP") -->
+<!-- plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d", -->
+<!--         mode="markers", -->
+<!--         data = datAll %>% dplyr::filter(pb == "UFLP"), -->
+<!--         marker = list(size=3), -->
+<!--         color = ~n) %>% plotly::layout(title = "UFLP") -->
+<!-- ``` -->
+
+
+
+<!-- ## R1b: Does the generation method of the objective coefficients (`coef`) have an effect? -->
+
+<!-- ```{r, fig.asp = 1} -->
+<!-- datP <- datAll %>%   -->
+<!--   dplyr::filter(solved==1) %>%  -->
+<!--   select(instance, pb, n, p, coef, rangeC, ratioNDcoef, YN) %>%  -->
+<!--   distinct()  -->
+
+<!-- ggplot(datP, aes(y = YN , x = n)) + -->
+<!--   geom_jitter(aes(color = coef)) + -->
+<!--   facet_grid(cols = vars(pb), margins = T) + -->
+<!--   ggtitle("Effect of generation method (|YN| for each instance)") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) -->
+
+<!-- datPA <- datP %>% -->
+<!--   group_by(pb, coef, rangeC, n) %>% -->
+<!--   dplyr::summarise(YN = mean(YN)) -->
+<!-- ggplot(datPA, aes(y = YN , x = n)) + -->
+<!--   geom_jitter(aes(color = coef)) + -->
+<!--   facet_grid(cols = vars(pb), margins = T, scales = "free") + -->
+<!--   ggtitle("Effect of generation method (average |YN| for each instance group)") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- ``` -->
+
+<!-- Based on the plots we may answer the research question by concluding that the objective coefficient generation method have a high effect on the number of solutions. Random generation on average produce the lowest amount, then 2box. The two sphere methods seems to give approx. the same results.  -->
+
+<!-- Note in general the speed of the algorithm is highly correlated with the number of non-dominated points. That is, instances with a high number of nondominated points are harder to solve. Based on this we may conclude that using one of the sphere methods for further study seems a good choice. We may also consider comparing it against the easiest method.   -->
+
+
+
+
+<!-- # Analysis: Research Question 2 (R2) - Which instances are hard to solve? -->
+
+<!-- We focus on cpu time (`tpstotal`) and try to get an overview over difficulty of the instances. -->
+
+<!-- ## R2a: What is the cpu for each instance? -->
+
+<!-- First let us have a general look of the performance: -->
+
+
+
+<!-- <!-- The general picture is fuzzy due to different problem classes, ranges, generation methods and algorithm configurations. --> -->
+
+<!-- Let us have a look for different problem classes, ranges, generation methods and algorithm configurations: -->
+
+```{r, fig.asp=1}
+plotCPUFacet <- function() {
+  datP <- datAll
+  tmp <- datP %>% group_by(coef, rangeC) %>% summarize(avg = mean(tpstotal))
+  plt <- ggplot(datP, aes(y = tpstotal , x = n, color = algConfig)) +
+    stat_summary(fun=mean, geom="line") +
+    geom_jitter(width = 1, height = 0, size = 0.7) +
+    facet_grid(cols = vars(pb), scales = "free") +
+    ggtitle(str_c("Cpu time (note scale free)")) +
+    theme(legend.position="bottom", legend.title=element_blank()) +
+    coord_cartesian(ylim = c(0, 500)) +
+    scale_color_algConfig
+  print(plt)
+}
+plotCPUFacet()
+```
+
+<!-- Finally we may plot only the winner cpu times for each instance: -->
+
+<!-- ```{r, fig.asp=1} -->
+<!-- datP <-  -->
+<!--   datAll %>%  -->
+<!--   group_by(instance) %>%  -->
+<!--   nest() %>%  -->
+<!--   mutate(data = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>%  -->
+<!--   mutate(win = map(data, function(df) {str_c(df$nodesel[1], ".", df$varsel[1], ".", df$OB[1])})) %>%  -->
+<!--   unnest(c(win, data))  -->
+
+<!-- plotCPUWinner <- function() { -->
+<!--   datPP <- datP  -->
+<!--   plt <- ggplot(datPP, aes(y = tpstotal , x = n)) +  -->
+<!--     # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--     geom_jitter(aes(color = win), width = 3, height = 0, size = 0.7) + -->
+<!--     facet_grid(cols = vars(pb), scales = "fixed") + -->
+<!--     ggtitle(str_c("Cpu time")) + -->
+<!--     theme(legend.position="bottom", legend.title=element_blank()) + -->
+<!--     coord_cartesian(ylim = c(0, 100)) -->
+<!--   print(plt) -->
+<!-- } -->
+<!-- plotCPUWinner() -->
+<!-- ``` -->
+
+<!-- Some observations -->
+
+<!--   - There is no clear winner among the different algorithm configurations. -->
+<!--   - There seems to be a bigger difference for KP. -->
+<!--   - Hardest instances are the one generated with the sphere methods. -->
+
+<!-- ## R2b: Which sphere generation instances are hardest to solve? -->
+
+<!-- Let us consider ranges [1,1000] and [1,1000][1,100]: -->
+
+<!-- ```{r, fig.asp=1} -->
+<!-- res <- datP %>%  -->
+<!--   dplyr::filter(grepl("sphere", coef) & grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>%  -->
+<!--   group_by(pb, coef) %>%  -->
+<!--   summarize_at(vars(contains("YN") | tpstotal), mean)  -->
+<!-- res -->
+<!-- # ggplot(res, aes(y = avgCpu , x = n)) +  -->
+<!-- #   geom_jitter(aes(color = coef), width = 3, height = 0, size = 0.7) + -->
+<!-- #   facet_grid(rows = vars(interaction(nodesel,varsel,OB)), cols = vars(pb), margins = T, scales = "free") -->
+<!-- #    -->
+<!-- #    -->
+<!-- #     geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 3, height = 0, size = 0.7)  -->
+<!-- # + -->
+<!-- #     facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "free") + -->
+<!-- #     ggtitle(str_c("Cpu time for ", pb, " (note scale free)")) + -->
+<!-- #     theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- #  -->
+<!-- # res <- datP %>%  -->
+<!-- #   dplyr::filter(grepl("sphere", coef), grepl("[1,1000]", rangeC)) %>%  -->
+<!-- #   group_by(pb, coef) %>%  -->
+<!-- #   summarize(avgCpu = mean(tpstotal)) %>%  -->
+<!-- #   arrange(pb, desc(avgCpu)) -->
+<!-- # res -->
+
+<!-- # ggplot(res, aes(y = pct, x = win, fill = win)) +  -->
+<!-- #   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!-- #   geom_col() +  -->
+<!-- #   facet_grid(rows = vars(pb), cols = vars(coef), scales = "fixed") + -->
+<!-- #   ggtitle("Winner pct") + -->
+<!-- #   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- #  -->
+<!-- #  -->
+<!-- # ggplot(datPP, aes(y = tpstotal , x = n)) +  -->
+<!-- #   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!-- #   geom_jitter(aes(color = win), width = 4, height = 0, size = 0.7) + -->
+<!-- #   facet_grid(rows = vars(coef), cols = vars(rangeC), scales = "fixed") + -->
+<!-- #   ggtitle("Cpu time for UFLP") + -->
+<!-- #   theme(legend.position="bottom", legend.title=element_blank())  -->
+<!-- ``` -->
+
+<!-- There is no clear winner. Moreover, the shape of the nondominated set is not affected much by the generation method. -->
+
+<!-- ## R2c: Is the cpu time the same within each instance group? -->
+
+<!-- By instance group we mean an unique combination of `namePrefix`, `constId`, `pb`, `n`, `coef`, `rangeC`, `nodesel`, `varsel`, `OB` -->
+
+<!-- ```{r} -->
+<!-- # datP <- datAll %>%  -->
+<!-- #   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal) %>% #contains("tps") -->
+<!-- #   mutate(iG = str_c(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB, sep = ".")) -->
+<!-- datP <- datAll %>%  -->
+<!--   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, tpstotal) %>% #contains("tps") -->
+<!--   group_by(namePrefix, constId, pb, n, coef, rangeC, nodesel, varsel, OB) %>% nest() -->
+
+<!-- datPSd <- datP %>%  -->
+<!--   mutate( -->
+<!--     stdDevV = map(data, function(df) { -->
+<!--       df %>% summarise_if(is.numeric, sd) -->
+<!--     }), -->
+<!--     # meanV = map(data, function(df) { -->
+<!--     #   df %>% summarise_if(is.numeric, mean) -->
+<!--     # }), -->
+<!--     cvV = map(data, function(df) { -->
+<!--       df %>% summarise_if(is.numeric, function(x) {sd(x)/mean(x)}) -->
+<!--     }), -->
+<!--     maxV = map(data, function(df) { -->
+<!--       df %>% summarise_if(is.numeric, max) -->
+<!--     }) -->
+<!--   ) %>% unnest(c(stdDevV, cvV, maxV), names_sep = "_") -->
+
+<!-- # ggplot(datPSd, aes(y = meanV_tpstotal, x = n)) +  -->
+<!-- #   geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) +  -->
+<!-- #   facet_grid(rows = vars(coef), cols = vars(pb), margins = T) + -->
+<!-- #   ggtitle("Means") + -->
+<!-- #   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- ``` -->
+
+
+<!-- ```{r, fig.asp=1} -->
+<!-- ggplot(datPSd, aes(y = stdDevV_tpstotal, x = n)) +  -->
+<!--   geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) +  -->
+<!--   facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") + -->
+<!--   ggtitle("Std. dev.") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- ``` -->
+
+
+<!-- ```{r, fig.asp=1} -->
+<!-- ggplot(datPSd, aes(y = cvV_tpstotal, x = n)) +  -->
+<!--   geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) +  -->
+<!--   facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") + -->
+<!--   ggtitle("Coeff of variation (sd/mean)") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- ``` -->
+
+
+<!-- ```{r, fig.asp=1} -->
+<!-- ggplot(datPSd, aes(y = maxV_tpstotal, x = n)) +  -->
+<!--   geom_jitter(aes(color = rangeC, shape = interaction(nodesel, varsel, OB))) +  -->
+<!--   facet_grid(rows = vars(coef), cols = vars(pb), margins = T, scales = "free") + -->
+<!--   ggtitle("Max values") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank())  -->
+<!-- ``` -->
+
+<!-- In general we may have high variation within instance groups. -->
+
+
+
+
+
+<!-- ## R2d: In which subprocedures are the cpu time used? -->
+
+<!-- ```{r} -->
+<!-- res <- datAll %>% -->
+<!--   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, YN, contains("pcttps")) %>% -->
+<!--   mutate(pcttpsmisc = 100 - (pcttpsLB + pcttpsdomi + pcttpsUB + pcttpsnodesel + pcttpsvarsel + pcttpsSLUB + pcttpsdomiLUB)) %>% -->
+<!--   group_by(pb) %>% -->
+<!--   nest() -->
+<!-- res <- res %>%  -->
+<!--   mutate( -->
+<!--     meanV = map(data, function(df) { -->
+<!--       df %>% summarise_if(is.numeric, mean) -->
+<!--     }), -->
+<!--   ) %>% unnest(c(meanV), names_sep = "_") -->
+<!-- res <- res %>% pivot_longer(contains("pcttps")) -->
+<!-- ggplot(res, aes(y = value, x = name, fill = name)) + -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col() + -->
+<!--   facet_grid(rows = vars(pb), scales = "fixed") + -->
+<!--   ggtitle("Cpu usage") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- ``` -->
+
+
+<!-- # Analysis: Research Question 3 (R3) - Which algorithm configuration is best? -->
+
+<!-- ## R3a: Is there a clear winner? -->
+
+<!-- Let us have a look at the problem classes: -->
+
+<!-- ```{r} -->
+<!-- datP <-  -->
+<!--   datAll %>%  -->
+<!--   group_by(instance) %>%  -->
+<!--   nest() %>%  -->
+<!--   mutate(data = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>%  -->
+<!--   mutate(win = map(data, function(df) {df$algConfig})) %>%  -->
+<!--   unnest(c(win, data)) -->
+
+<!-- res <- datP %>%  -->
+<!--   group_by(pb) %>%  -->
+<!--   mutate(count = n()) %>%  -->
+<!--   group_by(pb, win) %>% summarize(pct = n()/mean(count)) %>%  -->
+<!--   arrange(pb,desc(pct)) -->
+<!-- ggplot(res, aes(y = pct, x = win, fill = win)) +  -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col() +  -->
+<!--   facet_grid(rows = vars(pb), scales = "fixed") + -->
+<!--   ggtitle("Winner pct") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) +  -->
+<!--   scale_fill_algConfig -->
+<!-- ``` -->
+
+<!-- Note if we look at different problem classes different variable selection methods may win. Do the generation method affect the winner: -->
+
+<!-- ```{r} -->
+<!-- res <- datP %>%  -->
+<!--   group_by(pb, coef) %>%  -->
+<!--   mutate(count = n()) %>%  -->
+<!--   group_by(pb, coef, win) %>% summarize(pct = n()/mean(count)) %>%  -->
+<!--   arrange(pb, coef, desc(pct)) -->
+<!-- ggplot(res, aes(y = pct, x = win, fill = win)) +  -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col() +  -->
+<!--   facet_grid(rows = vars(pb), cols = vars(coef), scales = "fixed") + -->
+<!--   ggtitle("Winner pct") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) +  -->
+<!--   scale_fill_algConfig -->
+<!-- ``` -->
+
+<!-- If we group by `coef`, we have different winners. This may have something to do with the hardness of the instance (generation method is highly correlated with number of nondominated points).  -->
+
+<!-- Will different methods be used for harder instances (here we use YN as a proxy for hard). Let us try to plot the aggregated percentage winner configuration: -->
+
+<!-- ```{r} -->
+<!-- res <- datP %>%  -->
+<!--   group_by(pb, YN) %>%  -->
+<!--   mutate(count = n()) %>%  -->
+<!--   group_by(pb, YN, win) %>% summarize(pct = n()/mean(count)) %>%  -->
+<!--   arrange(pb, YN, desc(pct)) -->
+<!-- ggplot(res, aes(x = YN, fill = win)) +  -->
+<!--   geom_histogram(position = "fill", bins = 10) +  -->
+<!--   stat_bin(bins = 10, geom="text", colour="white", size=3.5, -->
+<!--             aes(label=..count.., group = win), position=position_fill(vjust=0.5)) + -->
+<!--   facet_grid(rows = vars(pb), margins = T, scales = "fixed") + -->
+<!--   ggtitle("Pct for each configuration given 10 bins (numbers indicate instance counts)") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) +  -->
+<!--   scale_fill_algConfig -->
+<!-- ``` -->
+
+<!-- It can be seen that for some problem classes the best configuration change from easy instances to hard. -->
+
+<!-- ## R3b: Is the best node selection strategy affected by other algorithm configurations? -->
+
+<!-- We consider all instances: -->
+
+<!-- ```{r} -->
+<!-- res <- datP %>%  -->
+<!--   group_by(varsel, OB) %>%  -->
+<!--   mutate(count = n(), win = nodesel) %>%  -->
+<!--   group_by(varsel, OB, win) %>% summarize(pct = n()/mean(count)) %>%  -->
+<!--   arrange(varsel, OB, desc(pct)) -->
+<!-- ggplot(res, aes(y = pct, x = win, fill = win)) +  -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col() +  -->
+<!--   facet_grid(rows = vars(varsel), cols = vars(OB), scales = "fixed") + -->
+<!--   ggtitle("Winner pct") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- ``` -->
+
+<!-- ## R3c: Is the best variable selection strategy affected by other algorithm configurations? -->
+
+<!-- We consider all instances: -->
+
+<!-- ```{r, eval = FALSE} -->
+<!-- res <- datAll %>% group -->
+
+<!-- res <- datP %>%  -->
+<!--   group_by(nodesel, OB) %>%  -->
+<!--   mutate(count = n(), win = varsel) %>%  -->
+<!--   group_by(nodesel, OB, win) %>% summarize(pct = n()/mean(count)) %>%  -->
+<!--   arrange(nodesel, OB, desc(pct)) -->
+<!-- ggplot(res, aes(y = pct, x = win, fill = win)) +  -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col() +  -->
+<!--   facet_grid(rows = vars(nodesel), cols = vars(OB), scales = "fixed") + -->
+<!--   ggtitle("Winner pct") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) -->
+<!-- ``` -->
+
+
+<!-- <!-- There seems to be no effect. Let us have a look at the hard instances (ranges [1,1000] and [1,1000][1,100]) and the winner configurations: --> -->
+
+<!-- <!-- ```{r} --> -->
+<!-- <!-- res <- datP %>%  --> -->
+<!-- <!--   dplyr::filter(grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>%  --> -->
+<!-- <!--   group_by(varsel, OB) %>%  --> -->
+<!-- <!--   mutate(count = n(), win = nodesel) %>%  --> -->
+<!-- <!--   group_by(varsel, OB, win) %>% summarize(pct = n()/mean(count)) %>%  --> -->
+<!-- <!--   arrange(varsel, OB, desc(pct)) --> -->
+<!-- <!-- ggplot(res, aes(y = pct, x = win, fill = win)) +  --> -->
+<!-- <!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + --> -->
+<!-- <!--   geom_col() +  --> -->
+<!-- <!--   facet_grid(rows = vars(varsel), cols = vars(OB), scales = "fixed") + --> -->
+<!-- <!--   ggtitle("Winner pct") + --> -->
+<!-- <!--   theme(legend.position="bottom", legend.title=element_blank()) --> -->
+<!-- <!-- ``` --> -->
+
+<!-- <!-- Moreover if we filter further and only look at the sphere generation methods: --> -->
+
+<!-- <!-- ```{r} --> -->
+<!-- <!-- res <- datP %>%  --> -->
+<!-- <!--   dplyr::filter(grepl("sphere", coef) & grepl("1,1000", rangeC) & !grepl("1001,2000", rangeC)) %>%  --> -->
+<!-- <!--   group_by(varsel, OB) %>%  --> -->
+<!-- <!--   mutate(count = n(), win = nodesel) %>%  --> -->
+<!-- <!--   group_by(varsel, OB, win) %>% summarize(pct = n()/mean(count)) %>%  --> -->
+<!-- <!--   arrange(varsel, OB, desc(pct)) --> -->
+<!-- <!-- ggplot(res, aes(y = pct, x = win, fill = win)) +  --> -->
+<!-- <!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + --> -->
+<!-- <!--   geom_col() +  --> -->
+<!-- <!--   facet_grid(rows = vars(varsel), cols = vars(OB), scales = "fixed") + --> -->
+<!-- <!--   ggtitle("Winner pct") + --> -->
+<!-- <!--   theme(legend.position="bottom", legend.title=element_blank()) --> -->
+<!-- <!-- ``` --> -->
+
+
+<!-- # Analysis: Research Question 4 (R4) - How are nodes phantomed? -->
+
+<!-- ```{r} -->
+<!-- res <- datAll %>% -->
+<!--   select(instance, namePrefix, insId, constId, pb, n, coef, rangeC, ratioNDcoef, nodesel, varsel, OB, algConfig, YN, nbinfeas,	pctinfeas, tpsinfeas,	nbopt, pctopt, tpsopt, nbdomi, pctdomi,	avgdomi) %>% -->
+<!--   # mutate(pcttpsmisc = 100 - (pcttpsLB + pcttpsdomi + pcttpsUB + pcttpsnodesel + pcttpsvarsel + pcttpsSLUB + pcttpsdomiLUB)) %>% -->
+<!--   group_by(pb, coef, nodesel, varsel, OB, algConfig) %>% -->
+<!--   nest() -->
+<!-- res <- res %>%  -->
+<!--   mutate( -->
+<!--     meanV = map(data, function(df) { -->
+<!--       df %>% summarise_if(is.numeric, mean) -->
+<!--     }), -->
+<!--   ) %>% unnest(c(meanV), names_sep = "_") -->
+<!-- colnames(res) <- str_remove(colnames(res), "meanV_") -->
+<!-- res1 <- res %>% pivot_longer(contains("pct")) -->
+<!-- ggplot(res1, aes(y = value, x = name, fill = algConfig)) + -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col(position = "dodge") + -->
+<!--   facet_grid(rows = vars(pb), cols = vars(coef), scales = "free") + -->
+<!--   ggtitle("Relative number of leaf nodes pruned") + ylab("pct") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) +  -->
+<!--   scale_fill_algConfig -->
+
+<!-- res1 <- res %>% pivot_longer(contains("nb")) -->
+<!-- ggplot(res1, aes(y = value, x = name, fill = algConfig)) + -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col(position = "dodge") + -->
+<!--   facet_grid(rows = vars(pb), cols = vars(coef), scales = "free") + -->
+<!--   ggtitle("Number of leaf nodes pruned") + ylab("count") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) +  -->
+<!--   scale_fill_algConfig -->
+
+<!-- res1 <- res %>% pivot_longer(contains("tps") | contains("avg")) -->
+<!-- ggplot(res1, aes(y = value, x = name, fill = algConfig)) + -->
+<!--   # stat_summary(fun=mean, geom="line", aes(color = win)) + -->
+<!--   geom_col(position = "dodge") + -->
+<!--   facet_grid(rows = vars(pb), cols = vars(coef), scales = "free") + -->
+<!--   ggtitle("Avg. time to prune a node") + ylab("msec") + -->
+<!--   theme(legend.position="bottom", legend.title=element_blank()) +  -->
+<!--   scale_fill_algConfig -->
+<!-- ``` -->
+
+# Detailed results for each instance
+
+Detailed results for each instance can be generated using `instance.Rmd`. The report is already generated for some of the instances (see links in the table with input statistics). Some instances that might be of interest:
+
+```{r}
+tmp <- datAll %>% group_by(instance) %>% summarise_at(vars(contains(c("YN", "total", "solved"))), list(mean = mean, sd = sd, max = max), na.rm = TRUE)
+```
+
+* Instances with lowest number of nondominated points: `r toLink(tmp %>% top_n(-3, YN_max) %>% slice(1:3) %>% pull(instance))`
+* Instances with highest number of nondominated points (solved): `r toLink(tmp %>% filter(solved_max == 1) %>% top_n(3, YN_mean) %>% slice(1:3) %>% pull(instance))`
+* Instances with lowest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(-3, YNusRatio_max) %>% slice(1:3)%>% pull(instance))`
+* Instances with highest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(3, YNusRatio_max) %>% slice(1:3)%>% pull(instance))`
+* Instances with highest supported non-extreme nondominated points percentage: `r toLink(tmp %>% top_n(3, YNsneRatio_max) %>% slice(1:3) %>% pull(instance))`
+* Instances with highest variance in cpu time: `r toLink(tmp %>% top_n(3, tpstotal_sd) %>% slice(1:3) %>% pull(instance))`
+
+
+

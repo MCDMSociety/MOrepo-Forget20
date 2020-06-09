@@ -626,14 +626,20 @@ Let us have a look for different problem classes, ranges, generation methods and
 
 ```{r, fig.asp=1}
 plotCPUFacet <- function(pb) {
+  
   datP <- datAll %>% 
     dplyr::filter(pb == !!pb) 
+  
+  tmp <- datP %>% group_by(coef, rangeC) %>% summarize(avg = mean(tpstotal)) 
+  
   plt <- ggplot(datP, aes(y = tpstotal , x = n)) + 
     stat_summary(fun=mean, geom="line", aes(color = interaction(nodesel,varsel,OB))) +
     geom_jitter(aes(color = interaction(nodesel,varsel,OB)), width = 3, height = 0, size = 0.7) +
     facet_grid(rows = vars(coef), cols = vars(rangeC), margins = T, scales = "free") +
     ggtitle(str_c("Cpu time for ", pb, " (note scale free)")) +
-    theme(legend.position="bottom", legend.title=element_blank())
+    theme(legend.position="bottom", legend.title=element_blank()) +
+    coord_cartesian(ylim = c(0, 500))
+  
   print(plt)
 }
 for (pb in unique(datAll$pb)) plotCPUFacet(pb)
