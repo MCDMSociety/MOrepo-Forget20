@@ -1,3 +1,5 @@
+install.packages("Rcpp")
+install.packages("knitr")
 install.packages("remotes")
 remotes::install_github("jeroen/V8")
 remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
@@ -13,4 +15,6 @@ install.packages("purrr")
 install.packages("utils")
 install.packages("tidyr")
 install.packages("lubridate")
-
+install.packages("fs")
+install.packages("rgl")
+install.packages("gMOIP")
