@@ -50,7 +50,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
-  cache = TRUE, autodep = TRUE,
+  # cache = TRUE, autodep = TRUE,
   echo=FALSE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
 )
@@ -479,17 +479,17 @@ We may conclude that further study only consider range [1,1000] and the two case
 
 Note that the number of nondominated points increase with the number of variables which is due to the total possible range of the objectives increase with `n` (there is room for more points). 
 
-```{r}
+```{r, cache=FALSE}
 plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
         mode="markers",
         data = datAll %>% dplyr::filter(pb == "AP"),
         marker = list(size=3),
         color = ~n) %>% plotly::layout(title = "AP")
-# plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
-#         mode="markers",
-#         data = datAll %>% dplyr::filter(pb == "KP"),
-#         marker = list(size=3),
-#         color = ~n) %>% plotly::layout(title = "KP")
+plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
+        mode="markers",
+        data = datAll %>% dplyr::filter(pb == "KP"),
+        marker = list(size=3),
+        color = ~n) %>% plotly::layout(title = "KP")
 plot_ly(x = ~rangeGapZ1, y = ~rangeGapZ2, z = ~rangeGapZ3, type="scatter3d",
         mode="markers",
         data = datAll %>% dplyr::filter(pb == "UFLP"),

@@ -94,14 +94,16 @@ The purpose of the computational study is to answer the following questions:
   
   1) What is the performance of the different algorithm configurations?
   1) Which algorithm configurations perform the best?
-  1) Do integer rounding improve the performance?
   1) Is it worth doing objective branching?
-  1) How often is LP tight ????
   1) How do node selection, variable selection and objective branching affect the performance of the algorithm?
   1) In which subprocedures are the cpu time used?
   1) How are nodes pruned?
+  1) Where in the tree do we use obj branching avg + min and max values (relative values and box plot)?
+  1) Depth of tree in AP vs KP?
+  1) Do integer rounding improve the performance?
   1) How is the performance of the tri-objective B&B algorithm compared to objective branching algorithms?
-
+  Statistic: Number of nodes in the tree relative to total possible given depth
+  Plot reverse profiles (y = %, x = n)
 
 <!-- ### Old questions -->
 <!-- We first consider  -->
@@ -182,7 +184,7 @@ datWin <-
   unnest(c(win, data)) 
 
 datNotStable <- read_csv("../convert/data/stat.csv", col_types = cols()) %>%
-  filter(coef == "spheredown", rangemax == 1000) %>% #| coef == "sphereup"
+  filter(coef == "spheredown", rangemax == 1000, solved == 1) %>% #| coef == "sphereup"
   group_by(instance) %>%
   distinct(YN) %>%
   summarise(ctr = n()) %>%
@@ -443,6 +445,20 @@ ggplot(datAll %>%
   ggtitle(str_c("Number of instances solved within a given cpu time")) +
   labs(color = "nS | vS:", linetype = "oB:") +
   theme(legend.position="bottom") + xlab("cpu") +
+  scale_color_nodesel_varsel + scale_linetype_ob
+
+ggplot(datAll %>% 
+       group_by(algConfig, pb, n, solved, nodeselVarsel, OB) %>% 
+         summarise(count = n()) %>% 
+         group_by(algConfig, pb, n, nodeselVarsel, OB) %>% 
+         summarise(solv = ifelse(length(count[solved==1]) == 0, 0, count[solved==1]), pct = solv/sum(count))) +
+  # geom_col(aes(x=n, y=pct, fill = algConfig, linetype = OB), position = "dodge") +
+  geom_step(aes(x=n, y=pct, color = nodeselVarsel, linetype = OB)) +
+  geom_point(aes(x=n, y=pct, color = nodeselVarsel)) + 
+  facet_grid(cols = vars(pb), scales = "free") +
+  ggtitle(str_c("Number of instances solved within the time limit given n")) +
+  labs(color = "nS | vS:", linetype = "oB:") +
+  theme(legend.position="bottom") + #xlab("cpu") +
   scale_color_nodesel_varsel + scale_linetype_ob
 ```
 
