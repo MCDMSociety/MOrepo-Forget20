@@ -2223,6 +2223,7 @@
       "n": 49,
       "coeffNDRatio": 1,
       "coeffGenMethod": "sphereup",
+      "epsilon": 0.001,
       "coeffRange": [1000, 2000]
     },
     "outputStat": {
