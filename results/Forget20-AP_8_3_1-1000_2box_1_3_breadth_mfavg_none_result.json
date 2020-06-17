@@ -2769,6 +2769,7 @@
       "n": 64,
       "coeffNDRatio": 0.26562,
       "coeffGenMethod": "2box",
+      "epsilon": 0.001,
       "coeffRange": [1, 1000]
     },
     "outputStat": {

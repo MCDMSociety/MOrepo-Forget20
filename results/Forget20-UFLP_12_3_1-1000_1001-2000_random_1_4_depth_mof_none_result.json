@@ -909,6 +909,7 @@
       "n": 156,
       "coeffNDRatio": 0.07051,
       "coeffGenMethod": "random",
+      "epsilon": 0.001,
       "coeffRange": [1, 1000]
     },
     "outputStat": {

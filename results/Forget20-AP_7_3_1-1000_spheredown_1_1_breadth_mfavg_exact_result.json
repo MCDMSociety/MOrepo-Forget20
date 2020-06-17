@@ -2727,6 +2727,7 @@
       "n": 49,
       "coeffNDRatio": 1,
       "coeffGenMethod": "spheredown",
+      "epsilon": 0.001,
       "coeffRange": [1, 1000]
     },
     "outputStat": {
