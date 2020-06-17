@@ -149,13 +149,13 @@ for (iName in unique(dat$instance)) {
          mth <- mth1 %>%
             str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "2"))
          # cat(tmp$rowname[i],": ", mth, "  ", sep="")
-         # fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
-         # if (file_exists(fileNJson)) {
-         #    cpu <- datJson %>% dplyr::filter(instance == iName, nodesel == tmp$nodesel[i], varsel == tmp$varsel[i], OB == tmp$OB[i]) %>% pull(tpstotal)
-         #    if (tmp$tpstotal[i] == cpu) next  # use cpu time as indicator for old reslut
-         #    warning("Delete old ", iName, "_", mth1, "_result.json file (cpu not equal)!")
-         #    unlink(paste0("../", iName, "_", mth1, "_result.json"))
-         # }
+         fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
+         if (file_exists(fileNJson)) {
+            cpu <- datJson %>% dplyr::filter(instance == iName, nodesel == tmp$nodesel[i], varsel == tmp$varsel[i], OB == tmp$OB[i]) %>% pull(tpstotal)
+            if (tmp$tpstotal[i] == cpu) next  # use cpu time as indicator for old reslut
+            warning("Delete old ", fileNJson, " file (cpu not equal)!")
+            unlink(fileNJson)
+         }
          # if (round(coeffRatio,3) != round(tmp$ratioNDcoef[i], 3)) warning("Tjeck error: Ratio not the same!", coeffRatio, "!>", tmp$ratioNDcoef)
          fileNUB <- fNameUB(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
          pts1 <- read_csv(fileNUB, col_types = cols())
@@ -181,6 +181,7 @@ for (iName in unique(dat$instance)) {
             algConfig = tmp %>% select(nodesel:OB) %>% slice(i) %>% as.list(),
             inputStat = list(
                n = tmp$n[i], coeffNDRatio = tmp$ratioNDcoef[i], coeffGenMethod = tmp$coef[i],
+               epsilon = tmp$epsilon[i],
                coeffRange = c(tmp$rangemin[i], tmp$rangemax[i])),
             outputStat = tmp %>% select(nbnodes:maxnbpbOB) %>% slice(i) %>% as.list())
          if (tmp$solved[i] == 1) misc$xE = read_csv(fNameXE(iName), col_types = cols())
