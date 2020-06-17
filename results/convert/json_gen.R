@@ -150,12 +150,12 @@ for (iName in unique(dat$instance)) {
             str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "2"))
          # cat(tmp$rowname[i],": ", mth, "  ", sep="")
          fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
-         if (file_exists(fileNJson)) {
-            cpu <- datJson %>% dplyr::filter(instance == iName, nodesel == tmp$nodesel[i], varsel == tmp$varsel[i], OB == tmp$OB[i]) %>% pull(tpstotal)
-            if (tmp$tpstotal[i] == cpu) next  # use cpu time as indicator for old reslut
-            warning("Delete old ", fileNJson, " file (cpu not equal)!")
-            unlink(fileNJson)
-         }
+         # if (file_exists(fileNJson)) {
+         #    cpu <- datJson %>% dplyr::filter(instance == iName, nodesel == tmp$nodesel[i], varsel == tmp$varsel[i], OB == tmp$OB[i]) %>% pull(tpstotal)
+         #    if (tmp$tpstotal[i] == cpu) next  # use cpu time as indicator for old reslut
+         #    warning("Delete old ", fileNJson, " file (cpu not equal)!")
+         #    unlink(fileNJson)
+         # }
          # if (round(coeffRatio,3) != round(tmp$ratioNDcoef[i], 3)) warning("Tjeck error: Ratio not the same!", coeffRatio, "!>", tmp$ratioNDcoef)
          fileNUB <- fNameUB(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
          pts1 <- read_csv(fileNUB, col_types = cols())
