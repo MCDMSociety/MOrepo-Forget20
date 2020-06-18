@@ -2,13 +2,14 @@ Joining, by = "instance"
 Delete json files that don't have a corresponding instance:
  [1] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mfavg_cone_result.json"
  [2] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mfavg_none_result.json"
- [3] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mof_cone_result.json"  
- [4] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mof_exact_result.json" 
- [5] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mof_none_result.json"  
- [6] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mfavg_cone_result.json"  
- [7] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mfavg_exact_result.json" 
- [8] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mfavg_none_result.json"  
- [9] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mof_cone_result.json"    
-[10] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mof_exact_result.json"   
-[11] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mof_none_result.json"    
-|====================================================                                        |  56%|======================================================================                      |  75%|========================================================================================    |  94%|=============================================================================================| 100%
+ [3] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mof_cone_result.json"
+ [4] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mof_exact_result.json"
+ [5] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mof_none_result.json"
+ [6] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mfavg_cone_result.json"
+ [7] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mfavg_exact_result.json"
+ [8] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mfavg_none_result.json"
+ [9] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mof_cone_result.json"
+[10] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mof_exact_result.json"
+[11] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mof_none_result.json"
+
+
