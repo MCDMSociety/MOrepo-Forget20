@@ -13,20 +13,23 @@ on:
       - results/*.json
 
 jobs:
-  sleep:
-      name: Sleep
-      runs-on: ubuntu-latest
-      steps:
-      - name: Sleep so start after json_gen.R
-        uses: jakejarvis/wait-action@master
-        with:
-          time: '20m'
+#  sleep:
+#      name: Sleep
+#      runs-on: ubuntu-latest
+#      steps:
+#      - name: Sleep so start after json_gen.R
+#        uses: jakejarvis/wait-action@master
+#        with:
+#          time: '20m'
   runR:
-    needs: [sleep]
+#    needs: [sleep]
     name: Gen statistics.csv
     runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install V8
+        if: runner.os == 'macOS'
+        run: brew install V8
       - uses: r-lib/actions/setup-r@master
       - uses: r-lib/actions/setup-pandoc@master
       - name: Install packages
