@@ -1,6 +1,16 @@
-[1] "2020-06-17 18:07:46 UTC"
+[1] "2020-06-18 06:08:48 UTC"
 Delete json files that don't have a corresponding instance:
-[1] "../"
+ [1] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mfavg_cone_result.json"
+ [2] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mfavg_none_result.json"
+ [3] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mof_cone_result.json"  
+ [4] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mof_exact_result.json" 
+ [5] "../Forget20-KP_30_3_1-1000_spheredown_1_10_breadth_mof_none_result.json"  
+ [6] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mfavg_cone_result.json"  
+ [7] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mfavg_exact_result.json" 
+ [8] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mfavg_none_result.json"  
+ [9] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mof_cone_result.json"    
+[10] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mof_exact_result.json"   
+[11] "../Forget20-KP_30_3_1-1000_spheredown_1_10_depth_mof_none_result.json"    
 Warning messages:
 1: Error: data/details/Forget20-AP_11_3_1-1000_sphereup_1_10_UB.txt don't exists!
 2: Error: Forget20-AP_6_3_1-10_random_1_5. Different number of nondominated points when compare exact solutions for different alg. configs!
