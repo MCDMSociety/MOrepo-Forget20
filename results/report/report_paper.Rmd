@@ -48,7 +48,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
-  cache = TRUE, autodep = TRUE,
+  # cache = TRUE, autodep = TRUE,
   echo=FALSE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
 )
@@ -480,24 +480,32 @@ datYN <- datAll %>%
 winSeq <- datWin %>% group_by(algConfig) %>% summarise(cpu = mean(tpstotal)) %>% arrange(cpu) %>% pull(algConfig)
 winSeq <- c(winSeq, algConfigs[!(algConfigs %in% winSeq)])
 winAlgConfigSeq <- winSeq
-winSeq <- c(str_c("cpu_", winSeq), str_c("nodes_", winSeq))
-winSeq <- winSeq[as.vector(sapply(1:12, FUN = function(i) {c(i,i+12)}))]
+winSeq <- c(str_c("cpu_", winSeq), str_c("nodes_", winSeq), str_c("prune_", winSeq))
+winSeq <- winSeq[as.vector(sapply(1:12, FUN = function(i) {c(i,i+12,i+24)}))]
 digits <- c(0,0,0,rep(c(1,0),12))
 tabResults <- datAll %>% 
   group_by(pb, n, coef, algConfig) %>% 
-  summarise(cpu = mean(tpstotal), nodes = mean(nbnodes), solved = min(solved)) %>% 
+  summarise(cpu = mean(tpstotal), cpuMax = max(tpstotal), cpuMin = min(tpstotal), 
+            nodes = mean(nbnodes), nInf = mean(pctinfeas), nOpt = mean(pctopt), nDom = mean(pctdomi),
+            dptLeaf = mean(avgdepthT), dptMinLeaf = mean(mindepthT), dptMaxLeaf = mean(maxdepthT),
+            solved = min(solved)) %>% 
   ungroup() %>% 
   full_join(datYN) %>% 
-  mutate(cpu = if_else(solved == 1, str_c(round(cpu, 1)), str_c(round(cpu, 1), "*")),
-         YN = str_c(round(YN), " (", round(100*YNse/YN), "/", round(100*(YNs-YNse)/YN), "/", round(100*(YN-YNs)/YN), ")")) %>%
-  select(-solved) %>% 
-  pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes)) %>% 
+  mutate(cpu = if_else(solved == 1, 
+                       str_c(round(cpu, 1), " [", round(cpuMin,1), ",", round(cpuMax,1), "]"), 
+                       str_c(round(cpu, 1), "*", " [", round(cpuMin,1), ",", round(cpuMax,1), "]")),
+         YN = str_c(round(YN), " (", round(100*YNse/YN), "/", round(100*(YNs-YNse)/YN), "/", round(100*(YN-YNs)/YN), ")"),
+         nodes = str_c(round(nodes), " [", round(dptMinLeaf), ",", round(dptLeaf), ",", round(dptMaxLeaf), "]"),
+         prune = str_c("[", round(nInf), ",", round(nOpt), ",", round(nDom), "]")
+         ) %>%
+  select(-solved, -cpuMin, -cpuMax, -dptMinLeaf, -dptMaxLeaf, -dptLeaf, -nInf, -nOpt, -nDom) %>% 
+  pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes, prune)) %>% 
   select(pb, n, coef, YN, !!winSeq)
 tabResults %>% 
   select(-pb) %>% 
-  kable(digits = digits, col.names = c("n", "gen", "YN (se, sne, us)", rep(c("cpu", "nodes"), length(winAlgConfigSeq)))) %>% 
+  kable(digits = digits, col.names = c("n", "gen", "YN (se, sne, us)", rep(c("cpu", "nodes (d leaf)", "prune (I/O/D)"), length(winAlgConfigSeq)))) %>% 
   kable_styling() %>% 
-  add_header_above(c(" " = 3, setNames(rep(2, length(winAlgConfigSeq)), winAlgConfigSeq))) %>% 
+  add_header_above(c(" " = 3, setNames(rep(3, length(winAlgConfigSeq)), winAlgConfigSeq))) %>% 
   pack_rows("AP", min(which(tabResults$pb == "AP")), max(which(tabResults$pb == "AP"))) %>% 
   pack_rows("KP", min(which(tabResults$pb == "KP")), max(which(tabResults$pb == "KP"))) %>% 
   pack_rows("UFLP", min(which(tabResults$pb == "UFLP")), max(which(tabResults$pb == "UFLP"))) 
