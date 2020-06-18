@@ -38,6 +38,7 @@ library(fs)
 options(width = 100)
 setwd("./results/convert")
 source("functions.R")
+
 now()
 
 #' Get all instances
