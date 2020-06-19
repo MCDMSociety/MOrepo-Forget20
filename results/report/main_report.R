@@ -5,7 +5,7 @@ loadPackages <- function(packages) {
    lapply(packages, library, character.only = TRUE)
    invisible(NULL)
 }
-loadPackages(c("tidyverse", "rmarkdown", "fs"))
+loadPackages(c("tidyverse", "rmarkdown", "fs", "distill"))
 # options(rgl.useNULL=TRUE)
 
 oldDir <- setwd("./results/report")
