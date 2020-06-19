@@ -1,24 +1,33 @@
 ---
-title: "Computational results (included in the paper)"
-author: "Nicolas Forget, Lars Relund Nielsen, Sune Lauth Gadegaard"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
+title: "Computational results (preliminary version)"
+description: |
+  This report is a preliminary version of the computational results included in the paper
+author:
+  - name: Nicolas Forget
+    url: http://pure.au.dk/portal/en/nforget@econ.au.dk
+    affiliation: CORAL, BSS, Aarhus University
+    affiliation_url: https://econ.au.dk/coral
+  - name: Lars Relund Nielsen
+    url: http://pure.au.dk/portal/en/larsrn@econ.au.dk
+    affiliation: CORAL, BSS, Aarhus University
+    affiliation_url: https://econ.au.dk/coral
+  - name: Sune Lauth Gadegaard
+    url: http://pure.au.dk/portal/en/sgadegaard@econ.au.dk
+    affiliation: CORAL, BSS, Aarhus University
+    affiliation_url: https://econ.au.dk/coral
+date: "`r Sys.Date()`"
 output:
-  html_document: 
-    df_print: paged
-    number_sections: no
+  distill::distill_article:
     toc: true
-    toc_float: false
-    theme: united #cosmo
-    highlight: tango
-    code_folding: show
-    self_contained: true
-editor_options: 
-  chunk_output_type: console
+    toc_depth: 2
 ---
 
+
+
+
 <style type="text/css">
-table {  /* Table  */
-  font-size: 10px;
+table td, table th {  /* Table  */
+  font-size: 10px !important;
 }
 </style>
 
@@ -48,21 +57,27 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE, message=FALSE, include = TRUE, 
-  # cache = TRUE, autodep = TRUE,
+  cache = TRUE, autodep = TRUE,
   echo=FALSE,
   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
 )
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
 
-*This report contains a preliminary version of the computational results for the instances included in the paper. All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.*
+[*This report is a preliminary version of the computational results included in the paper. Only instances generated with option spheredown are used since they are hard instances.*]
+
+[See https://rstudio.github.io/distill/ on how to write this report.]
+
+All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.
 
 In this section we report on the computational experiments conducted with the tri–objective
-branch–and–bound algorithm. All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz processor and 32GB of RAM memory.
+branch–and–bound algorithm. All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz processor and 32GB of RAM memory [check if correct].
 
 The algorithm can be run using *algorithm configuration* parameters `nS`, `vS`, `oB` and `eps` where
 
-[explanation of the different configurations with refs to paper]
+[explanation of the different configurations with possible refs to sections in paper]
+
+[Add other implementation details, e.g. about Bensolve and possible numerical instabilities]
 
 <!-- The branch and bound algorithm will always use the linear relaxation as lower bound set and the incumbent set as upper bound set. At each nodes, the extreme points of the lower bound set are checked for integrality and possibly added to the upper bound set. Different configurations are bases on: -->
 
@@ -228,25 +243,27 @@ scale_linetype_ob <- scale_linetype_manual(
   drop = F)
 ```
 
-We consider a total of `r nrow(datInput)` instances:
-
-```{r Input table}
+```{r tabInput, layout="l-screen-inset",}
 tabInput <- datInput %>% 
   group_by(pb, n, coef) %>% 
   summarise(instances = n(), rangeCoef = rangeC[1], gapO = mean(c(rangeGapZ1, rangeGapZ2, rangeGapZ3)), ratioNDCoef = mean(ratioNDcoef)) %>% 
   ungroup()
 tabInput %>% 
-  select(-pb) %>% 
-  kable(digits = c(0,0,0,0,0,2), col.names = c("n", "gen", "#", "range", "gapO", "ratio")) %>% 
+  select(-pb, -coef) %>% 
+  kable(digits = c(0,0,0,0,2), col.names = c("n^[tst]", "#", "range", "gapO", "ratio"),
+        caption = "Instances used.") %>% 
   kable_styling(full_width = T) %>% 
   pack_rows("AP", min(which(tabInput$pb == "AP")), max(which(tabInput$pb == "AP"))) %>% 
   pack_rows("KP", min(which(tabInput$pb == "KP")), max(which(tabInput$pb == "KP"))) %>% 
   pack_rows("UFLP", min(which(tabInput$pb == "UFLP")), max(which(tabInput$pb == "UFLP"))) 
 ```
 
-[Description of instances, generations method and rep to other report + repo]
+We consider a total of `r nrow(datInput)` instances [we may drop gapO and ratio] (see Table \@ref(tab:tabInput)) with ...
 
-<!-- named  -->
+
+[Description of instances, generation method and ref to other report + repo]
+
+
 
 <!-- ``` -->
 <!-- Forget20_[problemClass]_[n]_[p]_[rangeOfCosts]_[costGenerationMethod]_[constaintId]_[id].raw -->
@@ -343,18 +360,12 @@ tabInput %>%
 
 # Output statistics
 
-[Explanation of output statistics]
+[Explanation of output statistics (a list)]
 
 <!-- This report only consider instances with cpu time within the interval [`r limSec[1]`, `r limSec[2]`]. For instances with a longer cpu time the algorithm is terminated and only a subset of the nondominated points are calculated.  -->
 <!-- <!-- More detailed results for each instance can be seen in the files named `[instanceName]_results.html` ([see for instance this example](instance.html)). --> -->
 
 <!-- A set of statistics are stored for each instance and algorithm run. The statistics are stored in a [json result file (v1.0)](https://github.com/MCDMSociety/MOrepo/blob/master/contribute.md) for each instance and algorithm configuration named `[Instance name]_[Algorithm config]_result.json`. Most statistics are aggregated in file `stat.csv`. -->
-
-
-
-
-
-
 
 
 
@@ -435,7 +446,7 @@ tabInput %>%
 
 # What is the performance of the different algorithm configurations?
 
-```{r Perf plot by pb, fig.asp=1}
+```{r perfPlot, fig.asp=1, fig.cap="Performance plots for the different problem classes"}
 ggplot(datAll %>%
          group_by(algConfig, pb) %>%
          arrange(tpstotal) %>%
@@ -446,7 +457,10 @@ ggplot(datAll %>%
   labs(color = "nS | vS:", linetype = "oB:") +
   theme(legend.position="bottom") + xlab("cpu") +
   scale_color_nodesel_varsel + scale_linetype_ob
+```
 
+
+```{r revPerfPlot, fig.asp=1, fig.cap="Reverse performance plots for the different problem classes"}
 ggplot(datAll %>% 
        group_by(algConfig, pb, n, solved, nodeselVarsel, OB) %>% 
          summarise(count = n()) %>% 
@@ -462,15 +476,16 @@ ggplot(datAll %>%
   scale_color_nodesel_varsel + scale_linetype_ob
 ```
 
-[Explain results and drop exact results in the remaining]
+A performance plot for the different algorithm configurations are given in Figure \@ref(fig:perfPlot). 
+Reverse performance plot for the different algorithm configurations are given in Figure \@ref(fig:revPerfPlot). 
+
+[Explain results and drop 'OB = exact' alg configs in the remaining]
 
 
 
 # Which algorithm configurations perform the best?
 
-[Discussion based on a table where drop the exact columns]
-
-```{r Results table}
+```{r resTable, layout="l-screen-inset"}
 datYN <- datAll %>% 
   group_by(instance, pb, n, coef) %>% 
   summarise(YN = max(YN), YNse = max(YNse), YNs = max(YNs)) %>% 
@@ -482,7 +497,7 @@ winSeq <- c(winSeq, algConfigs[!(algConfigs %in% winSeq)])
 winAlgConfigSeq <- winSeq
 winSeq <- c(str_c("cpu_", winSeq), str_c("nodes_", winSeq), str_c("prune_", winSeq))
 winSeq <- winSeq[as.vector(sapply(1:12, FUN = function(i) {c(i,i+12,i+24)}))]
-digits <- c(0,0,0,rep(c(1,0),12))
+digits <- c(0,0,rep(c(1,0),12))
 tabResults <- datAll %>% 
   group_by(pb, n, coef, algConfig) %>% 
   summarise(cpu = mean(tpstotal), cpuMax = max(tpstotal), cpuMin = min(tpstotal), 
@@ -500,17 +515,24 @@ tabResults <- datAll %>%
          ) %>%
   select(-solved, -cpuMin, -cpuMax, -dptMinLeaf, -dptMaxLeaf, -dptLeaf, -nInf, -nOpt, -nDom) %>% 
   pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes, prune)) %>% 
-  select(pb, n, coef, YN, !!winSeq)
+  select(pb, n, YN, !!winSeq)
 tabResults %>% 
   select(-pb) %>% 
-  kable(digits = digits, col.names = c("n", "gen", "YN (se, sne, us)", rep(c("cpu", "nodes (d leaf)", "prune (I/O/D)"), length(winAlgConfigSeq)))) %>% 
+  kable(digits = digits, 
+        col.names = c("n", "YN (se, sne, us)", 
+                      rep(c("cpu", "nodes (d leaf)", "prune (I/O/D)"), length(winAlgConfigSeq))),
+        caption = "Results for each instance group.") %>% 
   kable_styling() %>% 
-  add_header_above(c(" " = 3, setNames(rep(3, length(winAlgConfigSeq)), winAlgConfigSeq))) %>% 
+  add_header_above(c(" " = 2, setNames(rep(3, length(winAlgConfigSeq)), winAlgConfigSeq))) %>% 
   pack_rows("AP", min(which(tabResults$pb == "AP")), max(which(tabResults$pb == "AP"))) %>% 
   pack_rows("KP", min(which(tabResults$pb == "KP")), max(which(tabResults$pb == "KP"))) %>% 
   pack_rows("UFLP", min(which(tabResults$pb == "UFLP")), max(which(tabResults$pb == "UFLP"))) 
 # View(tabResults)
 ```
+
+Results for each instance group and algorithm configuration are given in \@ref(tab:resTable). As can be seen ...
+
+[Discussion based on a table where drop the exact columns, I have added some statistics here that we may drop later.]
 
 [What more need to be included in the table?]
 
@@ -518,30 +540,28 @@ tabResults %>%
 
 Based on the above:
 
-  - Consider the input table for UFLP we have only one instance for n = 56. Maybe we should drop n = 56 since to hard.
-  - Consider the performance plot. Instances for AP are okay. We need harder instances for KP (i.e drop n = 10 in the paper and add n = 25). We need easier instances for UFLP (e.g. n = 42 highest n value and add two lower n values).
-  - We still have instabilities. Experiment with and eps that remove these.
-  - Add epsilon as column til stat.csv and add new tests for different eps as new rows. 
-  - Should we generate multi-dim KP also?
-  - Research questions and sequence?
+- Generate harder instances until hit the time limit of 30 min. 
+- Should we generate multi-dim KP also?
+- Research questions and sequence?
 
-[OLD STUFF]
+[OLD STUFF to be removed.]
+
 
 # Numerical instabilities
 
-In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used. To avoid parsing a lot a files at each node in our implementation, a wrapper that calls bensolve, retrieve some outputs and introduce them directly in our code as matrices, has been made.
+<!-- In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used. To avoid parsing a lot a files at each node in our implementation, a wrapper that calls bensolve, retrieve some outputs and introduce them directly in our code as matrices, has been made. -->
 
-The retrieved outputs are the extreme rays, the extreme points (in the objective space), their pre-image (in the decision space) and a list of extreme points and rays that constitute each facet of the lower bound set.
+<!-- The retrieved outputs are the extreme rays, the extreme points (in the objective space), their pre-image (in the decision space) and a list of extreme points and rays that constitute each facet of the lower bound set. -->
 
-To proceed the dominance test in the branch and bound, the normal vector of each facet of the lower bound set is required. At this point, as only a description using extreme points is available, the normal vectors will be computed using linear algebra. From the extreme points and extreme rays of a facet $f$ given by Bensolve, it is always possible to determine $p$ linearly independant points $x^1,...,x^p$ of this facet. To obtain the normal vector of $f$, the system $M \cdot n^f = 0$ is solved, where $n^f$ is the normal vector of $f$ and $M$ is a matrix such that each row $M_i = x^1 - x^p$, $\forall i \in \{1,...,p-1\}$ and $M_p = (1,...,1)$.
+<!-- To proceed the dominance test in the branch and bound, the normal vector of each facet of the lower bound set is required. At this point, as only a description using extreme points is available, the normal vectors will be computed using linear algebra. From the extreme points and extreme rays of a facet $f$ given by Bensolve, it is always possible to determine $p$ linearly independant points $x^1,...,x^p$ of this facet. To obtain the normal vector of $f$, the system $M \cdot n^f = 0$ is solved, where $n^f$ is the normal vector of $f$ and $M$ is a matrix such that each row $M_i = x^1 - x^p$, $\forall i \in \{1,...,p-1\}$ and $M_p = (1,...,1)$. -->
 
-However, this system is sometimes close to be singular, leading to numerical instabilities in the components of the normal vectors. This imply that occasionally, a facet may be slightly not correctly oriented, which may be a problem in the dominance test (e.g. considering a local upper bound as non-dominated while it is dominated, and the other way around).
+<!-- However, this system is sometimes close to be singular, leading to numerical instabilities in the components of the normal vectors. This imply that occasionally, a facet may be slightly not correctly oriented, which may be a problem in the dominance test (e.g. considering a local upper bound as non-dominated while it is dominated, and the other way around). -->
 
-Two equivalent epsilons can be introduced here in order to overcome these numerical instabilities. First, the facet such that the determinant of their matrix $M$ is too close to 0 are discarded. In other words, if $det(M) \leq \epsilon$, the facet is deleted. The other possibility is to move down the whole lower bound set by reducing from an epsilon the right-hand side of the equations of the facets, i.e. the equation of each facet $f \in \mathcal{L}(\eta)$ becomes $n^fy = d - \epsilon$ instead of $n^fy = d$. Both method produce weaker lower bound set, leading to greater computational times, but reducing the chances of missing a non-dominated point due to numerical instabilities.
+<!-- Two equivalent epsilons can be introduced here in order to overcome these numerical instabilities. First, the facet such that the determinant of their matrix $M$ is too close to 0 are discarded. In other words, if $det(M) \leq \epsilon$, the facet is deleted. The other possibility is to move down the whole lower bound set by reducing from an epsilon the right-hand side of the equations of the facets, i.e. the equation of each facet $f \in \mathcal{L}(\eta)$ becomes $n^fy = d - \epsilon$ instead of $n^fy = d$. Both method produce weaker lower bound set, leading to greater computational times, but reducing the chances of missing a non-dominated point due to numerical instabilities. -->
 
-Very rarely, GLPK, the single-objective LP solver used by Bensolve, rises a warning for numerical instabilities as well. Unfortunately, there is no way for us to avoid these, but fortunately, these cases occur much less often.
+<!-- Very rarely, GLPK, the single-objective LP solver used by Bensolve, rises a warning for numerical instabilities as well. Unfortunately, there is no way for us to avoid these, but fortunately, these cases occur much less often. -->
 
-The list of instances where a different number of non-dominated points in some of the configurations has been found due to numerical instabilities can be found below:
+<!-- The list of instances where a different number of non-dominated points in some of the configurations has been found due to numerical instabilities can be found below: -->
 
 Currently we have instabilities with instances: `r datNotStable$instance`.
 

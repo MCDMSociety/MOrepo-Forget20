@@ -14,7 +14,7 @@ editor_options:
   chunk_output_cls: console
 params:
   new_title: 'Results for instance '
-  currentInstance: 'Forget20-UFLP_6_3_1000-2000_100-200_spheredown_1_2'
+  currentInstance: 'Forget20-AP_6_3_1-10_random_1_5'
 ---
  
 ```{r setup, include=FALSE}
