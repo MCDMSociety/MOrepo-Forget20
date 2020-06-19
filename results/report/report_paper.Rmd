@@ -540,6 +540,7 @@ Results for each instance group and algorithm configuration are given in \@ref(t
 
 Based on the above:
 
+- We suggest to only consider spheredown results (the ones reported in this report).
 - Generate harder instances until hit the time limit of 30 min. 
 - Should we generate multi-dim KP also?
 - Research questions and sequence?
