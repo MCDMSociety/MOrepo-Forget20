@@ -1,15 +1,16 @@
 ### Script for converting result output to json format
 
-sink("results/convert/json_gen.log", append=F, split=T)
-
-### Setup
+options(width = 100, nwarnings = 10000)
+setwd("./results/convert")
+logF <- file("json_gen.log", open = "wt")
+sink(logF, type = "message")
+sink(logF, split = T, type = "output")
 # remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
 library(MOrepoTools)
 library(tidyverse)
+library(jsonlite)
 library(lubridate)
 library(fs)
-options(width = 100, nwarnings = 10000)
-setwd("./results/convert")
 source("functions.R")
 
 
@@ -23,7 +24,10 @@ instances <- list.files("../../instances/raw/", recursive = T) %>%
 
 
 ### Read result output
-dat <- read_csv("data/stat.csv", col_types = cols()) %>% arrange(instance, nodesel, varsel, OB) %>% rownames_to_column()
+dat <- read_csv("data/stat.csv", col_types = cols()) %>%
+   arrange(instance, nodesel, varsel, OB) %>%
+   rownames_to_column() %>%
+   mutate(instance = str_remove(instance, ".raw"))
 #' Read statistics from json files
 datJson <- read_csv("../statistics.csv")
 
@@ -73,16 +77,16 @@ fNameJson <- function(instance, nodesel, varsel, ob) {
 }
 
 
-message("\nCheck cpu times in data folder:\n")
-tmp <- read_csv("data/stat.csv", col_types = cols())
-for (i in 1:nrow(tmp)) {
-   fileN <- fNameUB(tmp$instance[i], tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
-   if (file.exists(fileN)) pts <- read_csv(fileN, col_types = cols())
-   else message("Error: File ", fileN, " doesn't exist but has a row in stat.csv! Old results?")
-   tmp %>% slice(i) %>% select(instance, nodesel, varsel, OB, tpstotal)
-   if (tmp$tpstotal[i] < pts$time[nrow(pts)] - 0.1)
-      message("Error: Last cpu time in UB set is higher than tpstotal in stat.csv (file: ", fileN, ", row: ", i, ")!")
-}
+# message("\nCheck cpu times in data folder:\n")
+# tmp <- read_csv("data/stat.csv", col_types = cols())
+# for (i in 1:nrow(tmp)) {
+#    fileN <- fNameUB(tmp$instance[i], tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
+#    if (file.exists(fileN)) pts <- read_csv(fileN, col_types = cols())
+#    else message("Error: File ", fileN, " doesn't exist but has a row in stat.csv! Old results?")
+#    tmp %>% slice(i) %>% select(instance, nodesel, varsel, OB, tpstotal)
+#    if (tmp$tpstotal[i] < pts$time[nrow(pts)] - 0.1)
+#       message("Error: Last cpu time in UB set is higher than tpstotal in stat.csv (file: ", fileN, ", row: ", i, ")!")
+# }
 
 
 message("\nCreate json files with classification of points:\n")
@@ -120,6 +124,10 @@ ErrorCheckYN <- function(ptsYN, ptsUB, fileNYN, fileNUB) {
 }
 ResultsAlreadyGen <- function(fileNJson) {
    if (file_exists(fileNJson)) {
+      ## check if epsilon added
+      # lst <- jsonlite::fromJSON(fileNJson)
+      # if (is.null(lst$misc$inputStat$epsilon)) return(FALSE)
+      ## check if cpu the same
       # cpu <- datJson %>% dplyr::filter(instance == iName, nodesel == tmp$nodesel[i], varsel == tmp$varsel[i], OB == tmp$OB[i]) %>% pull(tpstotal)
       # if (tmp$tpstotal[i] == cpu) next  # use cpu time as indicator for old reslut
       # message("Delete old ", fileNJson, " file (cpu not equal)!")
@@ -132,7 +140,7 @@ ResultsAlreadyGen <- function(fileNJson) {
 
 resFiles <- list.files(recursive = T)
 start_time <- now()
-regenerate <- T
+regenerate <- FALSE
 for (iName in unique(dat$instance)) {
    if (MissingInstance(iName)) next
    tmp <- dat %>% dplyr::filter(instance == iName)
@@ -141,7 +149,7 @@ for (iName in unique(dat$instance)) {
 
    diff <- as.duration(now() - start_time)
    message("\nDuration: ", diff,"\n")
-   if (diff > 60*60) {message("\nStop script. Max time obtained."); break}
+   if (diff > 60*30) {message("\nStop script. Max time obtained."); break}
 
    message("Instance: ", iName)
    for (i in 1:nrow(tmp)) {
@@ -306,6 +314,7 @@ for (iName in unique(dat$instance)) {
 #' }
 
 warnings()
+sink(type = "message")
 sink()
 
 #' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html

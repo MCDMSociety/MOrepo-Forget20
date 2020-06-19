@@ -1,28 +1,10 @@
-#' ---
-#' title: "Script for generating statistics.csv"
-#' author: "Lars Relund"
-#' output:
-#'    html_document:
-#'      self_contained: true
-#'      theme: united
-#'      highlight: tango
-#'      df_print: paged
-#'      code_folding: show
-#'      toc: true
-#'      toc_float: true
-#' ---
+### Script for generating statistics.csv
 
-#+ include = FALSE
-library(knitr)
-knitr::opts_chunk$set(
-   collapse = TRUE,
-   comment = "#>", message=FALSE, include = TRUE,
-   cache = TRUE, autodep = TRUE, error = TRUE, warning =  TRUE,
-   out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.62
-)
-options(nwarnings = 100)
-sink("results/convert/json_gen_stat_csv.log", append=F, split=T)
-
+options(width = 100, nwarnings = 10000)
+setwd("./results/convert")
+logF <- file("json_gen_stat_csv.log", open = "wt")
+sink(logF, type = "message")
+sink(logF, split = T, type = "output")
 
 #' This script is used to generate the aggregated statistics stored in `statistics.csv` in the
 #' `results` subfolder
@@ -36,12 +18,15 @@ library(tidyverse)
 library(jsonlite)
 library(lubridate)
 options(width = 100)
-setwd("./results/convert")
+
+### Run date
 now()
 
+message("Add lines to statistics.csv:")
 resJsonFiles <- list.files("..", ".json", full.names = T)
 dat <- NULL
 for (i in 1:length(resJsonFiles)) {
+   message("File: ", resJsonFiles[i], " | ", appendLF = F)
    lst <- jsonlite::fromJSON(resJsonFiles[i])
    outS <- lst$misc$outputStat
    outS$yNStat <- NULL
@@ -82,10 +67,11 @@ for (i in 1:length(resJsonFiles)) {
    )
    dat <- bind_rows(dat, res)
 }
+message("\nFinished.\nWrite to csv.")
+
 # dat
 # dat <- type_convert(dat)
 write_csv(dat, "../statistics.csv")
 warnings()
+sink(type = "message")
 sink()
-
-#' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html
