@@ -384,10 +384,12 @@ The list of instances where a different number of non-dominated points in some o
 
 ```{r}
 tmp <- read_csv("../convert/data/stat.csv", col_types = cols()) %>% 
+  filter(solved == 1) %>% 
   group_by(instance) %>% 
   distinct(YN) %>% 
-  summarise(ctr = n()) %>% 
-  dplyr::filter(ctr > 1)
+  summarize(ctr = n()) %>% 
+  dplyr::filter(ctr > 1) %>% 
+  arrange(instance)
 ```
 
 Currently we have instabilities with instances: `r tmp$instance`.
