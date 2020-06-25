@@ -118,8 +118,9 @@ The purpose of the computational study is to answer the following questions:
   1) Depth of tree in AP vs KP?
   1) Do integer rounding improve the performance?
   1) How is the performance of the tri-objective B&B algorithm compared to objective branching algorithms?
+  
+  
   Statistic: Number of nodes in the tree relative to total possible given depth
-  Plot reverse profiles (y = %, x = n)
 
 <!-- ### Old questions -->
 <!-- We first consider  -->
@@ -205,6 +206,8 @@ datNotStable <- read_csv("../convert/data/stat.csv", col_types = cols()) %>%
   distinct(YN) %>%
   summarise(ctr = n()) %>%
   dplyr::filter(ctr > 1)
+
+datObNC <- datAll %>% filter(OB == "N" | OB == "C")
 ```
 
 ```{r Define color scales}
@@ -464,8 +467,16 @@ ggplot(datAll %>%
 
 [Warning: Have to be carefull here and only include instances with all configs solved!!!]
 
-Performance plots for the different algorithm configurations are given in Figure \@ref(fig:perfPlot). If we rank the configurations with respect to mean cpu time, the worst are 
+Performance plots for the different algorithm configurations are given in Figure \@ref(fig:perfPlot). If we rank the configurations with respect to mean cpu time for all instances, the worst sequence from best to worst are `r datAll %>% group_by(algConfig) %>% summarize(cpu = mean(tpstotal)) %>% arrange(cpu) %>% pull(algConfig)`.
 
+```{r}
+datAll %>% group_by(algConfig) %>% summarize(cpu = mean(tpstotal)) %>% arrange(cpu) %>% kable()
+
+datAll %>% group_by(algConfig, pb) %>% summarize(cpu = mean(tpstotal)) %>% arrange(pb, cpu) %>% kable()
+```
+
+
+[Better as histrogram??]
 
 ```{r revPerfPlot, fig.cap="Reverse performance plots for the different problem classes", layout="l-screen-inset"}
 ggplot(datAll %>% 
@@ -606,6 +617,20 @@ Results for each instance group and algorithm configuration are given in \@ref(t
 [Discussion based on a table where drop the exact columns, I have added some statistics here that we may drop later.]
 
 [What more need to be included in the table?]
+
+
+
+# Variable selection strategy
+
+Average results based on different groupings:
+
+```{r}
+datObNC %>% group_by(varsel) %>% summarise(cpu = mean(tpstotal), nodes = mean(nbnodes)) %>% arrange(cpu) %>% kable()
+datObNC %>% group_by(varsel, pb) %>% summarise(cpu = mean(tpstotal), nodes = mean(nbnodes)) %>% arrange(pb, cpu) %>% kable()
+datObNC %>% group_by(nodesel, varsel, pb) %>% summarise(cpu = mean(tpstotal), nodes = mean(nbnodes)) %>% arrange(nodesel, pb, cpu) %>% kable()
+```
+
+
 
 # ToDo
 
