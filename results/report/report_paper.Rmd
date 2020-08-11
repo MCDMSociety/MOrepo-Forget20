@@ -69,16 +69,30 @@ options(knitr.kable.NA = '')
 
 [See https://rstudio.github.io/distill/ on how to write this report.]
 
+In this section we report on the computational experiments conducted with the tri–objective
+branch–and–bound algorithm. All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz processor and 16GB of RAM memory.
+
 All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.
 
-In this section we report on the computational experiments conducted with the tri–objective
-branch–and–bound algorithm. All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz processor and 32GB of RAM memory [check if correct].
+In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used. To avoid parsing a lot a files at each node in our code, a wrapper that calls bensolve, retrieve some outputs and insert them directly in our code as matrices, has been implemented. Numerical instabilities leading to missing non-dominated points in the final output have been detected while building the hyperplanes representation of the lower bound set. We refer the reader to [report, section Numerical instabilities] for more information and on how they are handled (see `eps` parameter). With this value of `eps`, no instance with non-dominated points for some configurations have been detected.
+
+Regarding the variable selection, the rule slightly differs depending on whether objective branching is applied or not. If no objective branching is performed, the algorithm will branch on the free variable that is the most often fractional among the extreme points of the lower bound set, in case at least one of the variable has a fractionnal value. If no variable has a fractional value in any of the extreme points, the variable that is the most often different (i.e. with the average value closest to $0.5$) is chosen. If multiple choices are possible, the variable with the smallest index will be chosen.
+
+If objective branching is enabled, the rule is the same, except that a different variable may be chosen in each sub-problem. Indeed, given a sub-problem $P(\eta,s)$ in the objective space, only the extreme points of the lower bound set included in $P(\eta,s)$ (i.e. that dominates $s$) will be considered. In case there are multiple possible choices or no extreme point included in $P(\eta,s)$, the variable with the smallest index will be chosen.
 
 The algorithm can be run using *algorithm configuration* parameters `nS`, `vS`, `oB` and `eps` where
 
-[explanation of the different configurations with possible refs to sections in paper]
+* `nS` denotes the node selection method (Step 1 of Algorithm 1). Two of them are explored here:
+  + `B`: breadth first strategy
+  + `D`: depth first strategy
+* `vS` denotes the variable selection method. In this paper, it is fixed to the rule explained previously. We refer the reader to [report] for alternative rules.
+* `oB` denotes the objective branching strategy. Three configurations are tested here:
+  + `N`: no objective branching is performed. This is the equivalent of skipping Step 4 of Algorithm 1. This configuration is used to compare the use of objective branching against no use of objective branching.
+  + `E`: objective branching is applied as described in Algorithm 2.
+  + `C`: objective branching is applied, but [explain this configuration in the theoretical part]
+* `eps`: parameter used to avoid numerical instabilities. This value is fixed to $0.001$ here. [used as a parameter ?]
 
-[Add other implementation details, e.g. about Bensolve and possible numerical instabilities]
+
 
 <!-- The branch and bound algorithm will always use the linear relaxation as lower bound set and the incumbent set as upper bound set. At each nodes, the extreme points of the lower bound set are checked for integrality and possibly added to the upper bound set. Different configurations are bases on: -->
 
@@ -106,23 +120,24 @@ The algorithm can be run using *algorithm configuration* parameters `nS`, `vS`, 
 
 The purpose of the computational study is to answer the following questions:
   
-[Just some ideas for the moment. Add/modify as you like]  
+<!--[Just some ideas for the moment. Add/modify as you like]  -->
   
-  1) What is the performance of the different algorithm configurations?
-  1) Which algorithm configurations perform the best?
-  1) Is it worth doing objective branching?
-  1) How do node selection, variable selection and objective branching affect the performance of the algorithm?
+  1) What is the performance of the different algorithm configurations and which configurations perform the best ? In particular, is it worth doing objective branching ?
+  1) Why does objective branching performs as it does ?
+  1) How is the performance of the tri-objective B&B algorithm compared to objective space search algorithms?
+  
+  <!-- 1) How do node selection, (variable selection) and objective branching affect the performance of the algorithm?
   1) In which subprocedures are the cpu time used?
   1) How are nodes pruned?
   1) Where in the tree do we use obj branching avg + min and max values (relative values and box plot)?
   1) Depth of tree in AP vs KP?
-  1) Do integer rounding improve the performance?
-  1) How is the performance of the tri-objective B&B algorithm compared to objective branching algorithms?
+  1) Do integer rounding improve the performance? -->
   
   
-  Statistic: Number of nodes in the tree relative to total possible given depth
   
-  [Only focus on mof variable sel]
+<!--  Statistic: Number of nodes in the tree relative to total possible given depth -->
+  
+<!--  [Only focus on mof variable sel] -->
 
 <!-- ### Old questions -->
 <!-- We first consider  -->
@@ -265,10 +280,19 @@ tabInput %>%
   pack_rows("UFLP", min(which(tabInput$pb == "UFLP")), max(which(tabInput$pb == "UFLP"))) 
 ```
 
-We consider a total of `r nrow(datInput)` instances [we may drop gapO and ratio] (see Table \@ref(tab:tabInput)) with ...
+[we may drop gapO and ratio]
 
+We consider a total of `r nrow(datInput)` instances (see Table \@ref(tab:tabInput)) with Assignment (AP), Knapsack (KP) and Uncapacitated Facility Location (UFLP) problems. The problem descriptions are given in [Appendix]. The number of variables is given by `n` for each instance class.
 
-[Description of instances, generation method and ref to other report + repo]
+The objective coefficients are generated on the non-dominated part (in minimisation) of a sphere, in the range [1,1000] and all coefficient are integer. This method of coefficients generation is used as it generates harder instances than just using random numbers in a given range. We refer the reader to [report] for more details.
+
+Regarding the Uncapacitated Facility Location instances, two sets of coefficients can be distinguished. The assignment costs ($c_{ij}^k$ in [Appendix]) are generated in the range [1,1000] and the opening costs ($f_j^k$ in [Appendix]) are generated in [1,100]. For each instance size, the number of facilities equals the number of customers.
+
+Regarding the Knapsack instances, the coefficients of the constraints $a_i$ are generated randomly in the range [1,15] and are integer. The right-hand side is given by $0.5\sum_{i=1}^n a_i$.
+
+<!--[Description of instances, generation method and ref to other report + repo] -->
+
+[input statistics ?]
 
 
 
@@ -367,6 +391,19 @@ We consider a total of `r nrow(datInput)` instances [we may drop gapO and ratio]
 
 # Output statistics
 
+The following statistics will be studied:
+
+* `cpu`: total CPU time expressed in seconds used to solve an instance with a given configuration
+* `YN`: size of $\mathcal{Y}_N$, i.e. number of non-dominated points
+  + `se`: number of supported extreme points
+  + `sne`: number of supported non-extreme points
+  + `us`: number of unsupported points
+* `node`: number of nodes explored to sovle an instance with a given configuration
+* `prune`: how leaf nodes are pruned
+  + `I`: number of leaf nodes pruned by infeasibility
+  + `O`: number of leaf nodes pruned by optimality
+  + `D`: number of leaf nodes pruned by dominance
+
 [Explanation of output statistics (a list)]
 
 <!-- This report only consider instances with cpu time within the interval [`r limSec[1]`, `r limSec[2]`]. For instances with a longer cpu time the algorithm is terminated and only a subset of the nondominated points are calculated.  -->
@@ -453,6 +490,8 @@ We consider a total of `r nrow(datInput)` instances [we may drop gapO and ratio]
 
 # What is the performance of the different algorithm configurations?
 
+In this section, performance profiles will be used to answer the question. It shows how many instances has been solved at any point in time for a given configuration. The greater this number is, the better the configuration is. Note that if the cpu time exceed 1800 seconds (30 minuts) for a configuration, the instance is considered as unsolved by it.
+
 [Should this be in percentages on y-axes?]
 
 ```{r perfPlot, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
@@ -468,8 +507,19 @@ ggplot(datAll %>%
   scale_color_nodesel_varsel + scale_linetype_ob
 ```
 
-[Warning: Have to be carefull here and only include instances with all configs solved!!!]
+In Figure \@ref(fig:perfPlot), only Assignment problems up to 64 variables, Knapsack problems up to 30 variables and Uncapacitated Facility Location problems up to 42 variables are considered.
 
+The first observation is that [exact version] seems to perform the worst, especially for Assignment and Uncapacited Facility Location problems. Although for Knapsack problems, this observation is less obvious, these configurations are still among the worst ones. Thus, the [exact version] will be discarded in the rest of this paper.
+
+[Plot: performance profiles without exact OB and for all instances]
+
+[Plot: histogram for winning configuration for each problem]
+
+OB in final results...
+
+Another observation is that in general, breadth first strategies tend to perform better than depth first strategies in this branch and bound framework. A possible explanation is that the linear relaxation of the problems studied is of good quality in the single-objective case [ref ?]. Thus, integer extreme points can be found very early (i.e. at a very low depth) in the branch and bound tree. For example, all the extreme points of the linear relaxation of a multi-objective assignment problem are integer and are thus new candidates for being part of the final non-dominated set. Hence, while using depth first strategies, the branch and bound algorithm tends to focus to specific parts of the objective space one by one; using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets.
+
+<!--
 Performance plots for the different algorithm configurations are given in Figure \@ref(fig:perfPlot). If we rank the configurations with respect to mean cpu time for all instances, the worst sequence from best to worst are `r datAll %>% group_by(algConfig) %>% summarize(cpu = mean(tpstotal)) %>% arrange(cpu) %>% pull(algConfig)`.
 
 ```{r}
@@ -477,9 +527,12 @@ datAll %>% group_by(algConfig) %>% summarize(cpu = mean(tpstotal)) %>% arrange(c
 
 datAll %>% group_by(algConfig, pb) %>% summarize(cpu = mean(tpstotal)) %>% arrange(pb, cpu) %>% kable()
 ```
+-->
+
 
 
 [Better as histrogram??]
+[Does these plots add knowledge to what we already know so far ?]
 
 ```{r revPerfPlot, fig.cap="Reverse performance plots for the different problem classes", layout="l-screen-inset"}
 ggplot(datAll %>% 
@@ -499,11 +552,11 @@ ggplot(datAll %>%
 
 Reverse performance plot for the different algorithm configurations are given in Figure \@ref(fig:revPerfPlot). 
 
-[Explain results and drop 'OB = exact' alg configs in the remaining. NOTE WITH THE CURRENT RESULTS THIS IS NOT THE CASE FOR KP!!]
 
+<!--# Which algorithm configurations perform the best? -->
+# Why does objective branching performs as it does ?
 
-
-# Which algorithm configurations perform the best?
+[remove "win" columns -> goes to histogram earlier ?]
 
 ```{r resTable, layout="l-screen-inset"}
 datBestCpu <- 
@@ -615,12 +668,34 @@ tabResults %>%
   scroll_box(width = "100%")
 ```
 
+<!--
 Results for each instance group and algorithm configuration are given in \@ref(tab:resTable). As can be seen ...
 
 [Discussion based on a table where drop the exact columns, I have added some statistics here that we may drop later.]
 
-[What more need to be included in the table?]
+[What more need to be included in the table?] -->
 
+As shown previously, using the [exact OB] isn't the most efficient configuration for the branch and bound algorithm. One could say that as it may create several sub-problems in the objective space, it may create more nodes in the branch and bound tree, which may lead to higher computational times if the algorithm cannot explore them all quickly enough.
+
+As it can be seen in \@ref(tab:resTable), it can be seen that, indeed, [exact] configurations tends to produce more nodes in the tree than the other configurations. However, it seems that these nodes are also explored slower than for other versions. For example, it can be seen in \@ref(tab:resTable) that for Knapsack problems for `n` = 30, the number of nodes for the configurations [depth / cone] and [depth / exact] is approximatively the same. However, the first configuration is about 3 times faster than the second one.
+
+As most of the computational time is spent in computing the lower bound set in the branch and bound tree (see [report]), this may indicates that the sub-problems generated in the [exact] configurations tends to be harder. This observation makes sense, as the purpose of [exact] objective branching is to produce more sub-problems (and thus get wider trees), hoping that the tree will go less deep by making more local decision. When we look at the average depth of the tree in \@ref(tab:resTable), it can be seen that it is generally lower for [exact] than for [cone]. Thus, the nodes in [exact] are closer to the root node. As the more a node is deep in the tree, the less complex the lower bound set tends to be (up to a single point at depth $n + 1$), those generated in the [exact] version are more complex and thus may take more time both to compute and for the dominance tests.
+
+This phenomenon may be minimized by introducing for exemple an updating procedure of the lower bound set, instead of a computation from scratch at each node as it is done currently in our implementation. Another way to improve and maybe make [exact] competitive would be to make more use of the local information provided by the sub-problems in the objective space. For example, as presented in [I have to find ref again, it's somewhere in my references list], pre-processing in the multi-objective case has much less impact than in the single-objective case as the efficient solutions may differ a lot. However, one could imagine that the efficient solutions are more likely to be alike and thus, by localising the branch and bound, pre-processing or introducing cuts may have a significantly more impact.
+
+Except for AP, the [cone] configurations are performing better than the [none] configurations. A first explanation is that, for the same number of sub-problems created at a given node, the focus will be only on a specific part of the objective space in the son nodes. Thus, the lower bound sets tends to be less complex (only computed in a specific part of the objective space, while fully computed in the [none] version), which means spending less time in the most expensive part of the branch and bound (computing the lower bound sets).
+
+In addition to that, the way nodes are fathomed is highly influenced. Indeed, in the [cone] configurations, the proportion of nodes fathomed by infeasibility tends to be much higher than for the [none] configurations. It comes from the fact that additional constraints are added in the [cone] configurations (and this phenomenon can be observed as well for [exact] configurations). Beside, fathoming a node by infeasibility is faster than fathoming a node by optimality or by dominance. Indeed, to fathom by dominance or optimality, having the lower bound set computed is required. On the contrary, testing the feasibility of the sub-problem is the first thing done when a node is chosen and is thus, a node fathomed by infeasibility is explored faster (see [report] for how much faster it is in practice).
+
+The case of AP is a special. Indeed, in the [none] version, as the single-objective AP is in P, all the extreme points of the lower bound sets will always be integer. Thus, when a variable is chosen for branching, the special branching rule is triggered and the one chosen is the variable that is the most often different. However, in the [cone] configurations, due to the fact that new constraints are added, the extreme points may have fractional values and thus, the branching rule differs from the [none] configurations. It seems to have a significant impact on the branch and bound tree, which make the [none] configurations be the best.
+
+In conclusion, it seems that objective branching can be very sensitive to the choices made in the other components of the branch and bound tree (variable selection, lower bound set, pre-processing...). The reader is refered to [report] to see even more about that.
+
+
+
+# How is the performance of the tri-objective B&B algorithm compared to objective space search algorithms?
+
+[need results]
 
 
 <!-- # Variable selection strategy -->
@@ -634,7 +709,7 @@ Results for each instance group and algorithm configuration are given in \@ref(t
 <!-- ``` -->
 
 
-
+<!--
 # ToDo
 
 Based on the above:
@@ -645,7 +720,7 @@ Based on the above:
 - Research questions and sequence?
 
 [OLD STUFF to be removed.]
-
+-->
 
 # Numerical instabilities
 
