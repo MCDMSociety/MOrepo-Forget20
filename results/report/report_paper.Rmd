@@ -72,6 +72,8 @@ options(knitr.kable.NA = '')
 In this section we report on the computational experiments conducted with the tri–objective
 branch–and–bound algorithm. All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz processor and 16GB of RAM memory.
 
+[operating system add]
+
 All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.
 
 In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used. To avoid parsing a lot a files at each node in our code, a wrapper that calls bensolve, retrieve some outputs and insert them directly in our code as matrices, has been implemented. Numerical instabilities leading to missing non-dominated points in the final output have been detected while building the hyperplanes representation of the lower bound set. We refer the reader to [report, section Numerical instabilities] for more information and on how they are handled (see `eps` parameter). With this value of `eps`, no instance with missing non-dominated points for some configurations have been detected.
@@ -159,6 +161,10 @@ The purpose of the computational study is to answer the following questions:
 
 
 # Test instances
+
+[add instances with only cone and none as well]
+
+[for ex KP 35 -> 21 config with at least 1 config solved -> put 30* instead]
 
 ```{r load instance results}
 toLink <- function(inst) {
@@ -488,10 +494,15 @@ The following statistics will be considered:
 
 # What is the performance of the different algorithm configurations?
 
+[change title to "comparison of..."]
+
 In this section, performance profiles will be used to answer the question. It shows how many instances has been solved at any point in time for a given configuration. The greater this number is, the better the configuration is. Note that if the cpu time exceed 1800 seconds (30 minuts) for a configuration, the instance is considered as unsolved for this configuration.
 
 [Should this be in percentages on y-axes? Yes]
 
+[add all the instances for these performance profiles]
+
+<!--eval = FALSE-->
 ```{r perfPlot, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
 tmp <- datAll %>%
     group_by(algConfig, pb) %>%
@@ -524,9 +535,7 @@ ggplot(tmp) +
 
 In Figure \@ref(fig:perfPlot), only Assignment problems up to 64 variables, Knapsack problems up to 30 variables and Uncapacitated Facility Location problems up to 42 variables are considered.
 
-The first observation is that `B|E` and `D|E` seem to perform the worst, especially for Assignment and Uncapacited Facility Location problems. Although for Knapsack problems, this observation is less obvious, these configurations are still among the worst ones. Thus, the `B|E` and `D|E` will be discarded in the rest of this paper. [Reason for this?]
-
-[Plot: performance profiles without exact OB and for all instances]
+The first observation is that `B|E` and `D|E` seem to perform the worst, especially for Assignment and Uncapacited Facility Location problems. Although for Knapsack problems, this observation is less obvious, these configurations are still among the worst ones. Thus, the `B|E` and `D|E` will be discarded in the rest of this paper. [say that we discard it in the enxt section, after explanations]
 
 [Plot: histogram for winning configuration for each problem]
 
@@ -548,6 +557,8 @@ datAll %>% group_by(algConfig, pb) %>% summarize(cpu = mean(tpstotal)) %>% arran
 
 [Better as histrogram??]
 [Do we have something new to say with these plots ?]
+
+[put this plot as curved lines]
 
 ```{r revPerfPlot, fig.cap="Reverse performance plots for the different problem classes", layout="l-screen-inset"}
 ggplot(datAll %>% 
@@ -571,8 +582,11 @@ Reverse performance plot for the different algorithm configurations are given in
 <!--# Which algorithm configurations perform the best? -->
 # Why does objective branching performs as it does ?
 
-[remove "win" columns -> goes to histogram earlier ?]
-[split this table into plots ?]
+[LRN : win column in percentages + "ghost" column for unsolved] [or as a plot -> (n,%)]
+
+[NF : comment about YN, about se, ns...]
+
+[LRN : prune column as stack plot]
 
 ```{r resTable, layout="l-screen-inset"}
 datBestCpu <- 
