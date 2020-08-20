@@ -180,7 +180,7 @@ datAll <- read_csv("../statistics.csv") %>%   #"../convert/data/stat.csv"
          YNusRatio = 1-YNs/YN, 
          YNsneRatio = (YNs-YNse)/YN,
          algConfig = tolower(str_c(nodesel, varsel, OB, sep="|")),
-         nodeselVarsel = tolower(str_c(nodesel, varsel, sep="|")),
+         nodeselVarsel = tolower(str_c(nodesel, sep="|")),   #nodeselVarsel = tolower(str_c(nodesel, varsel, sep="|")),
          resultName = str_c(instance, algConfig, sep="_")) %>% 
   mutate(algConfig = tolower(str_c(nodesel, OB, sep="|")))
 algConfigsN <- length(unique(datAll$algConfig))
@@ -282,9 +282,11 @@ tabInput %>%
 
 [I think we can drop gapO and ratio, I don't think it adds much of information here, especially since we only have spheredown instances]
 
+[Drop UFLP n=56, KP n=35??]
+
 We consider a total of `r nrow(datInput)` instances (see Table \@ref(tab:tabInput)) with Assignment (AP), Knapsack (KP) and Uncapacitated Facility Location (UFLP) problems. The problem descriptions are given in [Appendix]. The number of variables is given by `n` for each instance class.
 
-The objective coefficients are generated on the non-dominated part (in minimisation) of a sphere, in the range [1,1000] and all coefficient are integer. This method of coefficients generation is used as it generates harder instances than just using random numbers in a given range. We refer the reader to [report] for more details.
+The objective coefficients are generated on the non-dominated part (in minimisation) of a sphere, in the range [1,1000] and all coefficient are integer. This method of coefficients generation is used as it generates harder instances than just using random numbers in a given range. We refer the reader to [link to package] for more details.
 
 Regarding the UFLP instances, two sets of coefficients can be distinguished. The assignment costs ($c_{ij}^k$ in [Appendix]) are generated in the range [1,1000] and the opening costs ($f_j^k$ in [Appendix]) are generated in [1,100]. For each instance size, the number of facilities equals the number of customers.
 
@@ -488,24 +490,41 @@ The following statistics will be considered:
 
 In this section, performance profiles will be used to answer the question. It shows how many instances has been solved at any point in time for a given configuration. The greater this number is, the better the configuration is. Note that if the cpu time exceed 1800 seconds (30 minuts) for a configuration, the instance is considered as unsolved for this configuration.
 
-[Should this be in percentages on y-axes?]
+[Should this be in percentages on y-axes? Yes]
 
 ```{r perfPlot, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
-ggplot(datAll %>%
-         group_by(algConfig, pb) %>%
-         arrange(tpstotal) %>%
-         mutate(count = row_number())) +
+tmp <- datAll %>%
+    group_by(algConfig, pb) %>%
+    arrange(tpstotal) %>%
+    mutate(count = row_number()) %>% 
+  group_by(pb, algConfig, tpstotal) %>% 
+  arrange(pb, algConfig, tpstotal, count) %>% 
+  filter(tpstotal != 1800 | row_number() == 1) 
+ggplot(tmp) +
   geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
+  # geom_step(aes(y=..y.., x=tpstotal, color = nodeselVarsel, linetype = OB), stat="ecdf") +
   facet_grid(rows = vars(pb), scales = "free") +
   ggtitle(str_c("Number of instances solved within a given cpu time")) +
   labs(color = "nS:", linetype = "oB:") +
-  theme(legend.position="bottom") + xlab("cpu") +
+  theme(legend.position="bottom") + xlab("cpu") + ylab("count") + 
+  scale_color_nodesel_varsel + scale_linetype_ob
+```
+
+```{r perfPlotPct, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
+ggplot(tmp) +
+  # geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
+  geom_step(aes(y=..y.., x=tpstotal, color = nodeselVarsel, linetype = OB), stat="ecdf") +
+  # geom_point(aes(y=..y.., x=tpstotal, color = nodeselVarsel, linetype = OB), stat="ecdf", size = 1) +
+  facet_grid(rows = vars(pb), scales = "free") +
+  ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  labs(color = "nS:", linetype = "oB:") +
+  theme(legend.position="bottom") + xlab("cpu") + ylab("%") + coord_cartesian(expand = FALSE, ylim = c(0, 1.05)) + 
   scale_color_nodesel_varsel + scale_linetype_ob
 ```
 
 In Figure \@ref(fig:perfPlot), only Assignment problems up to 64 variables, Knapsack problems up to 30 variables and Uncapacitated Facility Location problems up to 42 variables are considered.
 
-The first observation is that `B|E` and `D|E` seem to perform the worst, especially for Assignment and Uncapacited Facility Location problems. Although for Knapsack problems, this observation is less obvious, these configurations are still among the worst ones. Thus, the `B|E` and `D|E` will be discarded in the rest of this paper.
+The first observation is that `B|E` and `D|E` seem to perform the worst, especially for Assignment and Uncapacited Facility Location problems. Although for Knapsack problems, this observation is less obvious, these configurations are still among the worst ones. Thus, the `B|E` and `D|E` will be discarded in the rest of this paper. [Reason for this?]
 
 [Plot: performance profiles without exact OB and for all instances]
 
