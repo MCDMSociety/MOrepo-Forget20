@@ -70,9 +70,8 @@ options(knitr.kable.NA = '')
 [See https://rstudio.github.io/distill/ on how to write this report.]
 
 In this section we report on the computational experiments conducted with the tri–objective
-branch–and–bound algorithm. All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz processor and 16GB of RAM memory.
+branch–and–bound algorithm. All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz processor and 16GB of RAM memory, using Linux Ubuntu 14.04 LTS.
 
-[operating system add]
 
 All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.
 
@@ -162,9 +161,9 @@ The purpose of the computational study is to answer the following questions:
 
 # Test instances
 
-[add instances with only cone and none as well]
+[LRN: add instances with only cone and none as well]
 
-[for ex KP 35 -> 21 config with at least 1 config solved -> put 30* instead]
+[LRN: put a star for n if some instances are unsolved for all configurations. For ex KP 35 -> 21 config with at least 1 config solved -> put 30* instead]
 
 ```{r load instance results}
 toLink <- function(inst) {
@@ -286,9 +285,7 @@ tabInput %>%
   pack_rows("UFLP", min(which(tabInput$pb == "UFLP")), max(which(tabInput$pb == "UFLP"))) 
 ```
 
-[I think we can drop gapO and ratio, I don't think it adds much of information here, especially since we only have spheredown instances]
-
-[Drop UFLP n=56, KP n=35??]
+[LRN: I think we can drop gapO and ratio, I don't think it adds much of information here, especially since we only have spheredown instances]
 
 We consider a total of `r nrow(datInput)` instances (see Table \@ref(tab:tabInput)) with Assignment (AP), Knapsack (KP) and Uncapacitated Facility Location (UFLP) problems. The problem descriptions are given in [Appendix]. The number of variables is given by `n` for each instance class.
 
@@ -408,10 +405,10 @@ The following statistics will be considered:
   + `O`: number of leaf nodes pruned by optimality
   + `D`: number of leaf nodes pruned by dominance
 
-[If statistics are missing, feel free to let me know]
+<!--[If statistics are missing, feel free to let me know]-->
 
 <!-- This report only consider instances with cpu time within the interval [`r limSec[1]`, `r limSec[2]`]. For instances with a longer cpu time the algorithm is terminated and only a subset of the nondominated points are calculated.  -->
-<!-- <!-- More detailed results for each instance can be seen in the files named `[instanceName]_results.html` ([see for instance this example](instance.html)). --> -->
+<!-- <!-- More detailed results for each instance can be seen in the files named `[instanceName]_results.html` ([see for instance this example](instance.html)). -->
 
 <!-- A set of statistics are stored for each instance and algorithm run. The statistics are stored in a [json result file (v1.0)](https://github.com/MCDMSociety/MOrepo/blob/master/contribute.md) for each instance and algorithm configuration named `[Instance name]_[Algorithm config]_result.json`. Most statistics are aggregated in file `stat.csv`. -->
 
@@ -492,15 +489,11 @@ The following statistics will be considered:
 <!-- `yNStat` are sorted in exactly the same order as $\mathcal{X}_E$, i.e. each row represent the non-dominated point and its corresponding solution. -->
 
 
-# What is the performance of the different algorithm configurations?
-
-[change title to "comparison of..."]
+# Comparison of the performance of the different configurations
 
 In this section, performance profiles will be used to answer the question. It shows how many instances has been solved at any point in time for a given configuration. The greater this number is, the better the configuration is. Note that if the cpu time exceed 1800 seconds (30 minuts) for a configuration, the instance is considered as unsolved for this configuration.
 
-[Should this be in percentages on y-axes? Yes]
-
-[add all the instances for these performance profiles]
+[LRN: add all the instances for these performance profiles (consider the "exact" configurations as unsolved for larger instances, given the fact that there are many unsolved for even smaller instances, even thought we don't have the statistic for it ?)]
 
 <!--eval = FALSE-->
 ```{r perfPlot, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
@@ -535,11 +528,14 @@ ggplot(tmp) +
 
 In Figure \@ref(fig:perfPlot), only Assignment problems up to 64 variables, Knapsack problems up to 30 variables and Uncapacitated Facility Location problems up to 42 variables are considered.
 
-The first observation is that `B|E` and `D|E` seem to perform the worst, especially for Assignment and Uncapacited Facility Location problems. Although for Knapsack problems, this observation is less obvious, these configurations are still among the worst ones. Thus, the `B|E` and `D|E` will be discarded in the rest of this paper. [say that we discard it in the enxt section, after explanations]
+The first observation is that `B|E` and `D|E` seem to perform the worst, especially for AP and UFLP. Although for KP, this observation is less obvious, these configurations are still among the worst ones. Both for KP and UFLP, the best objective branching configuration is the `C`, while it performs better to don't have any objective branching prodecure for AP. These observations will be explored with more details in the next section.
 
-[Plot: histogram for winning configuration for each problem]
+<!--Thus, the `B|E` and `D|E` will be discarded in the rest of this paper. [say that we discard it in the enxt section, after explanations]-->
 
-OB in final results...
+[LRN: Plot for winning configurations -> `n` as x-axis and percentages of instances as y-axis. Have a color for the 6 configurations + another one for unsolved instances for all the configurations. Do a "stack plot", in the spirit of the plot called "Pct for each configuration given 10 bins" in Research question 3 from the old report]
+[extra observation: with such a plot, we will be able to see that the number of unsolved instances grows with the size of the instance as well]
+
+[NF: a few words about winning configurations]
 
 Another observation is that in general, breadth first strategies tend to perform better than depth first strategies in this branch and bound framework. A possible explanation is that the linear relaxation of the problems studied is of good quality in the single-objective case [ref ?]. Thus, integer extreme points can be found very early (i.e. at a very low depth) in the branch and bound tree. For example, all the extreme points of the linear relaxation of an AP are integer and are thus new candidates for being part of the final non-dominated set. Hence, while using depth first strategies, the branch and bound algorithm tends to focus to specific parts of the objective space one by one; using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier.
 
@@ -555,10 +551,7 @@ datAll %>% group_by(algConfig, pb) %>% summarize(cpu = mean(tpstotal)) %>% arran
 
 
 
-[Better as histrogram??]
-[Do we have something new to say with these plots ?]
-
-[put this plot as curved lines]
+[Make curved lines for this plot, so that it becomes easier to read (in case we want to keep it)]
 
 ```{r revPerfPlot, fig.cap="Reverse performance plots for the different problem classes", layout="l-screen-inset"}
 ggplot(datAll %>% 
@@ -582,11 +575,11 @@ Reverse performance plot for the different algorithm configurations are given in
 <!--# Which algorithm configurations perform the best? -->
 # Why does objective branching performs as it does ?
 
-[LRN : win column in percentages + "ghost" column for unsolved] [or as a plot -> (n,%)]
+[LRN: prune column as stack plot. One color for infeasibility, optimality and dominance. `n` as x-axis, percentages as y-axis.]
 
-[NF : comment about YN, about se, ns...]
+[LRN: number of nodes as a plot. One line for each configuration, `n` as x-axis, number of nodes as y-axis.]
 
-[LRN : prune column as stack plot]
+[LRN: average depth as a plot. One line for each configuration, `n` as x-axis, average depth as y-axis. You may drop the `N` configurations for OB here, as they are not used.]
 
 ```{r resTable, layout="l-screen-inset"}
 datBestCpu <- 
@@ -730,7 +723,9 @@ The principle of the algorithm from [ref Tamby] is to explore sub-problems that 
 
 As the LP solver in Bensolve is GLPK, the MIP solver that we will use for this algorithm is GLPK as well. Due to a technical constraint in the chosen programming language (Julia), the MIP solver could not be warmstarted. Hence, one should keep in mind that the cpu times for the objective space search algorithm are upper bounds on their actual cpu time.
 
-[need results]
+[LRN: performance profile -> best config B&B vs Objective Space Search (OSS) algorithm. See stat_OSS.csv, columns "solved" (1 if instance solved, 0 otherwise) and "cpu" (cpu time expressed in seconds) for OSS algorithm. One performance profile per problem class ?]
+
+[NF: a few words about the results]
 
 
 <!-- # Variable selection strategy -->
