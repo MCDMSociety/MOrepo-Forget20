@@ -17,6 +17,9 @@ source("functions.R")
 ### Date of run
 now()
 
+
+
+#### Branch and bound results ####
 ### Get all instances
 instances <- list.files("../../instances/raw/", recursive = T) %>%
    str_remove(".*/") %>% str_remove(".raw")
@@ -109,8 +112,8 @@ ErrorCheckConfig <- function(iName, datConfig, fileNYN) {
       message("Error: ", iName, ". Different number of nondominated points when compare exact solutions for different alg. configs in stat.csv!", sep="")
       return(TRUE)
    }
-   if (!file.exists(fileNYN)) {
-      message("Error: ", fileNYN, " don't exists!", sep = "")
+   if (!file.exists(fileNYN) & nrow(datConfig %>% dplyr::filter(solved == 1)) > 0) {
+      message("Error: A config found an exact solution but ", fileNYN, " don't exists!", sep = "")
       return(TRUE)
    }
    return(FALSE)
@@ -144,6 +147,7 @@ regenerate <- FALSE
 for (iName in unique(dat$instance)) {
    if (MissingInstance(iName)) next
    tmp <- dat %>% dplyr::filter(instance == iName)
+   exactSolution <- nrow(tmp %>% dplyr::filter(solved==1)) > 0
    resFilesTmp <- grep(str_c(iName, "_"), resFiles, value = T)
    if (MissingResultFiles(iName, resFilesTmp)) next
 
@@ -159,21 +163,20 @@ for (iName in unique(dat$instance)) {
       fileNUB <- fNameUB(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
       if (ErrorCheckConfig(iName, tmp, fileNYN)) next
       if (!regenerate & ResultsAlreadyGen(fileNJson)) next
-      pts0 <- read_csv(fileNYN, col_types = cols())[,1:tmp$p[1]] %>%
-         mutate(rowId = 1:nrow(.))
-      pts <- classifyNDSet(pts0[,1:(ncol(pts0)-1)]) %>%
-         select(-(se:us), type = "cls")
       pts1 <- read_csv(fileNUB, col_types = cols())
-      pts2 <- full_join(pts,pts1, by = c("z1", "z2", "z3"))
-      pts3 <- pts %>% slice(0)
-      if (tmp$solved[i] == 1) {
-         if (ErrorCheckYN(pts, pts2, fileNYN, fileNUB)) next
-         pts3 <- pts
-      } else {
-         pts3 <- pts1[,1:tmp$p[i]]
-         pts3 <- pts3 %>% mutate(type = NA)
+      pts3 <- pts1[,1:tmp$p[i]]
+      pts3 <- pts3 %>% mutate(type = NA)
+      if (exactSolution) {
+         pts0 <- read_csv(fileNYN, col_types = cols())[,1:tmp$p[1]] %>%
+            mutate(rowId = 1:nrow(.))
+         pts <- classifyNDSet(pts0[,1:(ncol(pts0)-1)]) %>%
+            select(-(se:us), type = "cls")
+         pts2 <- full_join(pts,pts1, by = c("z1", "z2", "z3"))
+         if (tmp$solved[i] == 1) {
+            if (ErrorCheckYN(pts, pts2, fileNYN, fileNUB)) next
+            pts3 <- pts
+         }
       }
-
       misc <- list(
          algConfig = tmp %>% select(nodesel:OB) %>% slice(i) %>% as.list(),
          inputStat = list(
@@ -313,8 +316,21 @@ for (iName in unique(dat$instance)) {
 #'    # message("\n")
 #' }
 
+#### Objective space search results ####
+
+
+
+
+
+
+
+
+
+
+#### Close files ####
+
 warnings()
 sink(type = "message")
 sink()
 
-#' For how to compiling reports from R script see https://rmarkdown.rstudio.com/articles_report_from_r_script.html
+

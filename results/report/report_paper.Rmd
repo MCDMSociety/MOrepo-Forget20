@@ -20,6 +20,8 @@ output:
   distill::distill_article:
     toc: true
     toc_depth: 2
+bibliography: references.bib
+citation_url: https://mcdmsociety.github.io/MOrepo-Forget20/report_paper.html
 ---
 
 
@@ -65,17 +67,61 @@ knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 options(knitr.kable.NA = '')
 ```
 
-[*This report is a preliminary version of the computational results included in the paper. Only instances generated with option spheredown are used since they are hard instances.*]
+*This report is a preliminary version of the computational results included in the paper. Only instances generated with option spheredown are used since they are hard instances.*
 
-[See https://rstudio.github.io/distill/ on how to write this report.]
+<!-- See https://rstudio.github.io/distill/ on how to write this report. -->
 
 In this section we report on the computational experiments conducted with the tri–objective
-branch–and–bound algorithm. All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz processor and 16GB of RAM memory, using Linux Ubuntu 14.04 LTS.
-
+branch–and–bound algorithm. 
 
 All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.
 
-In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used. To avoid parsing a lot a files at each node in our code, a wrapper that calls bensolve, retrieve some outputs and insert them directly in our code as matrices, has been implemented. Numerical instabilities leading to missing non-dominated points in the final output have been detected while building the hyperplanes representation of the lower bound set. We refer the reader to [report, section Numerical instabilities] for more information and on how they are handled (see `eps` parameter). With this value of `eps`, no instance with missing non-dominated points for some configurations have been detected.
+The purpose of the computational study is to answer the following questions:
+  
+<!--[Just some ideas for the moment. Add/modify as you like]  -->
+  
+  1) What is the performance of the different algorithm configurations and which configurations perform the best ? In particular, is it worth doing objective branching ?
+  1) Why does objective branching performs as it does ?
+  1) How is the performance of the tri-objective B&B algorithm compared to objective space search algorithms?
+  
+  <!-- 1) How do node selection, (variable selection) and objective branching affect the performance of the algorithm?
+  1) In which subprocedures are the cpu time used?
+  1) How are nodes pruned?
+  1) Where in the tree do we use obj branching avg + min and max values (relative values and box plot)?
+  1) Depth of tree in AP vs KP?
+  1) Do integer rounding improve the performance? -->
+  
+  
+  
+<!--  Statistic: Number of nodes in the tree relative to total possible given depth -->
+  
+<!--  [Only focus on mof variable sel] -->
+
+<!-- ### Old questions -->
+<!-- We first consider  -->
+
+<!--   2. Which instances are hard to solve? -->
+<!--      a) What is the cpu for each instance? -->
+<!--      b) Which sphere generation instances are hardest to solve? -->
+<!--      c) What is the std.dev. within each instance group? -->
+<!--      d) In which subprocedures are the cpu time used? -->
+
+<!--   3. Which algorithm configuration is best? -->
+<!--      a) Is there a clear winner? -->
+<!--      b) Is the best node selection strategy affected by other algorithm configurations? -->
+<!--         * Are some problem classes solved best with one node selection strategy compared to others? -->
+<!--         * Are 'easy' problems solved best with one node selection strategy compared to others? -->
+<!--      c) Does different `OB` strategies affect the node selection strategy? -->
+
+<!--   4. How are nodes pruned? -->
+
+## Impelmentation details and algorithm configurations
+
+All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz processor and 16GB of RAM memory, using Linux Ubuntu 14.04 LTS.
+
+In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used. To avoid parsing a lot a files at each node in our code, a wrapper that calls bensolve, retrieve some outputs and insert them directly in our code as matrices, has been implemented. 
+
+Numerical instabilities leading to missing non-dominated points in the final output have been detected while building the hyperplanes representation of the lower bound set. The matrix used when finding the normal to each hyperplane may in a few cases be singular (its determinant is zero). Hence a small value `eps` has been introduced so that it the determinant is less that or equal `eps`, then the hyperplane is discarded. We refer the reader to the [section about numerical instabilities](https://mcdmsociety.github.io/MOrepo-Forget20/report.html#numerical-instablities) in @Forget20a for more information. We have used `eps`=[LRN: Value??] in all tests reported in this paper resulting in that no missing non-dominated points have been detected.
 
 Regarding the variable selection, the rule slightly differs depending on whether objective branching is applied or not. If no objective branching is performed, the algorithm will branch on the free variable that is the most often fractional among the extreme points of the lower bound set, in case at least one of the variables has a fractionnal value. If no variable has a fractional value in any of the extreme points, the variable that is the most often different (i.e. with the average value closest to $0.5$) is chosen. If multiple choices are possible, the variable with the smallest index will be chosen.
 
@@ -119,44 +165,7 @@ Hence, this leads to 6 configurations to be tested in this paper: `B|N`, `B|E`, 
 
 <!--   + unique cone: a unique sub-problem is created at each node. In this case, objective branching is applied on the nadir point of the local upper bounds dominated by the lower bound set. See [master thesis paper] for more details. -->
 
-The purpose of the computational study is to answer the following questions:
-  
-<!--[Just some ideas for the moment. Add/modify as you like]  -->
-  
-  1) What is the performance of the different algorithm configurations and which configurations perform the best ? In particular, is it worth doing objective branching ?
-  1) Why does objective branching performs as it does ?
-  1) How is the performance of the tri-objective B&B algorithm compared to objective space search algorithms?
-  
-  <!-- 1) How do node selection, (variable selection) and objective branching affect the performance of the algorithm?
-  1) In which subprocedures are the cpu time used?
-  1) How are nodes pruned?
-  1) Where in the tree do we use obj branching avg + min and max values (relative values and box plot)?
-  1) Depth of tree in AP vs KP?
-  1) Do integer rounding improve the performance? -->
-  
-  
-  
-<!--  Statistic: Number of nodes in the tree relative to total possible given depth -->
-  
-<!--  [Only focus on mof variable sel] -->
 
-<!-- ### Old questions -->
-<!-- We first consider  -->
-
-<!--   2. Which instances are hard to solve? -->
-<!--      a) What is the cpu for each instance? -->
-<!--      b) Which sphere generation instances are hardest to solve? -->
-<!--      c) What is the std.dev. within each instance group? -->
-<!--      d) In which subprocedures are the cpu time used? -->
-
-<!--   3. Which algorithm configuration is best? -->
-<!--      a) Is there a clear winner? -->
-<!--      b) Is the best node selection strategy affected by other algorithm configurations? -->
-<!--         * Are some problem classes solved best with one node selection strategy compared to others? -->
-<!--         * Are 'easy' problems solved best with one node selection strategy compared to others? -->
-<!--      c) Does different `OB` strategies affect the node selection strategy? -->
-
-<!--   4. How are nodes pruned? -->
 
 
 # Test instances

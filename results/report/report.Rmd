@@ -1,5 +1,5 @@
 ---
-title: "Computational results for the instances"
+title: "Computational results (all instances)"
 author: "Nicolas Forget, Lars Relund Nielsen, Sune Lauth Gadegaard"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
@@ -57,7 +57,7 @@ knitr::opts_chunk$set(
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 ```
 
-This report present the computational results for the instances in this repo. All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.  
+This report present the computational results for all the instances in this repo. All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.  
 
 # Instances
 
@@ -377,6 +377,7 @@ To proceed the dominance test in the branch and bound, the normal vector of each
 However, this system is sometimes close to be singular, leading to numerical instabilities in the components of the normal vectors. This imply that occasionally, a facet may be slightly not correctly oriented, which may be a problem in the dominance test (e.g. considering a local upper bound as non-dominated while it is dominated, and the other way around).
 
 Two equivalent epsilons can be introduced here in order to overcome these numerical instabilities. First, the facet such that the determinant of their matrix $M$ is too close to 0 are discarded. In other words, if $det(M) \leq \epsilon$, the facet is deleted. The other possibility is to move down the whole lower bound set by reducing from an epsilon the right-hand side of the equations of the facets, i.e. the equation of each facet $f \in \mathcal{L}(\eta)$ becomes $n^fy = d - \epsilon$ instead of $n^fy = d$. Both method produce weaker lower bound set, leading to greater computational times, but reducing the chances of missing a non-dominated point due to numerical instabilities.
+[LRN: Rewrite so fit the current setting]
 
 Very rarely, GLPK, the single-objective LP solver used by Bensolve, rises a warning for numerical instabilities as well. Unfortunately, there is no way for us to avoid these, but fortunately, these cases occur much less often.
 
