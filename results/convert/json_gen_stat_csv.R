@@ -22,6 +22,7 @@ options(width = 100)
 ### Run date
 now()
 
+#### Branch and bound results ####
 message("Add lines to statistics.csv:")
 resJsonFiles <- list.files("..", ".json", full.names = T)
 dat <- NULL
@@ -72,6 +73,35 @@ message("\nFinished.\nWrite to csv.")
 # dat
 # dat <- type_convert(dat)
 write_csv(dat, "../statistics.csv")
+
+
+
+#### Objective space search results (OSS) ####
+
+dat <- read_csv("data/stat.csv", col_types = cols()) %>%
+   mutate(instance = str_remove(instance, ".raw")) %>%
+   arrange(instance, nodesel, varsel, OB) %>%
+   filter(solved == 1) %>%
+   group_by(instance) %>%
+   slice(1) %>%
+   rownames_to_column()
+datOSS <- read_csv("data/stat_OSS.csv", col_types = cols()) %>%
+   arrange(instance) %>%
+   filter(solved == 1) %>%
+   rownames_to_column()
+
+## Check same number of solutions
+datJoin <- right_join(dat, datOSS, by = c("instance")) %>%
+   filter(YN.x != YN.y) %>%
+   mutate(errTxt = str_c("Error (", instance, "): YN not same size (B&B=", YN.x, " OSS=", YN.y,")"))
+cat(str_c(datJoin$errTxt, collapse = "\n"))
+
+datOSS <- datOSS %>%
+   filter(!(rowname %in% datJoin$rowname.y))
+write_csv(dat, "../statistics_oss.csv")
+
+
+
 warnings()
 sink(type = "message")
 sink()

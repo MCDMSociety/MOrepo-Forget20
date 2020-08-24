@@ -316,7 +316,7 @@ for (iName in unique(dat$instance)) {
 #'    # message("\n")
 #' }
 
-#### Objective space search results ####
+#### Objective space search results (OSS) ####
 
 
 
