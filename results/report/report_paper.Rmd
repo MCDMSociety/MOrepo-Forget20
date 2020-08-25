@@ -67,7 +67,7 @@ knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 options(knitr.kable.NA = '')
 ```
 
-*This report is a preliminary version of the computational results included in the paper. Only instances generated with option spheredown are used since they are hard instances.*
+*This report is a preliminary version of the computational results included in the paper. Only instances generated with option spheredown are used since they seems to be hard instances.*
 
 <!-- See https://rstudio.github.io/distill/ on how to write this report. -->
 
@@ -119,43 +119,22 @@ The purpose of the computational study is to answer the following questions:
 
 All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz processor and 16GB of RAM memory, using Linux Ubuntu 14.04 LTS.
 
-In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used. To avoid parsing a lot a files at each node in our code, a wrapper that calls bensolve, retrieve some outputs and insert them directly in our code as matrices, has been implemented. 
+In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used [@Bensolve]. To avoid parsing a lot a files at each node of the tree, we have implemented a wrapper that calls Bensolve, retrieve some outputs and insert them directly in our code as matrices. 
+Numerical instabilities leading to missing non-dominated points in the final output have been detected while building the hyperplanes representation of the lower bound set. The matrix used when finding the normal to each hyperplane may in a few cases be close to singular (its determinant is close to zero). Hence a small value `eps` has been introduced so that if the determinant is less than or equal `eps`, then the hyperplane is discarded. For more information, we refer the reader to the [section about numerical instabilities](https://mcdmsociety.github.io/MOrepo-Forget20/report.html#numerical-instablities) in @Forget20a. We have used `eps` $= 0.001$ in all tests reported in this paper resulting in that no missing non-dominated points have been detected.
 
-Numerical instabilities leading to missing non-dominated points in the final output have been detected while building the hyperplanes representation of the lower bound set. The matrix used when finding the normal to each hyperplane may in a few cases be singular (its determinant is zero). Hence a small value `eps` has been introduced so that it the determinant is less that or equal `eps`, then the hyperplane is discarded. We refer the reader to the [section about numerical instabilities](https://mcdmsociety.github.io/MOrepo-Forget20/report.html#numerical-instablities) in @Forget20a for more information. We have used `eps`=[LRN: Value??] in all tests reported in this paper resulting in that no missing non-dominated points have been detected.
+The variable selected in Step 5 of the algorithm differs depending on whether objective branching is applied or not. If no objective branching is performed, the algorithm will branch on the free variable that is the most often fractional among the extreme points of the lower bound set, given that at least one of the variables has a fractional value. If no variable has a fractional value in any of the extreme points, the variable that is the most often different (i.e. with the average value closest to $0.5$) is chosen. If objective branching is enabled, the rule is the same, except that a different variable may be chosen in each sub-problem. Indeed, given a sub-problem $P(\eta,s)$ in the objective space, only the extreme points of the lower bound set included in $P(\eta,s)$ (i.e. that dominates $s$) will be considered. In case there are multiple possible choices or no extreme point included in $P(\eta,s)$, the variable with the smallest index will be chosen.
 
-Regarding the variable selection, the rule slightly differs depending on whether objective branching is applied or not. If no objective branching is performed, the algorithm will branch on the free variable that is the most often fractional among the extreme points of the lower bound set, in case at least one of the variables has a fractionnal value. If no variable has a fractional value in any of the extreme points, the variable that is the most often different (i.e. with the average value closest to $0.5$) is chosen. If multiple choices are possible, the variable with the smallest index will be chosen.
+To test different algorithm configurations we use the following parameters:
 
-If objective branching is enabled, the rule is the same, except that a different variable may be chosen in each sub-problem. Indeed, given a sub-problem $P(\eta,s)$ in the objective space, only the extreme points of the lower bound set included in $P(\eta,s)$ (i.e. that dominates $s$) will be considered. In case there are multiple possible choices or no extreme point included in $P(\eta,s)$, the variable with the smallest index will be chosen.
-
-The algorithm can be run using *algorithm configuration* parameters `nS`, `vS`, `oB` and `eps` where
-
-* `nS` denotes the node selection method (Step 1 of Algorithm 1). Two of them are explored here:
-  + `B`: breadth first strategy
-  + `D`: depth first strategy
-* `vS` denotes the variable selection method. In this paper, it is fixed to the rule explained previously. We refer the reader to [report] for alternative rules.
-* `oB` denotes the objective branching strategy. Three configurations are tested here:
-  + `N`: no objective branching is performed. This is the equivalent of skipping Step 4 of Algorithm 1. This configuration is used to compare the use of objective branching against no use of objective branching.
+* `nS` denotes the node selection method (Step 1 of Algorithm 1). Two values are possible:
+  + `B`: breadth first strategy.
+  + `D`: depth first strategy.
+* `oB` denotes the objective branching strategy. Three configurations are tested:
+  + `N`: no objective branching is performed. This is the equivalent of skipping Step 4 of Algorithm 1. 
   + `E`: objective branching is applied as described in Algorithm 2.
-  + `C`: objective branching is applied as described in Section [4.3].
-* `eps`: parameter used to avoid numerical instabilities. This value is fixed to $0.001$ here.
+  + `C`: objective branching is applied as described in Section 4.3.
 
-Hence, this leads to 6 configurations to be tested in this paper: `B|N`, `B|E`, `B|C`, `D|N`, `D|E` and `D|C`. We refer the reader to [report] for more configurations (in particular with different `vS` and `eps`), but that are of lower interest for this paper.
-
-<!-- The branch and bound algorithm will always use the linear relaxation as lower bound set and the incumbent set as upper bound set. At each nodes, the extreme points of the lower bound set are checked for integrality and possibly added to the upper bound set. Different configurations are bases on: -->
-
-<!--   - `nodesel`: node selection strategy. -->
-<!--   - `varsel`: variable selection strategy. -->
-<!--   - `OB`: objective branching strategy. -->
-
-<!-- Combinations of `nodesel`, `varsel` and `OB` gives the configuration of the algorithm: -->
-
-<!-- * Node selection (`breadth`, `depth`): in the multi-objective branch and bound literature, depth first strategies are (almost) always used and are considered as better strategies than breadth first. However, if a problem with an "easy" single-objective version is solved, then many non-dominated points may be found in a node close to the root node, in the early stages of the tree. Hence, using a breadth first strategy may provide a better upper bound set earlier in the algorithm, as a larger number of points are expected to be found shallow in the tree while only a few points can be found at each node deep in the tree.  -->
-
-<!-- * Variable selection(`mof`, `mfavg`): to the best of our knowledge, no extensive study for variable selection has been conducted in the literature. Sometimes, this component is even not mentioned. As it is not the main purpose of this study, only two rules that rely on the characteristics of the lower bound set will be tested here. -->
-
-<!--   + mof: Most Often Fractional. The branching is operated on the variable that is the most often fractional among the extreme points of the lower bound set. -->
-
-<!--   + mfavg: Most Fractional on AVeraGe. The branching is operated on the variable such that its average value among the extreme points of the lower bound set is the most fractional, i.e. the closest to 0.5. -->
+This leads to 6 configurations: `B|N`, `B|E`, `B|C`, `D|N`, `D|E` and `D|C`. We refer the reader to @Forget20a where more configurations such as different variable selection rules (Step 5 of the algorithm).
 
 <!-- * Branching scheme (`none`, `exact`, `cone`): in a regular branch and bound, branching is operated (i.e. sub-problems are created) in the decision space. In the bi-objective case, it has been shown that creating additional sub-problems in the objective space (procedure called objective branching in this study) leads to better computational times. Three versions of the branch and bound will be tested: -->
 
@@ -167,12 +146,7 @@ Hence, this leads to 6 configurations to be tested in this paper: `B|N`, `B|E`, 
 
 
 
-
 # Test instances
-
-[LRN: add instances with only cone and none as well]
-
-[LRN: put a star for n if some instances are unsolved for all configurations. For ex KP 35 -> 21 config with at least 1 config solved -> put 30* instead]
 
 ```{r load instance results}
 toLink <- function(inst) {
@@ -197,20 +171,30 @@ datAll <- read_csv("../statistics.csv") %>%   #"../convert/data/stat.csv"
          nodeselVarsel = tolower(str_c(nodesel, sep="|")),   #nodeselVarsel = tolower(str_c(nodesel, varsel, sep="|")),
          resultName = str_c(instance, algConfig, sep="_")) %>% 
   mutate(algConfig = tolower(str_c(nodesel, OB, sep="|")))
+  # group_by(instance) %>% 
+  # mutate(minCpu = min(tpstotal), maxCpu = max(tpstotal)) %>% 
+  # mutate(unsolvedAllConfigs = if_else(maxCpu < limSec[1] | minCpu >= limSec[2], T, F))
 algConfigsN <- length(unique(datAll$algConfig))
 
+# tmp <- datAll %>% 
+#   group_by(instance) %>% 
+#   summarise(minCpu = min(tpstotal), maxCpu = max(tpstotal)) %>% 
+#   filter(maxCpu < limSec[1] | minCpu > limSec[2]) %>% 
+#   pull(instance)
+
 tmp <- datAll %>% 
-  group_by(instance) %>% 
-  summarise(minCpu = min(tpstotal), maxCpu = max(tpstotal)) %>% 
-  filter(maxCpu < limSec[1] | minCpu > limSec[2]) %>% 
+  group_by(pb, n, coef) %>% 
+  mutate(allUnsolved = 1 - max(solved)) %>% 
+  ungroup() %>% 
+  filter(allUnsolved == 1) %>% 
   pull(instance)
 
 datAll <- datAll %>% 
-  filter(!(instance %in% tmp)) %>% 
+  filter(!(instance %in% tmp)) %>%
   mutate(solved = if_else(tpstotal >= limSec[2] | solved == 0, 0, 1)) %>% 
-  group_by(instance) %>% 
-  filter(n() == algConfigsN) %>% 
-  ungroup() %>% 
+  # group_by(instance) %>% 
+  # filter(n() == algConfigsN) %>% 
+  # ungroup() %>% 
   mutate(tpstotal = if_else(tpstotal >= limSec[2], limSec[2], tpstotal),
          algConfig = abbrv(algConfig),
          coef = abbrv(coef),
@@ -222,8 +206,11 @@ nodeselVarselConfigs <- unique(datAll$nodeselVarsel)
 datNotSolved <- datAll %>% filter(solved == 0) 
 datSolved <- datAll %>% filter(solved == 1)
 datInput <- datAll %>% 
+  group_by(instance) %>%
+  mutate(unsolved = 1-max(solved)) %>%
+  ungroup() %>%
   distinct(instance, .keep_all = TRUE) %>% 
-  select(instance, pb, n, p, coef, contains("range"), ratioNDcoef)
+  select(instance, pb, n, p, coef, contains("range"), ratioNDcoef, unsolved)
 datWin <- 
   datAll %>% 
   group_by(instance) %>% 
@@ -238,6 +225,7 @@ datNotStable <- read_csv("../convert/data/stat.csv", col_types = cols()) %>%
   distinct(YN) %>%
   summarise(ctr = n()) %>%
   dplyr::filter(ctr > 1)
+if (nrow(datNotStable) > 0) stop("Instabilities found!")
 
 datObNC <- datAll %>% filter(OB == "N" | OB == "C")
 ```
@@ -262,6 +250,10 @@ scale_color_nodesel_varsel <- scale_color_manual(
   values = setNames(pal[c(1,3,9,11)], nodeselVarselConfigs),
   drop = F)
 
+scale_color_ob <- scale_color_manual(
+  values = setNames(pal[c(1,3,9,11)], c("breadth", "depth")),
+  drop = F)
+
 scale_color_nodesel <- scale_color_manual(
   values = c("breadth" = "red", "depth" = "green"),
   drop = F)
@@ -277,126 +269,49 @@ scale_linetype_valsel <- scale_linetype_manual(
 scale_linetype_ob <- scale_linetype_manual(
   values = c("cone" = 1, "exact" = 2, "None" = 3, "C" = 1, "E" = 2, "N" = 3),
   drop = F)
+
+scale_linetype_nodesel_varsel <- scale_linetype_manual(
+  values = c("cone" = 1, "exact" = 2, "None" = 3, "C" = 1, "E" = 2, "N" = 3, "B" = 1, "D" = 2),
+  drop = F)
 ```
 
 ```{r tabInput, layout="l-screen-inset",}
 tabInput <- datInput %>% 
   group_by(pb, n, coef) %>% 
-  summarise(instances = n(), rangeCoef = rangeC[1], gapO = mean(c(rangeGapZ1, rangeGapZ2, rangeGapZ3)), ratioNDCoef = mean(ratioNDcoef)) %>% 
-  ungroup()
+  summarise(instances = n(), 
+            rangeCoef = rangeC[1], 
+            gapO = mean(c(rangeGapZ1, rangeGapZ2, rangeGapZ3)), 
+            ratioNDCoef = mean(ratioNDcoef), 
+            someUnsolved = max(unsolved)) %>% 
+  ungroup() %>% 
+  group_by(pb) %>% 
+  summarise(n = str_c(n, collapse = ", "), 
+            instances = mean(instances), 
+            range = rangeCoef[1], ratio = mean(ratioNDCoef)
+            ) 
+  # mutate(n = str_c(n, if_else(someUnsolved == 1, "*", "")))
+# tabInput %>% 
+#   select(-pb, -coef, -someUnsolved, -gapO, -rangeCoef, -ratioNDCoef) %>%
+#   kable(digits = c(0,0), col.names = c("$n$", "#"),
+#         caption = "Instances used ($n$: number of variables, #: number of instances.") %>% 
+#   kable_styling(full_width = T) %>% 
+#   pack_rows("AP", min(which(tabInput$pb == "AP")), max(which(tabInput$pb == "AP"))) %>% 
+#   pack_rows("KP", min(which(tabInput$pb == "KP")), max(which(tabInput$pb == "KP"))) %>% 
+#   pack_rows("UFLP", min(which(tabInput$pb == "UFLP")), max(which(tabInput$pb == "UFLP"))) 
+
 tabInput %>% 
-  select(-pb, -coef) %>% 
-  kable(digits = c(0,0,0,0,2), col.names = c("n^[tst]", "#", "range", "gapO", "ratio"),
-        caption = "Instances used.") %>% 
-  kable_styling(full_width = T) %>% 
-  pack_rows("AP", min(which(tabInput$pb == "AP")), max(which(tabInput$pb == "AP"))) %>% 
-  pack_rows("KP", min(which(tabInput$pb == "KP")), max(which(tabInput$pb == "KP"))) %>% 
-  pack_rows("UFLP", min(which(tabInput$pb == "UFLP")), max(which(tabInput$pb == "UFLP"))) 
+  select(-range, -ratio) %>% 
+  group_by(pb) %>% 
+  kable(digits = c(0,0,1), col.names = c("", "$n$", "#"),
+        caption = "Instances used ($n$: number of variables, #: number of instances given variable size).") %>% 
+  kable_styling(full_width = T) 
 ```
 
-[LRN: I think we can drop gapO and ratio, I don't think it adds much of information here, especially since we only have spheredown instances]
+A total of `r nrow(datInput)` instances (see Table \@ref(tab:tabInput)) has been generated. Three problem classes are considered: the linear assignment problem (AP), the knapsack problem (KP) and the uncapacitated facility location problem (UFLP). The mathematical programming formulation for each problem is given in the appendix. The number of variables in each problem class have been increased until no algorithm configurations could find an exact solution within a time limit of half an hour (1800 seconds).
 
-We consider a total of `r nrow(datInput)` instances (see Table \@ref(tab:tabInput)) with Assignment (AP), Knapsack (KP) and Uncapacitated Facility Location (UFLP) problems. The problem descriptions are given in [Appendix]. The number of variables is given by `n` for each instance class.
+The objective coefficients are generated in the range [1, 1000] on the lower part of a 3D sphere using the R package @gMOIP. Hence a high number of the coefficient vectors for the variables are non-dominated among each other (`r round(100 * tabInput %>% filter(pb == "AP") %>% pull(ratio))`% for AP and `r round(100 * tabInput %>% filter(pb == "KP") %>% pull(ratio))`% for KP). This way of generating the objective coefficients has been tested against other methods and seems to result in solutions with a high number of non-dominated points [@Forget20a] (implying hard instances). For UFLP instances the same generation method has been used. However, since two cost groups exists (see the appendix), a range of [1, 1000] has been used for generating the cost of assigning a customer to a service and a range of [1, 100] for generating the cost for opening a service. All objective coefficients are all integer.
 
-The objective coefficients are generated on the non-dominated part (in minimisation) of a sphere, in the range [1,1000] and all coefficient are integer. This method of coefficients generation is used as it generates harder instances than just using random numbers in a given range. We refer the reader to [link to package] for more details.
-
-Regarding the UFLP instances, two sets of coefficients can be distinguished. The assignment costs ($c_{ij}^k$ in [Appendix]) are generated in the range [1,1000] and the opening costs ($f_j^k$ in [Appendix]) are generated in [1,100]. For each instance size, the number of facilities equals the number of customers.
-
-Regarding the Knapsack instances, the coefficients of the constraints $a_i$ are generated randomly in the range [1,15] and are integer. The right-hand side is given by $0.5\sum_{i=1}^n a_i$.
-
-<!--[Description of instances, generation method and ref to other report + repo] -->
-
-<!-- ``` -->
-<!-- Forget20_[problemClass]_[n]_[p]_[rangeOfCosts]_[costGenerationMethod]_[constaintId]_[id].raw -->
-<!-- ```  -->
-
-<!-- where  -->
-
-<!--    - `problemClass` is either KP (knapsack problem), AP (assignment problem) or UFLP  -->
-<!--       (uncapacitated facility location problem)  -->
-<!--    - `n` is the size of the problem.  -->
-<!--    - `p` is the number of objectives. -->
-<!--    - `rangeOfCosts`: Objective coefficient range e.g. 1-1000. -->
-<!--    - `costGenerationMethod`: Either random, spheredown, sphereup or 2box (see below).  -->
-<!--    - `constaintId`: Same id if constraints are the same. -->
-<!--    - `id`: Instance id running within the constraint id. -->
-
-<!-- The cost generation method for generating the coefficients of the objective functions are (given in column `coef`): -->
-
-<!-- * `random`: the coefficient are generated randomly in the interval [a,b]. -->
-<!-- * `spheredown`: the coefficient are generated on the non-dominated part of a sphere in minimization in the interval [a,b]. -->
-<!-- * `sphereup`: the coefficient are generated on the non-dominated part of a sphere in maximization in the interval [a,b]. -->
-<!-- * `2box`: the coefficients are generated randomly in two small boxes of R^3. -->
-
-<!-- For further details see the documentation function `genSample` in the R package -->
-<!-- [gMOIP](https://CRAN.R-project.org/package=gMOIP). -->
-
-<!-- For each instance we have the following statistics: -->
-
-<!-- ```{r instance table, echo=FALSE} -->
-<!-- links <- str_c("instances/", datInput$instance, ".html") -->
-<!-- DT::datatable( -->
-<!--   datInput %>% -->
-<!--     mutate(instance = if_else(file.exists(links), str_c('<a href="', links, '">', instance, '</a>'), instance)), -->
-<!--   escape = F, -->
-<!--   options = list(scrollX = T), -->
-<!--   caption = "Instances. A link to the results for the instance are given for some instances." -->
-<!-- ) -->
-<!-- ``` -->
-
-<!-- We have: -->
-
-<!--   - `instance`: Instance name -->
-<!--   - `pb`: Problem class  -->
-<!--     * KP = Knapsack Problem -->
-<!--     * AP = Assignment Problem -->
-<!--     * UFLP = Uncapacited Facility Location Problem -->
-<!--   - `n`: Number of variables. -->
-<!--   - `p`: Number of objectives. -->
-<!--   - `coef`: The method used for the generation of the objective coefficients (see section Research questions). We have: -->
-<!--     * spheredown = generation on the lower part of a sphere (in minimization) -->
-<!--     * sphereup = generation on the upper part of a sphere (in minimization) -->
-<!--   - `rangeC`: the range the objective coefficients are generated within. For the facility location problems, two sets of costs are generated: the assignment costs ($c_{ij}$) and the facility opening costs ($f_j$). It is reasonable to assume that these two sets of costs may not take their values in the same range. In this case `rangeC` defines two ranges: the assignment costs in $[a,b]$ and the facility opening costs which will be divided into two categories of instances: -->
-<!--     * facility location easy: $f_j \in [b+a,b+b]$. It is called "easy" because it seems that having high facility opening costs makes the problem easier. -->
-<!--     * facility location hard: $f_j \in [0.1a,0.1b]$. It is called "hard" because it seems that having small facility opening costs makes the problem harder. -->
-<!--     `rangeGapC`: Gap of the objective coefficients.  -->
-<!--   - `ratioNDcoef`: Proportion of objective coefficient vectors (here considered as a vector in $\mathbb{R}^p$, one for each variable, defining the objective coefficient for all the objective for this variable) that are non-dominated (with respect to the other objective coefficient vectors). Examples of the four ways of generating the objective coefficients are given: -->
-
-<!-- **Sphere down** -->
-
-<!-- The coefficients are generated on the lower part of a sphere (see next picture). Note that the sphere is adjusted such that the coefficients are in the range $[a,b]$, i.e. the sphere is not necessarily included in $[a,b]^p$. -->
-
-<!-- ```{r, webgl = TRUE, echo = FALSE, cache=FALSE} -->
-<!-- cent <- c(1000,1000,1000) -->
-<!-- r <- 750 -->
-<!-- planeC <- c(cent-r/3) -->
-<!-- planeC <- c(planeC, -sum(planeC^2)) -->
-<!-- pts <- genSample(3, 500, -->
-<!--   argsSphere = list(center = cent, radius = r, below = TRUE, plane = planeC, factor = 6)) -->
-<!-- ini3D() -->
-<!-- rgl::spheres3d(cent, radius=r, color = "grey100", alpha=0.1) -->
-<!-- plotPoints3D(pts) -->
-<!-- rgl::planes3d(planeC[1],planeC[2],planeC[3],planeC[4], alpha = 0.5, col = "red") -->
-<!-- finalize3D() -->
-<!-- ``` -->
-
-<!-- **Sphere up** -->
-
-<!-- The coefficients are generated on the upper part of a sphere (see next picture). Note that the sphere is adjusted such that the coefficients are in the range $[a,b]$, i.e. the sphere is not necessarily included in $[a,b]^p$. -->
-
-<!-- ```{r, webgl = TRUE, echo = FALSE, cache=FALSE} -->
-<!-- cent <- c(1000,1000,1000) -->
-<!-- r <- 750 -->
-<!-- planeC <- c(cent+r/3) -->
-<!-- planeC <- c(planeC, -sum(planeC^2)) -->
-<!-- pts <- genSample(3, 500, -->
-<!--   argsSphere = list(center = cent, radius = r, below = FALSE, plane = planeC, factor = 6)) -->
-<!-- ini3D() -->
-<!-- rgl::spheres3d(cent, radius=r, color = "grey100", alpha=0.1) -->
-<!-- plotPoints3D(pts) -->
-<!-- rgl::planes3d(planeC[1],planeC[2],planeC[3],planeC[4], alpha = 0.5, col = "red") -->
-<!-- finalize3D() -->
-<!-- ``` -->
+For the AP the constraints are fixed given the problem size. The same holds for the UFLP when assuming the number of facilities equals the number of customers. For KP instances, the integer coefficients of the constraint are generated randomly in the range [1,15]. The right-hand side is set equal to half of the sum of the coefficients on the right hand side [LRN: Rounded???].
 
 
 # Output statistics
@@ -404,22 +319,19 @@ Regarding the Knapsack instances, the coefficients of the constraints $a_i$ are 
 The following statistics will be considered:
 
 * `cpu`: total CPU time expressed in seconds used to solve an instance with a given configuration
-* `YN`: size of $\mathcal{Y}_N$, i.e. number of non-dominated points
-  + `se`: number of supported extreme points
-  + `sne`: number of supported non-extreme points
-  + `us`: number of unsupported points
-* `node`: number of nodes explored to sovle an instance with a given configuration
-* `prune`: how leaf nodes are pruned
-  + `I`: number of leaf nodes pruned by infeasibility
-  + `O`: number of leaf nodes pruned by optimality
-  + `D`: number of leaf nodes pruned by dominance
+* `|YN|`: size of $\mathcal{Y}_N$, i.e. number of non-dominated points which can be partitioned into
+  + `se`: number of supported extreme points,
+  + `sne`: number of supported non-extreme points,
+  + `us`: number of unsupported points.
+* `node`: number of nodes explored in the branching tree to solve an instance with a given configuration
+* `prune`: how leaf nodes are pruned partitioned into 
+  + `I`: number of leaf nodes pruned by infeasibility,
+  + `O`: number of leaf nodes pruned by optimality,
+  + `D`: number of leaf nodes pruned by dominance.
 
-<!--[If statistics are missing, feel free to let me know]-->
 
-<!-- This report only consider instances with cpu time within the interval [`r limSec[1]`, `r limSec[2]`]. For instances with a longer cpu time the algorithm is terminated and only a subset of the nondominated points are calculated.  -->
-<!-- <!-- More detailed results for each instance can be seen in the files named `[instanceName]_results.html` ([see for instance this example](instance.html)). -->
 
-<!-- A set of statistics are stored for each instance and algorithm run. The statistics are stored in a [json result file (v1.0)](https://github.com/MCDMSociety/MOrepo/blob/master/contribute.md) for each instance and algorithm configuration named `[Instance name]_[Algorithm config]_result.json`. Most statistics are aggregated in file `stat.csv`. -->
+
 
 
 
@@ -500,39 +412,48 @@ The following statistics will be considered:
 
 # Comparison of the performance of the different configurations
 
+[LRN: put a star for n if some instances are unsolved for all configurations. For ex KP 35 -> 21 config with at least 1 config solved -> put 30* instead]
+
 In this section, performance profiles will be used to answer the question. It shows how many instances has been solved at any point in time for a given configuration. The greater this number is, the better the configuration is. Note that if the cpu time exceed 1800 seconds (30 minuts) for a configuration, the instance is considered as unsolved for this configuration.
 
 [LRN: add all the instances for these performance profiles (consider the "exact" configurations as unsolved for larger instances, given the fact that there are many unsolved for even smaller instances, even thought we don't have the statistic for it ?)]
 
-<!--eval = FALSE-->
-```{r perfPlot, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
+```{r}
 tmp <- datAll %>%
-    group_by(algConfig, pb) %>%
-    arrange(tpstotal) %>%
-    mutate(count = row_number()) %>% 
+  group_by(algConfig, pb) %>%
+  arrange(tpstotal) %>%
+  mutate(count = row_number(), total = n()) %>% 
+  group_by(pb) %>% 
+  mutate(total = max(total)) %>% 
   group_by(pb, algConfig, tpstotal) %>% 
   arrange(pb, algConfig, tpstotal, count) %>% 
-  filter(tpstotal != 1800 | row_number() == 1) 
+  filter(tpstotal < 1800 | row_number() == 1) %>% 
+  mutate(pct = count/total) %>% 
+  select(pb, algConfig, tpstotal, count, pct, total, OB, nodeselVarsel)
+```
+
+
+```{r perfPlot, eval=FALSE, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
 ggplot(tmp) +
-  geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
-  # geom_step(aes(y=..y.., x=tpstotal, color = nodeselVarsel, linetype = OB), stat="ecdf") +
+  geom_step(aes(x=tpstotal, y=count, color = OB, linetype = nodeselVarsel)) +
   facet_grid(rows = vars(pb), scales = "free") +
   ggtitle(str_c("Number of instances solved within a given cpu time")) +
   labs(color = "nS:", linetype = "oB:") +
-  theme(legend.position="bottom") + xlab("cpu") + ylab("count") + 
-  scale_color_nodesel_varsel + scale_linetype_ob
+  scale_color_ob + scale_linetype_nodesel_varsel +
+  theme(legend.position="bottom") + xlab("cpu") + ylab("count")
 ```
 
 ```{r perfPlotPct, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
 ggplot(tmp) +
   # geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
-  geom_step(aes(y=..y.., x=tpstotal, color = nodeselVarsel, linetype = OB), stat="ecdf") +
-  # geom_point(aes(y=..y.., x=tpstotal, color = nodeselVarsel, linetype = OB), stat="ecdf", size = 1) +
-  facet_grid(rows = vars(pb), scales = "free") +
+  geom_step(aes(y=pct, x=tpstotal, color = OB, linetype = nodeselVarsel), alpha = 0.75) +
+  # geom_point(aes(y=..y.., x=tpstotal, color = OB, linetype = nodeselVarsel), stat="ecdf", size = 1) +
+  facet_grid(rows = vars(pb)) +
   ggtitle(str_c("Number of instances solved within a given cpu time")) +
   labs(color = "nS:", linetype = "oB:") +
-  theme(legend.position="bottom") + xlab("cpu") + ylab("%") + coord_cartesian(expand = FALSE, ylim = c(0, 1.05)) + 
-  scale_color_nodesel_varsel + scale_linetype_ob
+  scale_color_ob + scale_linetype_nodesel_varsel +
+  theme(legend.position="bottom") + xlab("cpu") + ylab("%") + 
+  coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, NA)) 
 ```
 
 In Figure \@ref(fig:perfPlot), only Assignment problems up to 64 variables, Knapsack problems up to 30 variables and Uncapacitated Facility Location problems up to 42 variables are considered.
@@ -569,7 +490,7 @@ ggplot(datAll %>%
          group_by(algConfig, pb, n, nodeselVarsel, OB) %>% 
          summarise(solv = ifelse(length(count[solved==1]) == 0, 0, count[solved==1]), pct = solv/sum(count))) +
   # geom_col(aes(x=n, y=pct, fill = algConfig, linetype = OB), position = "dodge") +
-  geom_step(aes(x=n, y=pct, color = nodeselVarsel, linetype = OB)) +
+  geom_step(aes(x=n, y=pct, color = nodeselVarsel, linetype = OB), alpha = 0.75) +
   geom_point(aes(x=n, y=pct, color = nodeselVarsel)) + 
   facet_grid(cols = vars(pb), scales = "free") +
   ggtitle(str_c("Number of instances solved within the time limit given n")) +
@@ -882,21 +803,21 @@ Currently we have instabilities with instances: `r datNotStable$instance`.
 
 <!-- Let us have a look for different problem classes, ranges, generation methods and algorithm configurations: -->
 
-```{r, fig.asp=1}
+```{r, fig.asp=1, layout="l-screen-inset"}
 plotCPUFacet <- function() {
   datP <- datAll
   tmp <- datP %>% group_by(coef, rangeC) %>% summarize(avg = mean(tpstotal))
   plt <- ggplot(datP, aes(y = tpstotal , x = n, color = algConfig)) +
     stat_summary(fun=mean, geom="line") +
-    geom_jitter(width = 1, height = 0, size = 0.7) +
+    geom_jitter(width = 0.5, height = 0, size = 0.7) +
     facet_grid(cols = vars(pb), scales = "free") +
     ggtitle(str_c("Cpu time (note scale free)")) +
     theme(legend.position="bottom", legend.title=element_blank()) +
-    coord_cartesian(ylim = c(0, 500)) +
+    coord_cartesian(ylim = c(0, 1800)) +
     scale_color_algConfig
   print(plt)
 }
-plotCPUFacet()
+ggplotly(plotCPUFacet())
 ```
 
 <!-- Finally we may plot only the winner cpu times for each instance: -->
