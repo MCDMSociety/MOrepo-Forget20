@@ -24,17 +24,11 @@ bibliography: references.bib
 citation_url: https://mcdmsociety.github.io/MOrepo-Forget20/report_paper.html
 ---
 
-
-
-
 <style type="text/css">
 table td, table th {  /* Table  */
   font-size: 10px !important;
 }
 </style>
-
-
-
 
 ```{r setup, include=FALSE}
 #' Function for loading missing packages that install them if not already installed.
@@ -61,7 +55,8 @@ knitr::opts_chunk$set(
   warning=FALSE, message=FALSE, include = TRUE, 
   # cache = TRUE, autodep = TRUE,
   echo=FALSE,
-  out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7
+  out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7,
+  layout="l-page"   #"l-screen-inset"
 )
 knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
 options(knitr.kable.NA = '')
@@ -74,14 +69,14 @@ options(knitr.kable.NA = '')
 In this section we report on the computational experiments conducted with the tri–objective
 branch–and–bound algorithm. 
 
-All instances are minimized, i.e. if an objective function $z(x)$ is maximized, we minimize $-z(x)$ instead. Note that in all instances only binary variables are considered.
+All instances are converted to minimization problems meaning that if an objective function $z(x)$ should be maximized, we minimize $−z(x)$ instead. 
 
 The purpose of the computational study is to answer the following questions:
   
 <!--[Just some ideas for the moment. Add/modify as you like]  -->
   
   1) What is the performance of the different algorithm configurations and which configurations perform the best ? In particular, is it worth doing objective branching ?
-  1) Why does objective branching performs as it does ?
+  1) Why does objective branching perform as it does ?
   1) How is the performance of the tri-objective B&B algorithm compared to objective space search algorithms?
   
   <!-- 1) How do node selection, (variable selection) and objective branching affect the performance of the algorithm?
@@ -115,12 +110,12 @@ The purpose of the computational study is to answer the following questions:
 
 <!--   4. How are nodes pruned? -->
 
-## Impelmentation details and algorithm configurations
+# Impelmentation details and algorithm configurations
 
-All algorithms have been implemented in Julia $1.0.1$. The experiments have been done on a computer with an Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz processor and 16GB of RAM memory, using Linux Ubuntu 14.04 LTS.
+All algorithms have been implemented in Julia $1.0.1$. The experiments was done a computer with an Intel(R) Core(TM) i7-4785T CPU @ 2.20GHz processor and 16GB of RAM memory, using Linux Ubuntu 14.04 LTS.
 
-In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used [@Bensolve]. To avoid parsing a lot a files at each node of the tree, we have implemented a wrapper that calls Bensolve, retrieve some outputs and insert them directly in our code as matrices. 
-Numerical instabilities leading to missing non-dominated points in the final output have been detected while building the hyperplanes representation of the lower bound set. The matrix used when finding the normal to each hyperplane may in a few cases be close to singular (its determinant is close to zero). Hence a small value `eps` has been introduced so that if the determinant is less than or equal `eps`, then the hyperplane is discarded. For more information, we refer the reader to the [section about numerical instabilities](https://mcdmsociety.github.io/MOrepo-Forget20/report.html#numerical-instablities) in @Forget20a. We have used `eps` $= 0.001$ in all tests reported in this paper resulting in that no missing non-dominated points have been detected.
+In order to compute the linear relaxation at each node, the solver [Bensolve](https://www.optimierung-loehne.uni-jena.de/bensolve) is used [@Bensolve]. To avoid reading from and writing to text files at each node of the tree, we have implemented a wrapper that calls Bensolve, retrieve some outputs and insert them directly in our code as matrices. 
+Numerical instabilities leading to missing non-dominated points in the final output have been detected while building the hyperplanes representation of the lower bound set. The matrix used when finding the normal to each hyperplane may in a few cases be close to singular (its determinant is close to zero). Hence a small value `eps` has been introduced so that if the determinant is less than or equal `eps`, then the hyperplane is discarded, thus leaving a weaker but valid lower bound set. For more information, we refer the reader to the [section about numerical instabilities](https://mcdmsociety.github.io/MOrepo-Forget20/report.html#numerical-instablities) in @Forget20a. We have used `eps` $= 0.001$ in all tests reported in this paper resulting in that no missing non-dominated points have been detected.
 
 The variable selected in Step 5 of the algorithm differs depending on whether objective branching is applied or not. If no objective branching is performed, the algorithm will branch on the free variable that is the most often fractional among the extreme points of the lower bound set, given that at least one of the variables has a fractional value. If no variable has a fractional value in any of the extreme points, the variable that is the most often different (i.e. with the average value closest to $0.5$) is chosen. If objective branching is enabled, the rule is the same, except that a different variable may be chosen in each sub-problem. Indeed, given a sub-problem $P(\eta,s)$ in the objective space, only the extreme points of the lower bound set included in $P(\eta,s)$ (i.e. that dominates $s$) will be considered. In case there are multiple possible choices or no extreme point included in $P(\eta,s)$, the variable with the smallest index will be chosen.
 
@@ -131,10 +126,10 @@ To test different algorithm configurations we use the following parameters:
   + `D`: depth first strategy.
 * `oB` denotes the objective branching strategy. Three configurations are tested:
   + `N`: no objective branching is performed. This is the equivalent of skipping Step 4 of Algorithm 1. 
-  + `E`: objective branching is applied as described in Algorithm 2.
-  + `C`: objective branching is applied as described in Section 4.3.
+  + `E`: exact objective branching using super local upper bounds (see Algorithm 2). [LRN: Should we call it full OB?]
+  + `C`: objective branching using a single cone, namely, the nadir point of $D(\eta)$ (see Section 4.3).
 
-This leads to 6 configurations: `B|N`, `B|E`, `B|C`, `D|N`, `D|E` and `D|C`. We refer the reader to @Forget20a where more configurations such as different variable selection rules (Step 5 of the algorithm).
+This leads to 6 configurations: `B|N`, `B|E`, `B|C`, `D|N`, `D|E` and `D|C`. For an overview of more configurations such as different variable selection rules (Step 5 of the algorithm), the reader is referred to @Forget20a.
 
 <!-- * Branching scheme (`none`, `exact`, `cone`): in a regular branch and bound, branching is operated (i.e. sub-problems are created) in the decision space. In the bi-objective case, it has been shown that creating additional sub-problems in the objective space (procedure called objective branching in this study) leads to better computational times. Three versions of the branch and bound will be tested: -->
 
@@ -211,6 +206,8 @@ datInput <- datAll %>%
   ungroup() %>%
   distinct(instance, .keep_all = TRUE) %>% 
   select(instance, pb, n, p, coef, contains("range"), ratioNDcoef, unsolved)
+# instances with all configs run
+
 datWin <- 
   datAll %>% 
   group_by(instance) %>% 
@@ -228,6 +225,15 @@ datNotStable <- read_csv("../convert/data/stat.csv", col_types = cols()) %>%
 if (nrow(datNotStable) > 0) stop("Instabilities found!")
 
 datObNC <- datAll %>% filter(OB == "N" | OB == "C")
+
+tmp <- tibble(algConfig = datAll %>% pull(algConfig) %>% unique()) %>% separate(algConfig, c("nodeselVarsel", "OB"), remove = F, sep = "\\|")
+datAllJoined <- datAll %>% 
+  group_by(instance) %>% 
+  nest() %>% 
+  mutate(missing = map(data, function(df) full_join(df, tmp, by = c("algConfig", "nodeselVarsel", "OB")) %>% mutate(pb = df$pb[1]))) %>% 
+  select(-data) %>% 
+  unnest(missing) %>% 
+  replace_na(list(tpstotal = 1800)) 
 ```
 
 ```{r Define color scales}
@@ -251,6 +257,10 @@ scale_color_nodesel_varsel <- scale_color_manual(
   drop = F)
 
 scale_color_ob <- scale_color_manual(
+  values = setNames(pal[c(1,3,9,11)], c("breadth", "depth")),
+  drop = F)
+
+scale_fill_ob <- scale_fill_manual(
   values = setNames(pal[c(1,3,9,11)], c("breadth", "depth")),
   drop = F)
 
@@ -307,11 +317,11 @@ tabInput %>%
   kable_styling(full_width = T) 
 ```
 
-A total of `r nrow(datInput)` instances (see Table \@ref(tab:tabInput)) has been generated. Three problem classes are considered: the linear assignment problem (AP), the knapsack problem (KP) and the uncapacitated facility location problem (UFLP). The mathematical programming formulation for each problem is given in the appendix. The number of variables in each problem class have been increased until no algorithm configurations could find an exact solution within a time limit of half an hour (1800 seconds).
+A total of `r nrow(datInput)` instances (see Table \@ref(tab:tabInput)) has been generated. Three problem classes are considered: the linear assignment problem (AP), the knapsack problem (KP) and the uncapacitated facility location problem (UFLP). The mathematical programming formulation for each problem is given in the appendix. The number of variables in each problem class has been increased until no algorithm configurations was able to compute an exact solution within a time limit of half an hour (1800 seconds).
 
-The objective coefficients are generated in the range [1, 1000] on the lower part of a 3D sphere using the R package @gMOIP. Hence a high number of the coefficient vectors for the variables are non-dominated among each other (`r round(100 * tabInput %>% filter(pb == "AP") %>% pull(ratio))`% for AP and `r round(100 * tabInput %>% filter(pb == "KP") %>% pull(ratio))`% for KP). This way of generating the objective coefficients has been tested against other methods and seems to result in solutions with a high number of non-dominated points [@Forget20a] (implying hard instances). For UFLP instances the same generation method has been used. However, since two cost groups exists (see the appendix), a range of [1, 1000] has been used for generating the cost of assigning a customer to a service and a range of [1, 100] for generating the cost for opening a service. All objective coefficients are all integer.
+The objective coefficients are generated in the range [1, 1000] on the lower part of a 3D sphere using the R package @gMOIP. Hence a high number of the coefficient vectors for the variables are non-dominated among each other (`r round(100 * tabInput %>% filter(pb == "AP") %>% pull(ratio))`% for AP and `r round(100 * tabInput %>% filter(pb == "KP") %>% pull(ratio))`% for KP). This way of generating the objective coefficients has been tested against other methods and seems to result in solutions with a high number of non-dominated points [@Forget20a] (implying hard instances). For UFLP instances the same generation method has been used. However, since two cost groups exists (see the appendix), a range of [1, 1000] has been used for generating the cost of assigning a customer to a service point and a range of [1, 100] for generating the cost for opening a service point. The objective coefficients are all integer.
 
-For the AP the constraints are fixed given the problem size. The same holds for the UFLP when assuming the number of facilities equals the number of customers. For KP instances, the integer coefficients of the constraint are generated randomly in the range [1,15]. The right-hand side is set equal to half of the sum of the coefficients on the right hand side [LRN: Rounded???].
+For the AP the constraints are fixed given the problem size. The same holds for the UFLP when assuming the number of facilities equals the number of customers. For KP instances, the integer coefficients of the constraint are generated randomly in the range [1,15]. The right-hand side is set equal to half of the sum of the coefficients on the right hand side [LRN: Rounded???]. For KP three different constraints are generated for each variable size and objective coefficients.
 
 
 # Output statistics
@@ -319,19 +329,17 @@ For the AP the constraints are fixed given the problem size. The same holds for 
 The following statistics will be considered:
 
 * `cpu`: total CPU time expressed in seconds used to solve an instance with a given configuration
-* `|YN|`: size of $\mathcal{Y}_N$, i.e. number of non-dominated points which can be partitioned into
+* `|YN|`: size of $\mathcal{Y}_N$, i.e. the number of non-dominated points which can be partitioned into
   + `se`: number of supported extreme points,
   + `sne`: number of supported non-extreme points,
   + `us`: number of unsupported points.
-* `node`: number of nodes explored in the branching tree to solve an instance with a given configuration
+* `node`: number of nodes explored in the branching tree when solving an instance with a given configuration
 * `prune`: how leaf nodes are pruned partitioned into 
   + `I`: number of leaf nodes pruned by infeasibility,
   + `O`: number of leaf nodes pruned by optimality,
-  + `D`: number of leaf nodes pruned by dominance.
-
-
-
-
+  + `D`: number of leaf nodes pruned by dominance. [SLG: D also used for depth first]
+  
+All algorithm configurations have been tested using a time limit of half an hour (1800 seconds).
 
 
 
@@ -410,13 +418,23 @@ The following statistics will be considered:
 <!-- `yNStat` are sorted in exactly the same order as $\mathcal{X}_E$, i.e. each row represent the non-dominated point and its corresponding solution. -->
 
 
-# Comparison of the performance of the different configurations
+# Performance of the different algorithm configurations
 
-[LRN: put a star for n if some instances are unsolved for all configurations. For ex KP 35 -> 21 config with at least 1 config solved -> put 30* instead]
+```{r}
+tmp <- datAllJoined %>% 
+  group_by(algConfig) %>% 
+  summarize(cpu = mean(tpstotal)) %>% 
+  mutate(pct = cpu/min(cpu), strV = str_c(algConfig, " (", round((pct-1) * 100), "%)")) %>% 
+  arrange(cpu) 
+winSq <- tmp %>% pull(algConfig)
+tmp <- tmp %>% pull(strV)
+# datAll %>% group_by(algConfig) %>% summarize(cpu = mean(tpstotal)) %>% arrange(cpu) %>% kable()
+# datAll %>% group_by(algConfig, pb) %>% summarize(cpu = mean(tpstotal)) %>% arrange(pb, cpu) %>% kable()
+```
 
-In this section, performance profiles will be used to answer the question. It shows how many instances has been solved at any point in time for a given configuration. The greater this number is, the better the configuration is. Note that if the cpu time exceed 1800 seconds (30 minuts) for a configuration, the instance is considered as unsolved for this configuration.
+First, we rank the configurations with respect to mean cpu time for all instances, the sequence from best to worst becomes `r tmp` where the increase in percent compared to the best configuration is given in parentheses. Note that the mean cpu times calculated is in fact a lower bound due to the total run time limit. 
 
-[LRN: add all the instances for these performance profiles (consider the "exact" configurations as unsolved for larger instances, given the fact that there are many unsolved for even smaller instances, even thought we don't have the statistic for it ?)]
+Second, a comparison of the different algorithm configurations given problem class can be seen in Figure \@ref(fig:perfPlotPct). Remark that we have increased the variable size for each problem class until the size becomes so big that some instances cannot be solved within the time limit. That is, the number of instances solved before the time limit are under 100%.   
 
 ```{r}
 tmp <- datAll %>%
@@ -433,7 +451,7 @@ tmp <- datAll %>%
 ```
 
 
-```{r perfPlot, eval=FALSE, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
+```{r perfPlot, eval=FALSE, fig.asp=1.2, fig.cap="Performance profile: Number of instances in percent solved given cpu time. An instance is considered as unsolved if the cpu time exceeds 1800 seconds (time limit)."}
 ggplot(tmp) +
   geom_step(aes(x=tpstotal, y=count, color = OB, linetype = nodeselVarsel)) +
   facet_grid(rows = vars(pb), scales = "free") +
@@ -443,7 +461,7 @@ ggplot(tmp) +
   theme(legend.position="bottom") + xlab("cpu") + ylab("count")
 ```
 
-```{r perfPlotPct, fig.asp=1.2, fig.cap="Performance plots for the different problem classes", layout="l-screen-inset"}
+```{r perfPlotPct, fig.asp=1.2, fig.cap="Performance profile: Number of instances in percent solved given cpu time. An instance is considered as unsolved if the cpu time exceed 1800 seconds (time limit)."}
 ggplot(tmp) +
   # geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
   geom_step(aes(y=pct, x=tpstotal, color = OB, linetype = nodeselVarsel), alpha = 0.75) +
@@ -453,99 +471,60 @@ ggplot(tmp) +
   labs(color = "nS:", linetype = "oB:") +
   scale_color_ob + scale_linetype_nodesel_varsel +
   theme(legend.position="bottom") + xlab("cpu") + ylab("%") + 
-  coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, NA)) 
+  coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
 ```
 
-In Figure \@ref(fig:perfPlot), only Assignment problems up to 64 variables, Knapsack problems up to 30 variables and Uncapacitated Facility Location problems up to 42 variables are considered.
+Some observations based on Figure \@ref(fig:perfPlotPct) are:
 
-The first observation is that `B|E` and `D|E` seem to perform the worst, especially for AP and UFLP. Although for KP, this observation is less obvious, these configurations are still among the worst ones. Both for KP and UFLP, the best objective branching configuration is the `C`, while it performs better to don't have any objective branching prodecure for AP. These observations will be explored with more details in the next section.
+* In general exact objective branching (`B|E` and `D|E`) performs poorly compared to the other configurations. This is especially evident for AP and UFLP. For KP exact objective branching are still among the worst ones. 
+
+* For both KP and UFLP, the best objective branching configuration is using a single cone (`C`), while no objective branching (`N`) performs better for AP. 
+
+* In general breadth first strategies tend to perform better than depth first strategies. 
+
+These observations will be explored with more details in the next sections.
 
 <!--Thus, the `B|E` and `D|E` will be discarded in the rest of this paper. [say that we discard it in the enxt section, after explanations]-->
 
-[LRN: Plot for winning configurations -> `n` as x-axis and percentages of instances as y-axis. Have a color for the 6 configurations + another one for unsolved instances for all the configurations. Do a "stack plot", in the spirit of the plot called "Pct for each configuration given 10 bins" in Research question 3 from the old report]
-[extra observation: with such a plot, we will be able to see that the number of unsolved instances grows with the size of the instance as well]
-
-[NF: a few words about winning configurations]
-
-Another observation is that in general, breadth first strategies tend to perform better than depth first strategies in this branch and bound framework. A possible explanation is that the linear relaxation of the problems studied is of good quality in the single-objective case [ref ?]. Thus, integer extreme points can be found very early (i.e. at a very low depth) in the branch and bound tree. For example, all the extreme points of the linear relaxation of an AP are integer and are thus new candidates for being part of the final non-dominated set. Hence, while using depth first strategies, the branch and bound algorithm tends to focus to specific parts of the objective space one by one; using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier.
-
-<!--
-Performance plots for the different algorithm configurations are given in Figure \@ref(fig:perfPlot). If we rank the configurations with respect to mean cpu time for all instances, the worst sequence from best to worst are `r datAll %>% group_by(algConfig) %>% summarize(cpu = mean(tpstotal)) %>% arrange(cpu) %>% pull(algConfig)`.
-
-```{r}
-datAll %>% group_by(algConfig) %>% summarize(cpu = mean(tpstotal)) %>% arrange(cpu) %>% kable()
-
-datAll %>% group_by(algConfig, pb) %>% summarize(cpu = mean(tpstotal)) %>% arrange(pb, cpu) %>% kable()
-```
--->
 
 
 
-[Make curved lines for this plot, so that it becomes easier to read (in case we want to keep it)]
+<!-- How can the performance of the objective branching be explained? -->
+# Objective branching: a closer look
 
-```{r revPerfPlot, fig.cap="Reverse performance plots for the different problem classes", layout="l-screen-inset"}
-ggplot(datAll %>% 
-       group_by(algConfig, pb, n, solved, nodeselVarsel, OB) %>% 
-         summarise(count = n()) %>% 
-         group_by(algConfig, pb, n, nodeselVarsel, OB) %>% 
-         summarise(solv = ifelse(length(count[solved==1]) == 0, 0, count[solved==1]), pct = solv/sum(count))) +
-  # geom_col(aes(x=n, y=pct, fill = algConfig, linetype = OB), position = "dodge") +
-  geom_step(aes(x=n, y=pct, color = nodeselVarsel, linetype = OB), alpha = 0.75) +
-  geom_point(aes(x=n, y=pct, color = nodeselVarsel)) + 
-  facet_grid(cols = vars(pb), scales = "free") +
-  ggtitle(str_c("Number of instances solved within the time limit given n")) +
-  labs(color = "nS | vS:", linetype = "oB:") +
-  theme(legend.position="bottom") + #xlab("cpu") +
-  scale_color_nodesel_varsel + scale_linetype_ob
-```
-
-Reverse performance plot for the different algorithm configurations are given in Figure \@ref(fig:revPerfPlot). 
-
-
-<!--# Which algorithm configurations perform the best? -->
-# Why does objective branching performs as it does ?
-
-[LRN: prune column as stack plot. One color for infeasibility, optimality and dominance. `n` as x-axis, percentages as y-axis.]
-
-[LRN: number of nodes as a plot. One line for each configuration, `n` as x-axis, number of nodes as y-axis.]
-
-[LRN: average depth as a plot. One line for each configuration, `n` as x-axis, average depth as y-axis. You may drop the `N` configurations for OB here, as they are not used.]
+For taking a closer look at the different objective branching configurations we limit us to the set of instances which have been solved to optimality for all algorithm configurations. Detailed summary statistics are given in Table \@ref(tab:resTable). 
 
 ```{r resTable, layout="l-screen-inset"}
-datBestCpu <- 
-  datAll %>% 
-  group_by(algConfig) %>% 
-  summarise(cpu = mean(tpstotal), cpuMax = max(tpstotal), solved = if_else(mean(solved) == 1, T, F)) %>% 
-  arrange(cpu)
-winSeq <- datBestCpu$algConfig
-winSeq <- c(winSeq, algConfigs[!(algConfigs %in% winSeq)])
+winSeq <- c(winSq, algConfigs[!(algConfigs %in% winSq)])
 winAlgConfigSeq <- winSeq
-winSeq <- c(str_c("cpu_", winSeq), str_c("ctWin_", winSeq), str_c("nodes_", winSeq), str_c("prune_", winSeq))
-winSeq <- winSeq[as.vector(sapply(1:algConfigsN, FUN = function(i) {c(i, i+algConfigsN, i+2*algConfigsN, i+3*algConfigsN)}))]
+winSeq <- c(str_c("cpu_", winSeq), str_c("nodes_", winSeq), str_c("prune_", winSeq))
+winSeq <- winSeq[as.vector(sapply(1:algConfigsN, FUN = function(i) {c(i, i+algConfigsN, i+2*algConfigsN)}))]
 
-getResGroup <- function(...) {
-  datYN <- datAll %>% 
+tmp <- datAll %>% 
+  group_by(instance) %>%
+  filter(n() == algConfigsN, min(solved) == 1) %>%
+  ungroup() 
+tmpWin <- datWin %>% 
+  filter(instance %in% unique(tmp$instance))
+
+
+getResGroup <- function(dat, win, ...) {
+  datYN <- dat %>% 
     group_by(instance, ...) %>% 
     summarise(YN = max(YN), YNse = max(YNse), YNs = max(YNs)) %>% 
     group_by(...) %>% 
     summarise(YN = mean(YN), YNse = mean(YNse), YNs = mean(YNs)) 
-  
-  datWinner <- datWin %>% 
-    group_by(..., algConfig) %>%
-    summarise(ctWin = n()) %>% 
-    full_join(datAll %>% distinct(..., algConfig)) %>% 
-    replace_na(list(ctWin = 0))
-  
-  datResults <- datAll %>% 
+
+  datResults <- dat %>% 
     group_by(..., algConfig) %>% 
     summarise(ct = n(), cpu = mean(tpstotal), cpuMax = max(tpstotal), cpuMin = min(tpstotal), 
               nodes = mean(nbnodes), nInf = mean(pctinfeas), nOpt = mean(pctopt), nDom = mean(pctdomi),
               dptLeaf = mean(avgdepthT), dptMinLeaf = mean(mindepthT), dptMaxLeaf = mean(maxdepthT),
               solved = min(solved)) %>% 
     full_join(datYN) %>% 
-    full_join(datWinner) %>% 
+    # full_join(datWinner) %>% 
     mutate(cpu = if_else(cpu == min(cpu), str_c(round(cpu, 1), "!"), str_c(round(cpu, 1))),
-           ctWin = if_else(ctWin == max(ctWin), str_c(round(ctWin, 0), "!"), str_c(round(ctWin, 0))),
+           # ctWin = if_else(ctWin == max(ctWin), str_c(round(ctWin, 0), "!"), str_c(round(ctWin, 0))),
            nodes = if_else(nodes == min(nodes), str_c(round(nodes, 0), "!"), str_c(round(nodes, 0))),) %>% 
     ungroup() %>% 
     mutate(cpu = if_else(solved == 1, 
@@ -556,62 +535,32 @@ getResGroup <- function(...) {
            prune = str_c("[", round(nInf), ",", round(nOpt), ",", round(nDom), "]")
            ) %>%
     select(-solved, -cpuMin, -cpuMax, -dptMinLeaf, -dptMaxLeaf, -dptLeaf, -nInf, -nOpt, -nDom) %>%
-    pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes, prune, ctWin)) %>%
+    pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes, prune)) %>%
     select(..., ct, YN, !!winSeq)
   return(datResults)
 }
-datResRows <- getResGroup(pb, n)
+datResRows <- getResGroup(tmp, tmpWin, pb, n)
 tabResults <- NULL
 for (p in unique(datResRows$pb)) {
   dat1 <- datResRows %>% filter(pb == p)
-  dat2 <- getResGroup(pb) %>% filter(pb == p)
+  dat2 <- getResGroup(tmp, tmpWin, pb) %>% filter(pb == p)
   tabResults  <- bind_rows(tabResults, dat1, dat2)
 }
-
-# 
-# datYN <- datAll %>% 
-#   group_by(instance, pb, n, coef) %>% 
-#   summarise(YN = max(YN), YNse = max(YNse), YNs = max(YNs)) %>% 
-#   group_by(pb, n, coef) %>% 
-#   summarise(YN = mean(YN), YNse = mean(YNse), YNs = mean(YNs)) 
-# 
-# winSeq <- datWin %>% group_by(algConfig) %>% summarise(cpu = mean(tpstotal)) %>% arrange(cpu) %>% pull(algConfig)
-# winSeq <- c(winSeq, algConfigs[!(algConfigs %in% winSeq)])
-# winAlgConfigSeq <- winSeq
-# winSeq <- c(str_c("cpu_", winSeq), str_c("nodes_", winSeq), str_c("prune_", winSeq))
-# winSeq <- winSeq[as.vector(sapply(1:12, FUN = function(i) {c(i,i+12,i+24)}))]
-# digits <- c(0,0,rep(c(1,0),12))
-# tabResults <- datAll %>% 
-#   group_by(pb, n, coef, algConfig) %>% 
-#   summarise(cpu = mean(tpstotal), cpuMax = max(tpstotal), cpuMin = min(tpstotal), 
-#             nodes = mean(nbnodes), nInf = mean(pctinfeas), nOpt = mean(pctopt), nDom = mean(pctdomi),
-#             dptLeaf = mean(avgdepthT), dptMinLeaf = mean(mindepthT), dptMaxLeaf = mean(maxdepthT),
-#             solved = min(solved)) %>% 
-#   ungroup() %>% 
-#   full_join(datYN) %>% 
-#   mutate(cpu = if_else(solved == 1, 
-#                        str_c(round(cpu, 1), " [", round(cpuMin,1), ",", round(cpuMax,1), "]"), 
-#                        str_c(round(cpu, 1), "*", " [", round(cpuMin,1), ",", round(cpuMax,1), "]")),
-#          YN = str_c(round(YN), " (", round(100*YNse/YN), "/", round(100*(YNs-YNse)/YN), "/", round(100*(YN-YNs)/YN), ")"),
-#          nodes = str_c(round(nodes), " [", round(dptMinLeaf), ",", round(dptLeaf), ",", round(dptMaxLeaf), "]"),
-#          prune = str_c("[", round(nInf), ",", round(nOpt), ",", round(nDom), "]")
-#          ) %>%
-#   select(-solved, -cpuMin, -cpuMax, -dptMinLeaf, -dptMaxLeaf, -dptLeaf, -nInf, -nOpt, -nDom) %>% 
-#   pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes, prune)) %>% 
-#   select(pb, n, YN, !!winSeq)
 
 tabResults <- tabResults %>% 
   mutate_at(vars(contains(c("cpu", "win", "nodes"))), ~cell_spec(., bold = if_else(str_detect(., fixed("!")), T, F))) %>% 
   mutate_if(is.character, str_replace_all, pattern = "!", replacement = "")
-digits <- c(0,0,0,rep(c(1,0,0,0),algConfigsN))
+digits <- c(0,0,0,rep(c(1,0,0),algConfigsN))
 tabResults %>% 
   select(-pb) %>% 
-  kable(digits = digits, escape = F,
-        col.names = c("n", "#", "YN (se, sne, us)", 
-                      rep(c("cpu", "win", "nodes (d leaf)", "prune (I/O/D)"), length(winAlgConfigSeq))),
-        caption = "Results for each instance group.") %>% 
+  kable(
+    digits = digits, 
+    escape = F,
+    col.names = c("n", "#", "YN (se, sne, us)",
+                  rep(c("cpu", "nodes (d leaf)", "prune (I/O/D)"), length(winAlgConfigSeq))),
+    caption = "Detailed results for all instances which have been solved to optimality for all algorithm configurtions.") %>% 
   kable_styling() %>% 
-  add_header_above(c(" " = 3, setNames(rep(4, length(winAlgConfigSeq)), winAlgConfigSeq))) %>% 
+  add_header_above(c(" " = 3, setNames(rep(3, length(winAlgConfigSeq)), winAlgConfigSeq))) %>% 
   pack_rows("AP", min(which(tabResults$pb == "AP")), max(which(tabResults$pb == "AP"))) %>% 
   pack_rows("KP", min(which(tabResults$pb == "KP")), max(which(tabResults$pb == "KP"))) %>% 
   pack_rows("UFLP", min(which(tabResults$pb == "UFLP")), max(which(tabResults$pb == "UFLP"))) %>% 
@@ -621,16 +570,54 @@ tabResults %>%
   scroll_box(width = "100%")
 ```
 
-<!--
-Results for each instance group and algorithm configuration are given in \@ref(tab:resTable). As can be seen ...
+Figure \@ref(fig:perfPlotPct) illustrates that using exact objective branching (`E`) is not efficient with respect to cpu time. As explained in Section 4.3, exact objective branching may create several sub-problems in the objective space resulting in more nodes in the branch and bound tree. This may lead to higher computational times if the algorithm cannot explore them all fast enough. Indeed, this can be seen in Figure \@ref(fig:figTreeSize) where `E` configurations produce more nodes in the tree compared to `C` and `N` given same node selection rule. This observation makes sense, as the purpose of objective branching as described in Algorithm 2 is to produce more sub-problems and thus get wider trees with a smaller depth. 
 
-[Discussion based on a table where drop the exact columns, I have added some statistics here that we may drop later.]
+```{r figTreeSize, fig.cap="Average branching tree size."}
+datAll %>% 
+  group_by(instance) %>%
+  filter(n() == algConfigsN, min(solved) == 1) %>%
+  ungroup() %>% 
+  group_by(pb, OB, nodeselVarsel) %>% 
+  summarise(node = mean(nbnodes)) %>% 
+  group_by(pb) %>% 
+  arrange(node) %>% 
+  ggplot(aes(x = pb, y = node, fill = OB, linetype = nodeselVarsel)) + 
+  geom_col(position = "dodge2", color = "black") +
+  # geom_line(alpha = 0.75) +
+  # geom_point(alpha = 0.75) +
+  facet_grid(cols = vars(pb), scales = "free") + 
+  # ggtitle(str_c("Average branching tree size.")) +
+  labs(color = "oB:", linetype = "nS:") +
+  scale_fill_ob + scale_linetype_nodesel_varsel +
+  theme(legend.position="bottom") + xlab("problem class") + ylab("tree size") 
+```
 
-[What more need to be included in the table?] -->
 
-As shown previously, using the `E` configurations are not the most efficient configurations for the branch and bound algorithm. As explained in Section [4.3], as it may create several sub-problems in the objective space, it may create more nodes in the branch and bound tree, which may lead to higher computational times if the algorithm cannot explore them all fast enough. In practice, as it can be seen in Table \@ref(tab:resTable), in general, `E` configurations indeed produce more nodes in the tree than the other configurations. Furthermore, it seems that these nodes are also explored slower than in other versions. For example, Table \@ref(tab:resTable) shows that for Knapsack problems for `n` = 30, the number of nodes for the configurations `D|C` and `D|E` is approximatively the same (between 180000 and 190000). However, the first configuration is about 3 times faster than the second one.
 
-As most of the computational time is spent in computing the lower bound set in this branch and bound framework (see [report]), the last observation may indicates that the sub-problems generated in the `E` configurations tends to be harder. This observation makes sense, as the purpose of objective branching as described in Algorithm 2 is to produce more sub-problems (and thus get wider trees), hoping that the tree will go less deep by making more local decision. When we look at the average depth of the tree in \@ref(tab:resTable), it can be seen that it is generally lower for `E` than for `C`. Thus, it means that the nodes in `E` configurations are closer to the root node and thus, the corresponding sub-problems may be more complex. Indeed, the more a node is deep in the tree, the less complex the lower bound set tends to be (up to a single point at depth $n + 1$). This phenomenon may be minimized by introducing for example an updating procedure of the lower bound set, instead of a computation from scratch at each node as it is done currently in our implementation. Hence, the complexity of computing the lower bound set, no matter how deep it is in the tree, would be approximatively the same.
+```{r}
+tmp <- datAll %>% 
+  group_by(instance) %>%
+  filter(n() == algConfigsN) %>%
+  ungroup()  %>% 
+  filter(OB == "E") %>% 
+  # group_by(pb) %>% 
+  summarise(avgnbpbOB = mean(avgnbpbOB)) %>% pull(avgnbpbOB)
+```
+
+<!-- In practice, as it can be seen in Table \@ref(tab:resTable), in general, `E` configurations indeed produce more nodes in the tree than the other configurations.  -->
+
+Furthermore, under exact objective branching the lower bound sets are harder to calculate [LRN: we need to add a statistic cpu/LP solved]. This indicates that the sub-problems generated in the `E` configurations tends to be harder to solve due to a more complicated set of constraints. 
+
+<!-- This observation makes sense, as the purpose of objective branching as described in Algorithm 2 is to produce more sub-problems (and thus get wider trees), hoping that the tree will go less deep by making more local decision. When we look at the average depth of the tree in \@ref(tab:resTable), it can be seen that it is generally lower for `E` than for `C`. Thus, it means that the nodes in `E` configurations are closer to the root node and thus, the corresponding sub-problems may be more complex. Indeed, the more a node is deep in the tree, the less complex the lower bound set tends to be (up to a single point at depth $n + 1$). This phenomenon may be minimized by introducing for example an updating procedure of the lower bound set, instead of a computation from scratch at each node as it is done currently in our implementation. Hence, the complexity of computing the lower bound set, no matter how deep it is in the tree, would be approximately the same. -->
+
+
+
+<!-- As most of the computational time is spent in computing the lower bound sets in our branch and bound algorithm (approx. [LRN: add average percentage]), the last observation may  -->
+<!-- For example, Table \@ref(tab:resTable) shows that for Knapsack problems for `n` = 30, the number of nodes for the configurations `D|C` and `D|E` is approximately the same (between 180000 and 190000). However, the first configuration is about 3 times faster than the second one. -->
+
+<!-- A possible explanation is that the linear relaxation of the problems studied is of good quality in the single-objective case [ref ?]. Thus, integer extreme points can be found very early (i.e. at a very low depth) in the branch and bound tree. For example, all the extreme points of the linear relaxation of an AP are integer and are thus new candidates for being part of the final non-dominated set. Hence, while using depth first strategies, the branch and bound algorithm tends to focus to specific parts of the objective space one by one; using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier. -->
+
+
 
 Another way to improve and possibly make `E` competitive would be to make more use of the local information provided by the sub-problems in the objective space. For example, as presented in [I have to find ref again, it's somewhere in my references list], pre-processing in the multi-objective case has much less impact than in the single-objective case, as the efficient solutions may differ a lot. However, one could imagine that the solutions are more likely to be close in a specific part of the objective space and thus, by localising the branch and bound, pre-processing or introducing cuts may have a significantly more impact.
 
@@ -643,9 +630,24 @@ The case of AP is a special. Indeed, in the `N` version, as the single-objective
 
 In conclusion, it seems that how objective branching behave and whether it is efficient or not is very sensitive to the choices made in the other components of the branch and bound tree (variable selection, lower bound set, pre-processing...). The reader is refered to [report] to see more about that.
 
+<!-- [LRN: Plot for winning configurations -> `n` as x-axis and percentages of instances as y-axis. Have a color for the 6 configurations + another one for unsolved instances for all the configurations. Do a "stack plot", in the spirit of the plot called "Pct for each configuration given 10 bins" in Research question 3 from the old report] -->
+<!-- [extra observation: with such a plot, we will be able to see that the number of unsolved instances grows with the size of the instance as well] -->
+
+<!-- [NF: a few words about winning configurations] -->
+
+<!-- [LRN: put a star for n if some instances are unsolved for all configurations. For ex KP 35 -> 21 config with at least 1 config solved -> put 30* instead] -->
+
+<!-- [LRN: prune column as stack plot. One color for infeasibility, optimality and dominance. `n` as x-axis, percentages as y-axis.] -->
+
+<!-- [LRN: number of nodes as a plot. One line for each configuration, `n` as x-axis, number of nodes as y-axis.] -->
+
+<!-- [LRN: average depth as a plot. One line for each configuration, `n` as x-axis, average depth as y-axis. You may drop the `N` configurations for OB here, as they are not used.] -->
 
 
-# How is the performance of the tri-objective B&B algorithm compared to objective space search algorithms?
+# Node selection: breadth vs depth
+
+<!-- # How well does the tri-objective B&B algorithm perform compared to an objective space search algorithm? -->
+# Comparing the branch and bound algorithm with an objective space search algorithm
 
 The best configuration of our branch and bound framework will now be compared to an efficient objective space search algorithm from the litterature [ref PhD Tamby]. Note that the goal of this paper is more like reaching a new step in making the branch and bound efficient in the multi-objective case by extending a concept that made branch and bounds more efficient in the bi-objective case, than to design an algorithm that performs better than objective space search algorithms on a specific set of instances. However, as the goal for futur research is to obtain a competitive branch and bound algorithm in the multi-objective case, we still want to compare to an objective space search algorithm, to see how far this goal is.
 
@@ -803,22 +805,7 @@ Currently we have instabilities with instances: `r datNotStable$instance`.
 
 <!-- Let us have a look for different problem classes, ranges, generation methods and algorithm configurations: -->
 
-```{r, fig.asp=1, layout="l-screen-inset"}
-plotCPUFacet <- function() {
-  datP <- datAll
-  tmp <- datP %>% group_by(coef, rangeC) %>% summarize(avg = mean(tpstotal))
-  plt <- ggplot(datP, aes(y = tpstotal , x = n, color = algConfig)) +
-    stat_summary(fun=mean, geom="line") +
-    geom_jitter(width = 0.5, height = 0, size = 0.7) +
-    facet_grid(cols = vars(pb), scales = "free") +
-    ggtitle(str_c("Cpu time (note scale free)")) +
-    theme(legend.position="bottom", legend.title=element_blank()) +
-    coord_cartesian(ylim = c(0, 1800)) +
-    scale_color_algConfig
-  print(plt)
-}
-ggplotly(plotCPUFacet())
-```
+
 
 <!-- Finally we may plot only the winner cpu times for each instance: -->
 
@@ -1174,7 +1161,185 @@ ggplotly(plotCPUFacet())
 <!--   scale_fill_algConfig -->
 <!-- ``` -->
 
-# Detailed results for each instance
+
+
+
+# Things that are currently not used
+
+Reverse performance plot for the different algorithm configurations are given in Figure \@ref(fig:revPerfPlot).
+```{r revPerfPlot, fig.cap="Reverse performance plots for the different problem classes"}
+ggplot(datAll %>% 
+       group_by(algConfig, pb, n, solved, nodeselVarsel, OB) %>% 
+         summarise(count = n()) %>% 
+         group_by(algConfig, pb, n, nodeselVarsel, OB) %>% 
+         summarise(solv = ifelse(length(count[solved==1]) == 0, 0, count[solved==1]), pct = solv/sum(count))) +
+  # geom_col(aes(x=n, y=pct, fill = algConfig, linetype = OB), position = "dodge") +
+  geom_step(aes(x=n, y=pct, color = nodeselVarsel, linetype = OB), alpha = 0.75) +
+  geom_point(aes(x=n, y=pct, color = nodeselVarsel)) + 
+  facet_grid(cols = vars(pb), scales = "free") +
+  ggtitle(str_c("Number of instances solved within the time limit given n")) +
+  labs(color = "nS | vS:", linetype = "oB:") +
+  theme(legend.position="bottom") + #xlab("cpu") +
+  scale_color_nodesel_varsel + scale_linetype_ob
+```
+
+
+```{r, fig.asp=1, layout="l-screen-inset"}
+plotCPUFacet <- function() {
+  datP <- datAll
+  tmp <- datP %>% group_by(coef, rangeC) %>% summarize(avg = mean(tpstotal))
+  plt <- ggplot(datP, aes(y = tpstotal , x = n, color = algConfig)) +
+    stat_summary(fun=mean, geom="line") +
+    geom_jitter(width = 0.5, height = 0, size = 0.7) +
+    facet_grid(cols = vars(pb), scales = "free") +
+    ggtitle(str_c("Cpu time (note scale free)")) +
+    theme(legend.position="bottom", legend.title=element_blank()) +
+    coord_cartesian(ylim = c(0, 1800)) +
+    scale_color_algConfig
+  print(plt)
+}
+ggplotly(plotCPUFacet())
+```
+
+```{r, layout="l-screen-inset"}
+# datBestCpu <- 
+#   datAllConfigs %>% 
+#   group_by(algConfig) %>% 
+#   summarise(cpu = mean(tpstotal), cpuMax = max(tpstotal), solved = if_else(mean(solved) == 1, T, F)) %>% 
+#   arrange(cpu)
+# winSeq <- datBestCpu$algConfig
+winSeq <- c(winSq, algConfigs[!(algConfigs %in% winSq)])
+winAlgConfigSeq <- winSeq
+winSeq <- c(str_c("cpu_", winSeq), str_c("ctWin_", winSeq), str_c("nodes_", winSeq), str_c("prune_", winSeq))
+winSeq <- winSeq[as.vector(sapply(1:algConfigsN, FUN = function(i) {c(i, i+algConfigsN, i+2*algConfigsN, i+3*algConfigsN)}))]
+
+tmp <- datAll %>% 
+  group_by(instance) %>%
+  filter(n() == algConfigsN) %>%
+  ungroup() 
+tmpWin <- datWin %>% 
+  filter(instance %in% unique(tmp$instance))
+
+
+getResGroup <- function(dat, win, ...) {
+  datYN <- dat %>% 
+    group_by(instance, ...) %>% 
+    summarise(YN = max(YN), YNse = max(YNse), YNs = max(YNs)) %>% 
+    group_by(...) %>% 
+    summarise(YN = mean(YN), YNse = mean(YNse), YNs = mean(YNs)) 
+  
+  datWinner <- win %>% 
+    group_by(..., algConfig) %>%
+    summarise(ctWin = n()) %>% 
+    full_join(dat %>% distinct(..., algConfig)) %>% 
+    replace_na(list(ctWin = 0))
+
+  datResults <- dat %>% 
+    group_by(..., algConfig) %>% 
+    summarise(ct = n(), cpu = mean(tpstotal), cpuMax = max(tpstotal), cpuMin = min(tpstotal), 
+              nodes = mean(nbnodes), nInf = mean(pctinfeas), nOpt = mean(pctopt), nDom = mean(pctdomi),
+              dptLeaf = mean(avgdepthT), dptMinLeaf = mean(mindepthT), dptMaxLeaf = mean(maxdepthT),
+              solved = min(solved)) %>% 
+    full_join(datYN) %>% 
+    full_join(datWinner) %>% 
+    mutate(cpu = if_else(cpu == min(cpu), str_c(round(cpu, 1), "!"), str_c(round(cpu, 1))),
+           ctWin = if_else(ctWin == max(ctWin), str_c(round(ctWin, 0), "!"), str_c(round(ctWin, 0))),
+           nodes = if_else(nodes == min(nodes), str_c(round(nodes, 0), "!"), str_c(round(nodes, 0))),) %>% 
+    ungroup() %>% 
+    mutate(cpu = if_else(solved == 1, 
+                         str_c(cpu, " [", round(cpuMin,1), ",", round(cpuMax,1), "]"), 
+                         str_c(cpu, "*", " [", round(cpuMin,1), ",", round(cpuMax,1), "]")),
+           YN = str_c(round(YN), " (", round(100*YNse/YN), "/", round(100*(YNs-YNse)/YN), "/", round(100*(YN-YNs)/YN), ")"),
+           nodes = str_c(nodes, " [", round(dptMinLeaf), ",", round(dptLeaf), ",", round(dptMaxLeaf), "]"),
+           prune = str_c("[", round(nInf), ",", round(nOpt), ",", round(nDom), "]")
+           ) %>%
+    select(-solved, -cpuMin, -cpuMax, -dptMinLeaf, -dptMaxLeaf, -dptLeaf, -nInf, -nOpt, -nDom) %>%
+    pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes, prune, ctWin)) %>%
+    select(..., ct, YN, !!winSeq)
+  return(datResults)
+}
+datResRows <- getResGroup(tmp, tmpWin, pb, n)
+tabResults <- NULL
+for (p in unique(datResRows$pb)) {
+  dat1 <- datResRows %>% filter(pb == p)
+  dat2 <- getResGroup(tmp, tmpWin, pb) %>% filter(pb == p)
+  tabResults  <- bind_rows(tabResults, dat1, dat2)
+}
+
+# 
+# datYN <- datAll %>% 
+#   group_by(instance, pb, n, coef) %>% 
+#   summarise(YN = max(YN), YNse = max(YNse), YNs = max(YNs)) %>% 
+#   group_by(pb, n, coef) %>% 
+#   summarise(YN = mean(YN), YNse = mean(YNse), YNs = mean(YNs)) 
+# 
+# winSeq <- datWin %>% group_by(algConfig) %>% summarise(cpu = mean(tpstotal)) %>% arrange(cpu) %>% pull(algConfig)
+# winSeq <- c(winSeq, algConfigs[!(algConfigs %in% winSeq)])
+# winAlgConfigSeq <- winSeq
+# winSeq <- c(str_c("cpu_", winSeq), str_c("nodes_", winSeq), str_c("prune_", winSeq))
+# winSeq <- winSeq[as.vector(sapply(1:12, FUN = function(i) {c(i,i+12,i+24)}))]
+# digits <- c(0,0,rep(c(1,0),12))
+# tabResults <- datAll %>% 
+#   group_by(pb, n, coef, algConfig) %>% 
+#   summarise(cpu = mean(tpstotal), cpuMax = max(tpstotal), cpuMin = min(tpstotal), 
+#             nodes = mean(nbnodes), nInf = mean(pctinfeas), nOpt = mean(pctopt), nDom = mean(pctdomi),
+#             dptLeaf = mean(avgdepthT), dptMinLeaf = mean(mindepthT), dptMaxLeaf = mean(maxdepthT),
+#             solved = min(solved)) %>% 
+#   ungroup() %>% 
+#   full_join(datYN) %>% 
+#   mutate(cpu = if_else(solved == 1, 
+#                        str_c(round(cpu, 1), " [", round(cpuMin,1), ",", round(cpuMax,1), "]"), 
+#                        str_c(round(cpu, 1), "*", " [", round(cpuMin,1), ",", round(cpuMax,1), "]")),
+#          YN = str_c(round(YN), " (", round(100*YNse/YN), "/", round(100*(YNs-YNse)/YN), "/", round(100*(YN-YNs)/YN), ")"),
+#          nodes = str_c(round(nodes), " [", round(dptMinLeaf), ",", round(dptLeaf), ",", round(dptMaxLeaf), "]"),
+#          prune = str_c("[", round(nInf), ",", round(nOpt), ",", round(nDom), "]")
+#          ) %>%
+#   select(-solved, -cpuMin, -cpuMax, -dptMinLeaf, -dptMaxLeaf, -dptLeaf, -nInf, -nOpt, -nDom) %>% 
+#   pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes, prune)) %>% 
+#   select(pb, n, YN, !!winSeq)
+
+tabResults <- tabResults %>% 
+  mutate_at(vars(contains(c("cpu", "win", "nodes"))), ~cell_spec(., bold = if_else(str_detect(., fixed("!")), T, F))) %>% 
+  mutate_if(is.character, str_replace_all, pattern = "!", replacement = "")
+digits <- c(0,0,0,rep(c(1,0,0,0),algConfigsN))
+tabResults %>% 
+  select(-pb) %>% 
+  kable(
+    digits = digits, 
+    escape = F,
+    col.names = c("n", "#", "YN (se, sne, us)",
+                  rep(c("cpu", "win", "nodes (d leaf)", "prune (I/O/D)"), length(winAlgConfigSeq))),
+    caption = "Results for each instance group.") %>% 
+  kable_styling() %>% 
+  add_header_above(c(" " = 3, setNames(rep(4, length(winAlgConfigSeq)), winAlgConfigSeq))) %>% 
+  pack_rows("AP", min(which(tabResults$pb == "AP")), max(which(tabResults$pb == "AP"))) %>% 
+  pack_rows("KP", min(which(tabResults$pb == "KP")), max(which(tabResults$pb == "KP"))) %>% 
+  pack_rows("UFLP", min(which(tabResults$pb == "UFLP")), max(which(tabResults$pb == "UFLP"))) %>% 
+  row_spec(c(max(which(tabResults$pb == "AP")), 
+             max(which(tabResults$pb == "KP")), 
+             max(which(tabResults$pb == "UFLP"))), italic = T, background = "lightgrey") %>% 
+  scroll_box(width = "100%")
+```
+
+```{r}
+datAll %>% 
+  group_by(instance) %>%
+  filter(n() == algConfigsN) %>%
+  ungroup() %>% 
+  group_by(n, pb, OB, nodeselVarsel) %>% 
+  summarise(node = mean(nbnodes)) %>% 
+  ggplot(aes(x = n, y = node, color = OB, linetype = nodeselVarsel)) + 
+  geom_line(alpha = 0.75) +
+  # geom_point(alpha = 0.75) +
+  facet_grid(cols = vars(pb), scales = "free") + 
+  ggtitle(str_c("Average branching tree size.")) +
+  labs(color = "oB:", linetype = "nS:") +
+  scale_color_ob + scale_linetype_nodesel_varsel +
+  theme(legend.position="bottom") + xlab("n") + ylab("tree size") 
+  # coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
+```
+
+## Detailed results for each instance
 
 Detailed results for each instance can be generated using `instance.Rmd`. The report is already generated for some of the instances (see links in the table with input statistics). Some instances that might be of interest:
 
@@ -1188,6 +1353,3 @@ tmp <- datAll %>% group_by(instance) %>% summarise_at(vars(contains(c("YN", "tot
 * Instances with highest unsupported nondominated points percentage: `r toLink(tmp %>% top_n(3, YNusRatio_max) %>% slice(1:3)%>% pull(instance))`
 * Instances with highest supported non-extreme nondominated points percentage: `r toLink(tmp %>% top_n(3, YNsneRatio_max) %>% arrange(YNsneRatio_max) %>%  slice(1:3) %>% pull(instance))` 
 * Instances with highest variance in cpu time: `r toLink(tmp %>% top_n(3, tpstotal_sd) %>% slice(1:3) %>% pull(instance))`
-
-
-
