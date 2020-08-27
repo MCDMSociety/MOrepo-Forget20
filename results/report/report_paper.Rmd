@@ -1083,6 +1083,7 @@ As the LP solver in Bensolve is GLPK, the MIP solver that we will use for this a
 # Things that are currently not used
 
 Reverse performance plot for the different algorithm configurations are given in Figure \@ref(fig:revPerfPlot).
+
 ```{r revPerfPlot, fig.cap="Reverse performance plots for the different problem classes"}
 ggplot(datAll %>% 
        group_by(algConfig, pb, n, solved, nodeselVarsel, OB) %>% 
@@ -1112,7 +1113,7 @@ plotCPUFacet <- function() {
     theme(legend.position="bottom", legend.title=element_blank()) +
     coord_cartesian(ylim = c(0, 1800)) +
     scale_color_algConfig
-  print(plt)
+  plt
 }
 ggplotly(plotCPUFacet())
 ```
