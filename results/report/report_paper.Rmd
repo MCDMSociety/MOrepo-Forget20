@@ -324,20 +324,20 @@ The objective coefficients are generated in the range [1, 1000] on the lower par
 For the AP the constraints are fixed given the problem size. The same holds for the UFLP when assuming the number of facilities equals the number of customers. For KP instances, the integer coefficients of the constraint are generated randomly in the range [1,15]. The right-hand side is set equal to half of the sum of the coefficients on the right hand side [LRN: Rounded???]. For KP three different constraints are generated for each variable size and objective coefficients.
 
 
-# Output statistics
+<!-- # Output statistics -->
 
-The following statistics will be considered:
+<!-- The following statistics will be considered: -->
 
-* `cpu`: total CPU time expressed in seconds used to solve an instance with a given configuration
-* `|YN|`: size of $\mathcal{Y}_N$, i.e. the number of non-dominated points which can be partitioned into
-  + `se`: number of supported extreme points,
-  + `sne`: number of supported non-extreme points,
-  + `us`: number of unsupported points.
-* `node`: number of nodes explored in the branching tree when solving an instance with a given configuration
-* `prune`: how leaf nodes are pruned partitioned into 
-  + `I`: number of leaf nodes pruned by infeasibility,
-  + `O`: number of leaf nodes pruned by optimality,
-  + `D`: number of leaf nodes pruned by dominance. [SLG: D also used for depth first]
+<!-- * `cpu`: total CPU time expressed in seconds used to solve an instance with a given configuration -->
+<!-- * `|YN|`: size of $\mathcal{Y}_N$, i.e. the number of non-dominated points which can be partitioned into -->
+<!--   + `se`: number of supported extreme points, -->
+<!--   + `sne`: number of supported non-extreme points, -->
+<!--   + `us`: number of unsupported points. -->
+<!-- * `node`: number of nodes explored in the branching tree when solving an instance with a given configuration -->
+<!-- * `prune`: how leaf nodes are pruned partitioned into  -->
+<!--   + `I`: number of leaf nodes pruned by infeasibility, -->
+<!--   + `O`: number of leaf nodes pruned by optimality, -->
+<!--   + `D`: number of leaf nodes pruned by dominance. [SLG: D also used for depth first] -->
   
 All algorithm configurations have been tested using a time limit of half an hour (1800 seconds).
 
@@ -470,7 +470,7 @@ ggplot(tmp) +
   ggtitle(str_c("Number of instances solved within a given cpu time")) +
   labs(color = "nS:", linetype = "oB:") +
   scale_color_ob + scale_linetype_nodesel_varsel +
-  theme(legend.position="bottom") + xlab("cpu") + ylab("%") + 
+  theme(legend.position="bottom") + xlab("cpu (seconds)") + ylab("%") + 
   coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
 ```
 
@@ -495,20 +495,29 @@ These observations will be explored with more details in the next sections.
 For taking a closer look at the different objective branching configurations we limit us to the set of instances which have been solved to optimality for all algorithm configurations. Detailed summary statistics are given in Table \@ref(tab:resTable). 
 
 ```{r resTable, layout="l-screen-inset"}
-winSeq <- c(winSq, algConfigs[!(algConfigs %in% winSq)])
-winAlgConfigSeq <- winSeq
-winSeq <- c(str_c("cpu_", winSeq), str_c("nodes_", winSeq), str_c("prune_", winSeq))
-winSeq <- winSeq[as.vector(sapply(1:algConfigsN, FUN = function(i) {c(i, i+algConfigsN, i+2*algConfigsN)}))]
-
-tmp <- datAll %>% 
+dat <- datAll %>% 
   group_by(instance) %>%
   filter(n() == algConfigsN, min(solved) == 1) %>%
   ungroup() 
-tmpWin <- datWin %>% 
-  filter(instance %in% unique(tmp$instance))
-
-
-getResGroup <- function(dat, win, ...) {
+winSeq <- unique(dat$algConfig)
+getResGroup <- function(dat, ...) {
+  # winSeq <- dat %>% 
+  #   group_by(algConfig) %>% 
+  #   summarize(cpu = mean(tpstotal)) %>% 
+  #   mutate(pct = cpu/min(cpu), strV = str_c(algConfig, " (", round((pct-1) * 100), "%)")) %>% 
+  #   arrange(cpu) %>% pull(algConfig)
+  cols = c("cpu", "cpuLB", "nodes", "prune")  # columns for each group
+  colN <- purrr::flatten_chr(map(cols, function(x) str_c(x, winSeq, sep = "_")))
+  idx <- {
+    lgd <- length(winSeq)
+    idx <- NULL
+    for (i in 1:length(winSeq))
+      for (j in 1:length(cols))
+        idx <- c(idx, i + (j-1)*lgd)
+    idx
+  }
+  colN <- colN[idx]
+  
   datYN <- dat %>% 
     group_by(instance, ...) %>% 
     summarise(YN = max(YN), YNse = max(YNse), YNs = max(YNs)) %>% 
@@ -520,12 +529,11 @@ getResGroup <- function(dat, win, ...) {
     summarise(ct = n(), cpu = mean(tpstotal), cpuMax = max(tpstotal), cpuMin = min(tpstotal), 
               nodes = mean(nbnodes), nInf = mean(pctinfeas), nOpt = mean(pctopt), nDom = mean(pctdomi),
               dptLeaf = mean(avgdepthT), dptMinLeaf = mean(mindepthT), dptMaxLeaf = mean(maxdepthT),
-              solved = min(solved)) %>% 
+              solved = min(solved), cpuLB = 1000*mean(tpsLB/nbLB)) %>% 
     full_join(datYN) %>% 
-    # full_join(datWinner) %>% 
     mutate(cpu = if_else(cpu == min(cpu), str_c(round(cpu, 1), "!"), str_c(round(cpu, 1))),
-           # ctWin = if_else(ctWin == max(ctWin), str_c(round(ctWin, 0), "!"), str_c(round(ctWin, 0))),
-           nodes = if_else(nodes == min(nodes), str_c(round(nodes, 0), "!"), str_c(round(nodes, 0))),) %>% 
+           cpuLB = if_else(cpuLB == min(cpuLB), str_c(round(cpuLB, 1), "!"), str_c(round(cpuLB, 1))),
+           nodes = if_else(nodes == min(nodes), str_c(round(nodes, 0), "!"), str_c(round(nodes, 0)))) %>% 
     ungroup() %>% 
     mutate(cpu = if_else(solved == 1, 
                          str_c(cpu, " [", round(cpuMin,1), ",", round(cpuMax,1), "]"), 
@@ -535,32 +543,49 @@ getResGroup <- function(dat, win, ...) {
            prune = str_c("[", round(nInf), ",", round(nOpt), ",", round(nDom), "]")
            ) %>%
     select(-solved, -cpuMin, -cpuMax, -dptMinLeaf, -dptMaxLeaf, -dptLeaf, -nInf, -nOpt, -nDom) %>%
-    pivot_wider(names_from = c(algConfig), values_from = c(cpu, nodes, prune)) %>%
-    select(..., ct, YN, !!winSeq)
+    pivot_wider(names_from = c(algConfig), values_from = c(cpu, cpuLB, nodes, prune)) %>%
+    select(..., ct, YN, !!colN)
   return(datResults)
 }
-datResRows <- getResGroup(tmp, tmpWin, pb, n)
+datResRows <- getResGroup(dat, pb, n)
 tabResults <- NULL
 for (p in unique(datResRows$pb)) {
   dat1 <- datResRows %>% filter(pb == p)
-  dat2 <- getResGroup(tmp, tmpWin, pb) %>% filter(pb == p)
+  dat2 <- getResGroup(dat, pb) %>% filter(pb == p)
   tabResults  <- bind_rows(tabResults, dat1, dat2)
 }
 
+colsN = c("cpu", "cpuLB", "nodes", "prune")
 tabResults <- tabResults %>% 
-  mutate_at(vars(contains(c("cpu", "win", "nodes"))), ~cell_spec(., bold = if_else(str_detect(., fixed("!")), T, F))) %>% 
+  mutate_at(vars(contains(c("cpu", "cpuLB", "nodes"))), ~cell_spec(., bold = if_else(str_detect(., fixed("!")), T, F))) %>% 
   mutate_if(is.character, str_replace_all, pattern = "!", replacement = "")
-digits <- c(0,0,0,rep(c(1,0,0),algConfigsN))
+# digits <- c(0,0,0,rep(c(1,0,0),algConfigsN))
 tabResults %>% 
   select(-pb) %>% 
   kable(
-    digits = digits, 
+    # digits = digits, 
     escape = F,
-    col.names = c("n", "#", "YN (se, sne, us)",
-                  rep(c("cpu", "nodes (d leaf)", "prune (I/O/D)"), length(winAlgConfigSeq))),
+    col.names = c(str_c("n", footnote_marker_alphabet(1)), 
+                  str_c("#", footnote_marker_alphabet(2)), 
+                  str_c("|YN|", footnote_marker_alphabet(3)),  
+                  str_c(rep(colsN, length(winSeq)),  
+                        c(footnote_marker_alphabet(4),
+                          footnote_marker_alphabet(5),
+                          footnote_marker_alphabet(6),
+                          footnote_marker_alphabet(7)))
+    ),
     caption = "Detailed results for all instances which have been solved to optimality for all algorithm configurtions.") %>% 
+  add_footnote(label = c("Number of variables.", 
+                         "Number of instances.", 
+                         "Avg. number of non-dominated points (supported extreme, supported non-extreme and unsupported in percent).",
+                         "Avg. cpu time (seconds). Square brackets contains the range.",
+                         "Avg. cpu time (miliseconds) used to find the LB set per node where LB set found.",
+                         "Avg. number of nodes in the branching tree. Square brackets contains the min, avg. and max depth of leaf nodes.",
+                         "Percentages of leaf nodes pruned by infisibility, optimality and dominance."
+                         )
+               ) %>% 
   kable_styling() %>% 
-  add_header_above(c(" " = 3, setNames(rep(3, length(winAlgConfigSeq)), winAlgConfigSeq))) %>% 
+  add_header_above(c(" " = 3, setNames(rep(length(colsN), length(winSeq)), winSeq))) %>% 
   pack_rows("AP", min(which(tabResults$pb == "AP")), max(which(tabResults$pb == "AP"))) %>% 
   pack_rows("KP", min(which(tabResults$pb == "KP")), max(which(tabResults$pb == "KP"))) %>% 
   pack_rows("UFLP", min(which(tabResults$pb == "UFLP")), max(which(tabResults$pb == "UFLP"))) %>% 
