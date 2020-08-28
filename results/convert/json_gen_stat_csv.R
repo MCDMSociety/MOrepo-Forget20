@@ -85,6 +85,7 @@ dat <- read_csv("data/stat.csv", col_types = cols()) %>%
    group_by(instance) %>%
    slice(1) %>%
    rownames_to_column()
+
 datOSS <- read_csv("data/stat_OSS.csv", col_types = cols()) %>%
    arrange(instance) %>%
    filter(solved == 1) %>%
@@ -97,10 +98,9 @@ datJoin <- right_join(dat, datOSS, by = c("instance")) %>%
 cat(str_c(datJoin$errTxt, collapse = "\n"))
 
 datOSS <- datOSS %>%
-   filter(!(rowname %in% datJoin$rowname.y))
-write_csv(dat, "../statistics_oss.csv")
-
-
+   filter(!(rowname %in% datJoin$rowname.y)) %>%
+   select(-rowname)
+write_csv(datOSS, "../statistics_oss.csv")
 
 warnings()
 sink(type = "message")

@@ -237,6 +237,8 @@ datAllJoined <- datAll %>%
   select(-data) %>% 
   unnest(missing) %>% 
   replace_na(list(tpstotal = 1800)) 
+
+datOSS <- read_csv("../statistics_oss.csv") 
 ```
 
 ```{r Define color scales}
@@ -460,7 +462,7 @@ tmp <- datAll %>%
 ggplot(tmp) +
   geom_step(aes(x=tpstotal, y=count, color = OB, linetype = nodeselVarsel)) +
   facet_grid(rows = vars(pb), scales = "free") +
-  ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  # ggtitle(str_c("Number of instances solved within a given cpu time")) +
   labs(color = "nS:", linetype = "oB:") +
   scale_color_ob + scale_linetype_nodesel_varsel +
   theme(legend.position="bottom") + xlab("cpu") + ylab("count")
@@ -472,7 +474,7 @@ ggplot(tmp) +
   geom_step(aes(y=pct, x=tpstotal, color = OB, linetype = nodeselVarsel), alpha = 0.75) +
   # geom_point(aes(y=..y.., x=tpstotal, color = OB, linetype = nodeselVarsel), stat="ecdf", size = 1) +
   facet_grid(rows = vars(pb)) +
-  ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  # ggtitle(str_c("Number of instances solved within a given cpu time")) +
   labs(color = "nS:", linetype = "oB:") +
   scale_color_ob + scale_linetype_nodesel_varsel +
   theme(legend.position="bottom") + xlab("cpu (seconds)") + ylab("%") + 
@@ -671,6 +673,59 @@ The case of the AP is different from KP and UFLP. This is not surprising as the 
 
 <!-- # How well does the tri-objective B&B algorithm perform compared to an objective space search algorithm? -->
 # Comparing the branch and bound algorithm with an objective space search algorithm
+
+
+<!-- Second, a comparison of the different algorithm configurations given problem class can be seen in Figure \@ref(fig:perfPlotPct). Remark that we have increased the variable size for each problem class until the size becomes so big that some instances cannot be solved within the time limit. That is, the number of instances solved before the time limit are under 100%.    -->
+
+```{r}
+dat1 <- datOSS %>% 
+  mutate(algConfig = "OSS", 
+         pb = str_replace(instance, "Forget20-(.*?)_.*", "\\1"),
+         tpstotal = cpu)
+dat <- datAll %>% 
+  filter (OB == "C" | OB == "N", instance %in% dat1$instance)  
+dat <- bind_rows(dat, dat1) %>% 
+  group_by(instance) %>% 
+  mutate(n = first(n)) %>% 
+  group_by(algConfig, pb) %>%
+  arrange(tpstotal) %>%
+  mutate(count = row_number(), total = n()) %>% 
+  group_by(pb) %>% 
+  mutate(total = max(total)) %>% 
+  group_by(pb, algConfig, tpstotal) %>% 
+  arrange(pb, algConfig, tpstotal, count) %>% 
+  filter(tpstotal < 1800 | row_number() == 1) %>% 
+  mutate(pct = count/total) %>% 
+  select(pb, algConfig, tpstotal, count, pct, total, n)
+```
+
+
+```{r perfPlotPctOss, fig.asp=1.2, fig.cap="Performance profile: Number of instances in percent solved given cpu time. An instance is considered as unsolved if the cpu time exceed 1800 seconds (time limit)."}
+ggplot(dat) +
+  # geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
+  geom_step(aes(y=pct, x=tpstotal, color = algConfig), alpha = 0.75) +
+  # geom_point(aes(y=..y.., x=tpstotal, color = OB, linetype = nodeselVarsel), stat="ecdf", size = 1) +
+  facet_grid(rows = vars(pb)) +
+  # ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  # labs(color = "nS:", linetype = "oB:") +
+  # scale_color_ob + scale_linetype_nodesel_varsel +
+  theme(legend.position="bottom", legend.title = element_blank()) + xlab("cpu (seconds)") + ylab("%") + 
+  coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
+```
+
+<!-- Some observations based on Figure \@ref(fig:perfPlotPctOss) are: -->
+
+```{r}
+plt <- ggplot(dat, aes(y = tpstotal , x = n, color = algConfig)) +
+    stat_summary(fun=mean, geom="line") +
+    geom_jitter(width = 0.5, height = 0, size = 0.7) +
+    facet_grid(cols = vars(pb), scales = "free") +
+    ggtitle(str_c("Cpu time")) +
+    theme(legend.position="bottom", legend.title=element_blank()) +
+    coord_cartesian(ylim = c(0, 1800)) 
+ggplotly(plt)
+```
+
 
 The best configuration of our branch and bound framework will now be compared to an efficient objective space search algorithm from the litterature [ref PhD Tamby]. The purpose of this paper is, as stated earlier, to extend the concept of objective space branching from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case.  However, we do find it important to compare the branch and bound algorithm to an objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems. The reason for the comparison is to test whether it is possible to extract knowledge about when and why the branch and bound algorithm is competitive and when and why it is not. In addition, the long term goal is develop an over-all competitive algorithm based on branch and bound and thus, it is also interesting to see how far from this goal we are.
 
