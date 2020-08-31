@@ -11,8 +11,7 @@ sink(logF, split = T, type = "output")
 #'
 #' Note set working dir to source file location when you work with the script.
 
-#' ### Setup
-#' Install packages:
+#### Setup ####
 # remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
 library(tidyverse)
 library(jsonlite)
@@ -101,6 +100,55 @@ datOSS <- datOSS %>%
    filter(!(rowname %in% datJoin$rowname.y)) %>%
    select(-rowname)
 write_csv(datOSS, "../statistics_oss.csv")
+
+
+#### Cpu times nd points ####
+message("Add lines to statistics_nd_points.csv:")
+resJsonFiles <- list.files("..", ".json", full.names = T)
+dat <- NULL
+for (i in 1:length(resJsonFiles)) {
+   message("File: ", resJsonFiles[i], " | ", appendLF = F)
+   lst <- jsonlite::fromJSON(resJsonFiles[i])
+   algConfig <- tolower(str_c(unlist(lst$misc$algConfig), collapse = "_"))
+   res <- lst$misc$outputStat$yNStat
+   instance <- lst$instanceName
+   maxDepth <- max(res$depth)
+   dat <- bind_rows(dat,
+                    tibble(instance = instance,
+                           algConfig = algConfig,
+                           tpstotal = lst$cpu$sec,
+                           maxDepth = maxDepth,
+                           resUB = list(as_tibble(res))))
+}
+
+dat <- dat %>%
+   group_by(instance, algConfig) %>%
+   mutate(relativeSolved =
+             pmap(list(resUB, tpstotal, algConfig, maxDepth),
+                  function(df = ..1, cpuT = ..2, mth = ..3, depthM = ..4) {
+                     # if (nrow(df) > 1) {
+                     res <- tibble(mth = mth,
+                                   pct = c(nrow(df),  rep(nrow(df), nrow(df)), nrow(df)),
+                                   cpu = c(0, df$time, cpuT),
+                                   depth = c(0, df$depth, depthM),
+                                   rowname = 1:(nrow(df)+2))
+                     res <- res %>% mutate(pct = (rowname-1)/pct) %>% select(-rowname)
+                     res[nrow(res),"pct"] <- 1
+                     # res <- res %>% arrange(pct, cpu)
+                     # } else {
+                     # res <- tibble(mth = mth, pct = c(1, cpu = c(df$time, cpuT), rowname = 1:2)
+                     # }
+                     res %>% mutate(pctCpu = cpu/cpuT, pctDepth = depth/depthM)
+                  })) %>%
+   unnest(relativeSolved) %>%
+   select(-resUB)
+
+
+
+message("\nFinished.\nWrite to csv.")
+write_csv(dat, "../statistics_nd_points.csv")
+
+#### Clean and Finish ####
 
 warnings()
 sink(type = "message")
