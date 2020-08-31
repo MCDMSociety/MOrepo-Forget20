@@ -106,11 +106,7 @@ write_csv(datOSS, "../statistics_oss.csv")
 message("Add lines to statistics_nd_points.csv:")
 resJsonFiles <- list.files("..", ".json", full.names = T)
 dat <- NULL
-<<<<<<< HEAD
 for (i in 1:length(resJsonFiles)) {
-=======
-for (i in 1:2) { # 1:length(resJsonFiles)
->>>>>>> 2f3bb6d45f55017ade8c1919d02a88836b306478
    message("File: ", resJsonFiles[i], " | ", appendLF = F)
    lst <- jsonlite::fromJSON(resJsonFiles[i])
    algConfig <- tolower(str_c(unlist(lst$misc$algConfig), collapse = "_"))
@@ -143,15 +139,9 @@ dat <- dat %>%
                      # res <- tibble(mth = mth, pct = c(1, cpu = c(df$time, cpuT), rowname = 1:2)
                      # }
                      res %>% mutate(pctCpu = cpu/cpuT, pctDepth = depth/depthM)
-<<<<<<< HEAD
                   })) %>%
    unnest(relativeSolved) %>%
    select(-resUB)
-
-
-=======
-                  }))
->>>>>>> 2f3bb6d45f55017ade8c1919d02a88836b306478
 
 message("\nFinished.\nWrite to csv.")
 write_csv(dat, "../statistics_nd_points.csv")
