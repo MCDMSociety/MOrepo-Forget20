@@ -136,10 +136,10 @@ To test different algorithm configurations we use the following parameters:
   + `D`: depth first strategy.
 * `oB` denotes the objective branching strategy. Three configurations are tested:
   + `N`: no objective branching is performed. This is the equivalent of skipping Step 4 of Algorithm 1. 
-  + `E`: exact objective branching using super local upper bounds (see Algorithm 2). [LRN: Should we call it full OB?]
+  + `F`: full objective branching using super local upper bounds (see Algorithm 2). [LRN: Should we call it full OB?]
   + `C`: objective branching using a single cone, namely, the nadir point of the local upper bounds dominated by the lower bound set (see Section 4.3).
 
-This leads to 6 configurations: `B|N`, `B|E`, `B|C`, `D|N`, `D|E` and `D|C`. For an overview of more configurations such as different variable selection rules (Step 5 of the algorithm), the reader is referred to @Forget20a.
+This leads to 6 configurations: `B|N`, `B|F`, `B|C`, `D|N`, `D|F` and `D|C`. For an overview of more configurations such as different variable selection rules (Step 5 of the algorithm), the reader is referred to @Forget20a.
 
 All algorithm configurations have been tested using a time limit of half an hour (1800 seconds).
 
@@ -407,7 +407,7 @@ For the AP the constraints are fixed given the problem size. The same holds for 
 <!--   - `pcttpsSLUB`: proportion (in %) of the total CPU time spend in computing the super local upper bounds. -->
 <!--   - `tpsdomiLUB`: CPU time (in sec) used to do the additional dominance tests to get the dominance status of EACH local upper bound. -->
 <!--   - `pcttpsdomiLUB`: proportion (in %) of the total CPU time spend in doing the additional dominance tests on the local upper bounds. -->
-<!--   - `nbOB`: number of nodes where two or more sub-problems are created in the objective space. When using the exact objective branching (`OB` = exact), it in particular shows how often it is actually possible to split the objective space with the definition of the sub-problems that we used ($z(x) \leqq \bar{z}$, $\bar{z} \in \mathbb{R}^p$). -->
+<!--   - `nbOB`: number of nodes where two or more sub-problems are created in the objective space. When using the full objective branching (`OB` = exact), it in particular shows how often it is actually possible to split the objective space with the definition of the sub-problems that we used ($z(x) \leqq \bar{z}$, $\bar{z} \in \mathbb{R}^p$). -->
 <!--   - `pctnbOB`: proportion (in %) of the nodes explored that where split in two or more sub-problems in the objective space. -->
 <!--   - `avgdepthOB`: [relevant only if `OB` = exact] average depth of the nodes split in two or more sub-problems in the objective space. -->
 <!--   - `mindepthOB`: [relevant only if `OB` = exact] minimal depth of the nodes split in two or more sub-problems in the objective space. -->
@@ -483,7 +483,7 @@ ggplot(tmp) +
 
 Some observations based on Figure \@ref(fig:perfPlotPct) are:
 
-* In general exact objective branching (`B|E` and `D|E`) performs poorly compared to the other configurations. This is especially evident for AP and UFLP. For KP exact objective branching are still among the worst ones. 
+* In general full objective branching (`B|F` and `D|F`) performs poorly compared to the other configurations. This is especially evident for AP and UFLP. For KP full objective branching are still among the worst ones. 
 
 * For both KP and UFLP, the best objective branching configuration is using a single cone (`C`), while no objective branching (`N`) performs better for AP. 
 
@@ -491,7 +491,7 @@ Some observations based on Figure \@ref(fig:perfPlotPct) are:
 
 These observations will be explored with more details in the next sections.
 
-<!--Thus, the `B|E` and `D|E` will be discarded in the rest of this paper. [say that we discard it in the enxt section, after explanations]-->
+<!--Thus, the `B|F` and `D|F` will be discarded in the rest of this paper. [say that we discard it in the enxt section, after explanations]-->
 
 
 
@@ -612,9 +612,9 @@ tmp <- datAll %>%
   summarise(avgnbpbOB = mean(avgnbpbOB)) %>% pull(avgnbpbOB)
 ```
 
-Figure \@ref(fig:perfPlotPct) illustrates that using exact objective branching (`E`) is not efficient with respect to cpu time. As explained in Section 4.3, exact objective branching creates more nodes (in average `r round(tmp,1)`) in the branch and bound tree as it partitions the objective space in smaller regions. This seems to lead to longer computation times, since computing the lower bound set of each node is computationally very expensive. Indeed, this can be seen in Figure \@ref(fig:figTreeSize) where `E` configurations produce more nodes in the tree compared to `C` and `N` given same node selection rule. This observation makes sense, as the purpose of objective branching as described in Algorithm 2 is to produce more sub-problems and thus get wider trees, hoping that these sub-problems will be easier and that the tree will have a smaller depth. 
-<!-- In practice, as it can be seen in Table \@ref(tab:resTable), in general, `E` configurations indeed produce more nodes in the tree than the other configurations.  -->
-Furthermore, the branching nodes produced using exact objective branching takes longer to process, on average. This can be seen in Table \@ref(tab:resTable) if we compare the time used to find lower bound sets for configurations `E` and `C`. That is, the sub-problems generated in the `E` configurations tends to be harder to solve due to a more complicated set of constraints. 
+Figure \@ref(fig:perfPlotPct) illustrates that using full objective branching (`F`) is not efficient with respect to cpu time. As explained in Section 4.3, full objective branching creates more nodes (in average `r round(tmp,1)`) in the branch and bound tree as it partitions the objective space in smaller regions. This seems to lead to longer computation times, since computing the lower bound set of each node is computationally very expensive. Indeed, this can be seen in Figure \@ref(fig:figTreeSize) where `F` configurations produce more nodes in the tree compared to `C` and `N` given same node selection rule. This observation makes sense, as the purpose of objective branching as described in Algorithm 2 is to produce more sub-problems and thus get wider trees, hoping that these sub-problems will be easier and that the tree will have a smaller depth. 
+<!-- In practice, as it can be seen in Table \@ref(tab:resTable), in general, `F` configurations indeed produce more nodes in the tree than the other configurations.  -->
+Furthermore, the branching nodes produced using full objective branching takes longer to process, on average. This can be seen in Table \@ref(tab:resTable) if we compare the time used to find lower bound sets for configurations `F` and `C`. That is, the sub-problems generated in the `F` configurations tends to be harder to solve due to a more complicated set of constraints. 
 
 ```{r figTreeSize, fig.cap="Average branching tree size."}
 datAll %>% 
@@ -654,7 +654,7 @@ Except for AP, objective branching using a single cone (`C`) are performing bett
 
 The case of the AP is different from KP and UFLP. This is not surprising as the constraint matrix of the AP is totally unimodular implying the extreme points of the the polytope defined by the constraints are integral. Hence, all the extreme points of the lower bound sets correspond to feasible solutions in the `N` configurations. This implies that in Step 5, the branching rule will exploit this and thus, always branch on the most often different variable. On the contrary, as new constraints are added in the `C` configurations, the extreme points are not necessarily integer and the branching rule will choose to branch on the most often fractional variable. This difference in the branching rule may have a significant impact and thus, explain why for AP `N` configurations are better.
 
-<!-- meaning these outcome vectors are potential non-dominated outcome vectors, leading to fast updates of the upper bound set. However, when the `E` and `C`-configurations are considered, additional constraints are added effectively destroying the totally unimodularity. This, in turn, implies that the upper bound set is not updated as often and in turn, the branching strategy chosen is different due to the non-integral extreme points of the lower bound set. This is also emphazied in Figure \@ref(fig:figTreeSize) where it can be seen that the tree size for AP is much lower if no objective branching is done. -->
+<!-- meaning these outcome vectors are potential non-dominated outcome vectors, leading to fast updates of the upper bound set. However, when the `F` and `C`-configurations are considered, additional constraints are added effectively destroying the totally unimodularity. This, in turn, implies that the upper bound set is not updated as often and in turn, the branching strategy chosen is different due to the non-integral extreme points of the lower bound set. This is also emphazied in Figure \@ref(fig:figTreeSize) where it can be seen that the tree size for AP is much lower if no objective branching is done. -->
 
 <!--[NF: change the paragraph to var sel rule]-->
 
