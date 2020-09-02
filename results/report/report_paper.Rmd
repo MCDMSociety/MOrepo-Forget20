@@ -241,7 +241,56 @@ datAllJoined <- datAll %>%
 datOSS <- read_csv("../statistics_oss.csv") 
 ```
 
-```{r Define color scales}
+```{r Define theme and color scales}
+theme_publish <- function() {
+  library(grid)
+  library(ggthemes)
+  return(theme_foundation(base_size = 10) +
+    theme(
+      # plot.title = element_text(face = "bold", size = rel(1.2), hjust = 0.5),
+      text = element_text(face = "plain"),
+      # panel.background = element_rect(colour = NA),
+      panel.spacing = unit(0.5, "cm"),
+      # plot.background = element_rect(colour = NA),
+      # panel.border = element_rect(colour = NA),
+      axis.title = element_text(face = "plain",size = rel(1)),
+      # axis.title.y = element_text(angle=90,vjust =2),
+      # axis.title.x = element_text(vjust = -0.2),
+      axis.text = element_text(),
+      axis.line = element_line(colour="black"),
+      axis.ticks = element_line(),
+      panel.grid.major = element_line(colour="#f0f0f0"),
+      panel.grid.minor = element_blank(),
+      legend.key = element_rect(colour = NA),
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      # legend.key.size = unit(0.2, "cm"),
+      legend.key.height = unit(0.2, "cm"), 
+      legend.key.width = unit(0.75, "cm"),
+      # legend.margin = unit(0, "cm"),
+      legend.title = element_blank(), #element_text(face="italic"),
+      # plot.margin=unit(c(10,5,5,5),"mm"),
+      # strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+      # strip.text = element_text(face="bold"),
+    )
+  )
+}
+
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+
+
 # display.brewer.pal(n = 11, name = "RdYlBu")
 pal <- brewer.pal(n = 11, name = "RdYlBu")
 # algConfigs <- algConfigs[c(2,5, 3,6, 1,4, 8,11, 9,12, 7,10)]
@@ -262,7 +311,7 @@ scale_color_nodesel_varsel <- scale_color_manual(
   drop = F)
 
 scale_color_ob <- scale_color_manual(
-  values = setNames(pal[c(1,3,9,11)], c("breadth", "depth")),
+  values = setNames(pal[c(1,3,9,11)], c("breadth", "depth", "OSS")),
   drop = F)
 
 scale_fill_ob <- scale_fill_manual(
@@ -286,7 +335,7 @@ scale_linetype_ob <- scale_linetype_manual(
   drop = F)
 
 scale_linetype_nodesel_varsel <- scale_linetype_manual(
-  values = c("cone" = 1, "exact" = 2, "None" = 3, "C" = 1, "E" = 2, "N" = 3, "B" = 1, "D" = 2),
+  values = c("cone" = 1, "exact" = 2, "None" = 3, "C" = 1, "E" = 2, "N" = 3, "B" = 1, "D" = 2, "OSS" = 1),
   drop = F)
 ```
 
@@ -465,10 +514,10 @@ ggplot(tmp) +
   # ggtitle(str_c("Number of instances solved within a given cpu time")) +
   labs(color = "nS:", linetype = "oB:") +
   scale_color_ob + scale_linetype_nodesel_varsel +
-  theme(legend.position="bottom") + xlab("cpu") + ylab("count")
+  theme_publish() + xlab("cpu") + ylab("count")
 ```
 
-```{r perfPlotPct, fig.asp=1.2, fig.cap="Performance profile: Number of instances in percent solved given cpu time. An instance is considered as unsolved if the cpu time exceed 1800 seconds (time limit)."}
+```{r perfPlotPct, fig.asp=1, fig.cap="Performance profile: Number of instances in percent solved given cpu time. An instance is considered as unsolved if the cpu time exceed 1800 seconds (time limit)."}
 ggplot(tmp) +
   # geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
   geom_step(aes(y=pct, x=tpstotal, color = OB, linetype = nodeselVarsel), alpha = 0.75) +
@@ -477,8 +526,9 @@ ggplot(tmp) +
   # ggtitle(str_c("Number of instances solved within a given cpu time")) +
   labs(color = "nS:", linetype = "oB:") +
   scale_color_ob + scale_linetype_nodesel_varsel +
-  theme(legend.position="bottom") + xlab("cpu (seconds)") + ylab("%") + 
-  coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
+  xlab("cpu (seconds)") + ylab("%") +
+  theme_publish() +
+  coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797))
 ```
 
 Some observations based on Figure \@ref(fig:perfPlotPct) are:
@@ -633,7 +683,8 @@ datAll %>%
   # ggtitle(str_c("Average branching tree size.")) +
   labs(color = "oB:", linetype = "nS:") +
   scale_fill_ob + scale_linetype_nodesel_varsel +
-  theme(legend.position="bottom") + xlab("problem class") + ylab("tree size") 
+  theme_publish() + theme() +
+  xlab("problem class") + ylab("tree size") 
 ```
 
 ```{r}
@@ -671,7 +722,11 @@ The case of the AP is different from KP and UFLP. This is not surprising as the 
 
 # Node selection: breadth vs depth
 
-```{r}
+In Figure \@ref(fig:perfPlotPct), it can be seen that for the studied problems, breadth first strategy tends to perform better than depth first strategy for node selection. This observation is in contrast to the prevalent use of depth first in multi-objective branch and bound algorithms (LRN: Add references). 
+
+A possible explanation is that with a depth first strategy, the branch and bound algorithm tends to focus on specific parts of the objective space one by one. Using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier. This is confirmed if we take a look at all the instances solved to optimality with no objective branching (`N`) or using a cone `C`. 
+
+```{r perfPlotND, fig.width=10, fig.asp=0.8, fig.cap="Smoothed curves of relative number of non-dominated points compared to relative cpu. "}
 instancesAllSolved <- datAll %>% 
   group_by(instance) %>%
   filter(n() == algConfigsN, min(solved) == 1) %>% 
@@ -686,56 +741,41 @@ csvFiles <- list.files("..", ".csv", full.names = T) %>%
   str_subset("nd")
 dat <- NULL
 for (f in csvFiles) dat <- bind_rows(dat, read_csv(f))
+dat <- dat %>% mutate(algConfig = abbrv(algConfig))
+
+# dat1 <- dat %>% 
+#   separate(algConfig, into = c("nodesel", "varsel", "OB"), sep = "_", remove = F) %>%
+#   mutate(pb = str_replace(instance, "^Forget20-(.*?)_.*$", "\\1")) %>% 
+#   filter(instance %in% instancesAllSolved, varsel == "mof")
+# 
+# ggplot(aes(x = pctCpu, y = pct, color = nodesel), data = dat1) + 
+#   geom_smooth() + 
+#   facet_grid(rows = vars(pb)) 
+
+# ggplot(aes(x = pctCpu, y = pct, color = algConfig), data = dat1) + 
+#   geom_smooth() + 
+#   facet_grid(rows = vars(pb)) 
 
 dat1 <- dat %>% 
   separate(algConfig, into = c("nodesel", "varsel", "OB"), sep = "_", remove = F) %>%
   mutate(pb = str_replace(instance, "^Forget20-(.*?)_.*$", "\\1")) %>% 
-  filter(instance %in% instancesAllSolved, varsel == "mof")
+  filter(instance %in% instancesNCSolved, varsel == "F", OB == "N" | OB =="C")
 
-ggplot(aes(x = pctCpu, y = pct, color = nodesel), data = dat1) + 
-  geom_smooth() + 
-  facet_grid(rows = vars(pb)) 
+ggplot(aes(x = pctCpu, y = pct, linetype = nodesel), data = dat1) + 
+  geom_smooth(color = "black", se = F) + 
+  facet_grid(rows = vars(pb)) +
+  coord_cartesian(expand = FALSE, ylim = c(0, 1), xlim = c(0, 1)) +
+  # ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  labs(linetype = "") +
+  scale_linetype_nodesel_varsel + 
+  theme_publish() + ylab("% of non-dominated points") + xlab("% of cpu time")
 
-ggplot(aes(x = pctCpu, y = pct, color = algConfig), data = dat1) + 
-  geom_smooth() + 
-  facet_grid(rows = vars(pb)) 
-
-ggplot(aes(x = pctDepth, y = pct, color = nodesel), data = dat1) + 
-  geom_smooth() + 
-  facet_grid(rows = vars(pb)) 
-
-ggplot(aes(x = pctDepth, y = pct, color = algConfig), data = dat1) + 
-  geom_smooth() + 
-  facet_grid(rows = vars(pb)) 
-  
-dat1 <- dat %>% 
-  separate(algConfig, into = c("nodesel", "varsel", "OB"), sep = "_", remove = F) %>%
-  mutate(pb = str_replace(instance, "^Forget20-(.*?)_.*$", "\\1")) %>% 
-  filter(instance %in% instancesNCSolved, varsel == "mof", OB == "none" | OB =="cone")
-
-ggplot(aes(x = pctCpu, y = pct, color = nodesel), data = dat1) + 
-  geom_smooth() + 
-  facet_grid(rows = vars(pb)) 
-
-ggplot(aes(x = pctCpu, y = pct, color = algConfig), data = dat1) + 
-  geom_smooth() + 
-  facet_grid(rows = vars(pb)) 
-
-ggplot(aes(x = pctDepth, y = pct, color = nodesel), data = dat1) + 
-  geom_smooth() + 
-  facet_grid(rows = vars(pb)) 
-
-ggplot(aes(x = pctDepth, y = pct, color = algConfig), data = dat1) + 
-  geom_smooth() + 
-  facet_grid(rows = vars(pb)) 
-
-# ggplot(tmp) +
+  # ggplot(tmp) +
 #   geom_step(aes(x=tpstotal, y=count, color = OB, linetype = nodeselVarsel)) +
 #   facet_grid(rows = vars(pb), scales = "free") +
-#   # ggtitle(str_c("Number of instances solved within a given cpu time")) +
-#   labs(color = "nS:", linetype = "oB:") +
-#   scale_color_ob + scale_linetype_nodesel_varsel +
-#   theme(legend.position="bottom") + xlab("cpu") + ylab("count")
+
+
+
 
 
 
@@ -744,11 +784,15 @@ ggplot(aes(x = pctDepth, y = pct, color = algConfig), data = dat1) +
 
 [LRN: Instances solved to optimality with N and C or just solved?]
 
-In Figure \@ref(fig:perfPlotPct), it can be seen that for the studied problems, breadth first strategy tends to perform better than depth first strategy for node selection. This observation is in contrast to the prevalent use of depth first in multi-objective branch and bound algorithms (references).
+
 
 A possible explanation is that with a depth first strategy, the branch and bound algorithm tends to focus on specific parts of the objective space one by one. Using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier.
 
-<!-- A possible explanation is that the linear relaxation of the problems studied is of good quality in the single-objective case [ref ?]. Thus, integer extreme points can be found very early (i.e. at a very low depth) in the branch and bound tree. For example, all the extreme points of the linear relaxation of an AP are integer and are thus new candidates for being part of the final non-dominated set. Hence, while using depth first strategies, the branch and bound algorithm tends to focus to specific parts of the objective space one by one; using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier. -->
+
+
+
+
+
 
 <!-- # How well does the tri-objective B&B algorithm perform compared to an objective space search algorithm? -->
 # Comparing the branch and bound algorithm with an objective space search algorithm
@@ -775,7 +819,9 @@ dat <- bind_rows(dat2, dat1) %>%
   arrange(pb, algConfig, tpstotal, count) %>% 
   filter(tpstotal < 1800 | row_number() == 1) %>% 
   mutate(pct = count/total) %>% 
-  select(pb, algConfig, tpstotal, count, pct, total, n)
+  select(pb, algConfig, tpstotal, count, pct, total, n) %>% 
+  separate(algConfig, into = c("nodeselVarsel", "OB"), sep = "\\|", remove = F) %>% 
+  mutate(OB = replace_na(OB,"OSS"))
 
 tmp1 <- dat2 %>% filter(algConfig == "B|C")
 tmp <- inner_join(dat1, tmp1, by = "instance") %>% 
@@ -789,26 +835,22 @@ tmp %>% kable() %>% kable_styling()
 
 ```{r perfPlotPctOss, fig.asp=1.2, fig.cap="Performance profile: Number of instances in percent solved given cpu time. An instance is considered as unsolved if the cpu time exceed 1800 seconds (time limit)."}
 ggplot(dat) +
-  # geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
-  geom_step(aes(y=pct, x=tpstotal, color = algConfig), alpha = 0.75) +
-  # geom_point(aes(y=..y.., x=tpstotal, color = OB, linetype = nodeselVarsel), stat="ecdf", size = 1) +
+  geom_step(aes(y=pct, x=tpstotal, color = OB, linetype = nodeselVarsel), alpha = 0.75) + 
   facet_grid(rows = vars(pb)) +
-  # ggtitle(str_c("Number of instances solved within a given cpu time")) +
-  # labs(color = "nS:", linetype = "oB:") +
-  # scale_color_ob + scale_linetype_nodesel_varsel +
-  theme(legend.position="bottom", legend.title = element_blank()) + xlab("cpu (seconds)") + ylab("%") + 
+  scale_color_ob + scale_linetype_nodesel_varsel +
+  theme_publish() + xlab("cpu (seconds)") + ylab("%") + 
   coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
 ```
 
 <!-- Some observations based on Figure \@ref(fig:perfPlotPctOss) are: -->
 
-```{r}
+```{r, eval=FALSE}
 plt <- ggplot(dat, aes(y = tpstotal , x = n, color = algConfig)) +
     stat_summary(fun=mean, geom="line") +
     geom_jitter(width = 0.5, height = 0, size = 0.7) +
     facet_grid(cols = vars(pb), scales = "free") +
     ggtitle(str_c("Cpu time")) +
-    theme(legend.position="bottom", legend.title=element_blank()) +
+    theme_publish() +
     coord_cartesian(ylim = c(0, 1800)) 
 ggplotly(plt)
 ```
@@ -1244,7 +1286,7 @@ ggplot(datAll %>%
   facet_grid(cols = vars(pb), scales = "free") +
   ggtitle(str_c("Number of instances solved within the time limit given n")) +
   labs(color = "nS | vS:", linetype = "oB:") +
-  theme(legend.position="bottom") + #xlab("cpu") +
+  theme_publish() + #xlab("cpu") +
   scale_color_nodesel_varsel + scale_linetype_ob
 ```
 
@@ -1258,7 +1300,7 @@ plotCPUFacet <- function() {
     geom_jitter(width = 0.5, height = 0, size = 0.7) +
     facet_grid(cols = vars(pb), scales = "free") +
     ggtitle(str_c("Cpu time (note scale free)")) +
-    theme(legend.position="bottom", legend.title=element_blank()) +
+    theme_publish() +
     coord_cartesian(ylim = c(0, 1800)) +
     scale_color_algConfig
   plt
@@ -1401,7 +1443,7 @@ datAll %>%
   ggtitle(str_c("Average branching tree size.")) +
   labs(color = "oB:", linetype = "nS:") +
   scale_color_ob + scale_linetype_nodesel_varsel +
-  theme(legend.position="bottom") + xlab("n") + ylab("tree size") 
+  theme_publish() + xlab("n") + ylab("tree size") 
   # coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
 ```
 
