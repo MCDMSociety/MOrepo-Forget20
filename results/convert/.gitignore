@@ -2,3 +2,5 @@ main_cache
 main.spin.R
 main.spin.Rmd
 Tuyttens00_AP_n05_result.json
+json_gen_nd_csv.R
+json_gen_nd_csv.log

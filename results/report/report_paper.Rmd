@@ -671,6 +671,77 @@ The case of the AP is different from KP and UFLP. This is not surprising as the 
 
 # Node selection: breadth vs depth
 
+```{r}
+instancesAllSolved <- datAll %>% 
+  group_by(instance) %>%
+  filter(n() == algConfigsN, min(solved) == 1) %>% 
+  pull(instance)
+instancesNCSolved <- datAll %>%
+  filter(OB == "C" | OB == "N") %>% 
+  group_by(instance) %>%
+  filter(min(solved) == 1) %>% 
+  pull(instance)
+
+csvFiles <- list.files("..", ".csv", full.names = T) %>% 
+  str_subset("nd")
+dat <- NULL
+for (f in csvFiles) dat <- bind_rows(dat, read_csv(f))
+
+dat1 <- dat %>% 
+  separate(algConfig, into = c("nodesel", "varsel", "OB"), sep = "_", remove = F) %>%
+  mutate(pb = str_replace(instance, "^Forget20-(.*?)_.*$", "\\1")) %>% 
+  filter(instance %in% instancesAllSolved, varsel == "mof")
+
+ggplot(aes(x = pctCpu, y = pct, color = nodesel), data = dat1) + 
+  geom_smooth() + 
+  facet_grid(rows = vars(pb)) 
+
+ggplot(aes(x = pctCpu, y = pct, color = algConfig), data = dat1) + 
+  geom_smooth() + 
+  facet_grid(rows = vars(pb)) 
+
+ggplot(aes(x = pctDepth, y = pct, color = nodesel), data = dat1) + 
+  geom_smooth() + 
+  facet_grid(rows = vars(pb)) 
+
+ggplot(aes(x = pctDepth, y = pct, color = algConfig), data = dat1) + 
+  geom_smooth() + 
+  facet_grid(rows = vars(pb)) 
+  
+dat1 <- dat %>% 
+  separate(algConfig, into = c("nodesel", "varsel", "OB"), sep = "_", remove = F) %>%
+  mutate(pb = str_replace(instance, "^Forget20-(.*?)_.*$", "\\1")) %>% 
+  filter(instance %in% instancesNCSolved, varsel == "mof", OB == "none" | OB =="cone")
+
+ggplot(aes(x = pctCpu, y = pct, color = nodesel), data = dat1) + 
+  geom_smooth() + 
+  facet_grid(rows = vars(pb)) 
+
+ggplot(aes(x = pctCpu, y = pct, color = algConfig), data = dat1) + 
+  geom_smooth() + 
+  facet_grid(rows = vars(pb)) 
+
+ggplot(aes(x = pctDepth, y = pct, color = nodesel), data = dat1) + 
+  geom_smooth() + 
+  facet_grid(rows = vars(pb)) 
+
+ggplot(aes(x = pctDepth, y = pct, color = algConfig), data = dat1) + 
+  geom_smooth() + 
+  facet_grid(rows = vars(pb)) 
+
+# ggplot(tmp) +
+#   geom_step(aes(x=tpstotal, y=count, color = OB, linetype = nodeselVarsel)) +
+#   facet_grid(rows = vars(pb), scales = "free") +
+#   # ggtitle(str_c("Number of instances solved within a given cpu time")) +
+#   labs(color = "nS:", linetype = "oB:") +
+#   scale_color_ob + scale_linetype_nodesel_varsel +
+#   theme(legend.position="bottom") + xlab("cpu") + ylab("count")
+
+
+
+```
+
+
 [LRN: Instances solved to optimality with N and C or just solved?]
 
 In Figure \@ref(fig:perfPlotPct), it can be seen that for the studied problems, breadth first strategy tends to perform better than depth first strategy for node selection. This observation is in contrast to the prevalent use of depth first in multi-objective branch and bound algorithms (references).
