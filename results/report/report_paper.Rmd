@@ -141,7 +141,9 @@ To test different algorithm configurations we use the following parameters:
 
 This leads to 6 configurations: `B|N`, `B|F`, `B|C`, `D|N`, `D|F` and `D|C`. For an overview of more configurations such as different variable selection rules (Step 5 of the algorithm), the reader is referred to @Forget20a.
 
-All algorithm configurations have been tested using a time limit of half an hour (1800 seconds).
+The Objective Space Search (OSS) algorithm of [LRN: Add ref PhD Tamby] was implemented. A short description of the algorithm is given in the appendix [LRN: create a short section]. As the LP solver in Bensolve is GLPK, the same MIP solver was used. Due to technical constraints in the chosen programming language (Julia), the MIP solver could not be warm started. Warm starting the MIP solver would lead to improved cpu times. However, note that the same holds for the branch and bound algorithm which also does not use warm starting when calculating the lower bound set in each node of the tree.  
+
+All algorithms and configurations have been tested using a time limit of half an hour (1800 seconds).
 
 
 # Test instances
@@ -450,7 +452,7 @@ Some observations based on Figure \@ref(fig:perfPlotPct) are:
 
 These observations will be explored with more details in the next sections. 
 
-Finally, consider the winning algorithm configurations in Figure \@ref(fig:winConfigs). Note that for KP and UFLP, no objective branching is competitive for some of the smaller instances. Furthermore, in general there is not configuration that wins. That is, algorithms using different node selection and objective branching strategies during the solution procedure may be useful. 
+Finally, consider the winning algorithm configurations in Figure \@ref(fig:winConfigs). Note that for KP and UFLP using no objective branching is competitive for some of the smaller instances. Furthermore, in general there is not configuration that wins. That is, algorithms using different node selection and objective branching strategies during the solution procedure may be useful. 
 
 ```{r winConfigs, fig.cap="Proportion of winning algorithm configurations."}
 res <- datWin %>% 
@@ -687,6 +689,8 @@ ggplot(aes(x = pctCpu, y = pct, linetype = nodesel), data = dat1) +
 ```
 
 
+[LRN: skip this?]
+
 ```{r}
 ggplot(aes(x = pctCpu, y = pct, linetype = nodesel), data = dat1) + 
   geom_smooth(color = "black", se = F, size = 0.5) + 
@@ -697,6 +701,8 @@ ggplot(aes(x = pctCpu, y = pct, linetype = nodesel), data = dat1) +
   scale_linetype_nodesel_varsel + 
   theme_publish() + ylab("% of non-dominated points") + xlab("% of cpu time")
 ```
+
+[LRN: avg depth]
 
 ```{r}
 dat1 %>% 
@@ -713,7 +719,7 @@ dat1 %>%
 
 A possible explanation is that with a depth first strategy, the branch and bound algorithm tends to focus on specific parts of the objective space one by one. Using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier. This is confirmed if we take a look at Figure \@ref(fig:perfPlotND) where all the instances solved to optimality with no objective branching (`N`) or using a cone (`C`) have been grouped based on node selection strategy. Observe that using a breath first strategy in general finds an approximation of the non-dominated set relatively faster, i.e. we obtain a better upper bound set. Moreover, a `B` node selection strategy in general finds an optimal solution better than a `D` node selection strategy (see Figure \@ref(fig:perfPlotPct)).
 
-
+[LRN: What is missing?]
 
 
 
@@ -722,9 +728,6 @@ A possible explanation is that with a depth first strategy, the branch and bound
 
 <!-- # How well does the tri-objective B&B algorithm perform compared to an objective space search algorithm? -->
 # Comparing the branch and bound algorithm with an objective space search algorithm
-
-
-<!-- Second, a comparison of the different algorithm configurations given problem class can be seen in Figure \@ref(fig:perfPlotPct). Remark that we have increased the variable size for each problem class until the size becomes so big that some instances cannot be solved within the time limit. That is, the number of instances solved before the time limit are under 100%.    -->
 
 ```{r}
 dat1 <- datOSS %>% 
@@ -768,8 +771,6 @@ ggplot(dat) +
   coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
 ```
 
-<!-- Some observations based on Figure \@ref(fig:perfPlotPctOss) are: -->
-
 ```{r, eval=FALSE}
 plt <- ggplot(dat, aes(y = tpstotal , x = n, color = algConfig)) +
     stat_summary(fun=mean, geom="line") +
@@ -781,6 +782,16 @@ plt <- ggplot(dat, aes(y = tpstotal , x = n, color = algConfig)) +
 ggplotly(plt)
 ```
 
+The performance of the branch and bound algorithm compared to the Objective Space Search (OSS) algorithm is shown in Figure \@ref(fig:perfPlotPctOss). In general the OSS algorithm performs better that the branch and bound algorithm. This is expected since 
+
+
+
+
+As it can be seen in Figure \@ref(fig:perfPlotPctOss), for KP, the OSS algorithm performs much better than the current best branch and bound configuration. It is the case as well for UFLP, but the gap is smaller. Regarding AP, the best branch and bound configurations seems to perform as good as the OSS algorithm. A possible explanation is that again, as constraints are added to the initial problem, the totally unimodularity of the constraint matrix is lost, which leads to harder problems (harder than a single-objective AP) for the MIP solver.
+
+
+
+
 
 
 The best configuration of our branch and bound framework will now be compared to an efficient *Objective Space Search (OSS)* algorithm from the litterature [ref PhD Tamby]. The purpose of this paper is, as stated earlier, to extend the concept of objective space branching from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case.  However, we do find it important to compare the branch and bound algorithm to an objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems. The reason for the comparison is to test whether it is possible to extract knowledge about when and why the branch and bound algorithm is competitive and when and why it is not. In addition, the long term goal is develop an over-all competitive algorithm based on branch and bound and thus, it is also interesting to see how far from this goal we are.
@@ -789,7 +800,7 @@ The principle of the algorithm from [ref Tamby] is to explore sub-problems that 
 
 As the LP solver in Bensolve is GLPK, the MIP solver that we will use for this algorithm is GLPK as well. Due to a technical constraint in the chosen programming language (Julia), the MIP solver could not be warmstarted. Hence, one should keep in mind that the cpu times for the objective space search algorithm are upper bounds on their actual cpu time. However, as the considered problems have good linear relaxations and a relatively small number of variables, the impact of warmstarting may be less significant here. Indeed, the problems will remain relatively easy for the MIP solver but, due to the large number of non-dominated points in the considered instances, the number of calls to the solver is expected to be high.
 
-As it can be seen in Figure \@ref(fig:perfPlotPctOss), for KP, the OSS algorithm performs much better than the current best branch and bound configuration. It is the case as well for UFLP, but the gap is smaller. Regarding AP, the best branch and bound configurations seems to perform as good as the OSS algorithm. A possible explanation is that again, as constraints are added to the initial problem, the totally unimodularity of the constraint matrix is lost, which leads to harder problems (harder than a single-objective AP) for the MIP solver.
+
 
 
 
