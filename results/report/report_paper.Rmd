@@ -131,12 +131,12 @@ The variable selected in Step 5 of the algorithm differs depending on whether ob
 
 To test different algorithm configurations we use the following parameters:
 
-* `nS` denotes the node selection method (Step 1 of Algorithm 1). Two values are possible:
+* Two node selection methods are considered (Step 1 of Algorithm 1):
   + `B`: breadth first strategy.
   + `D`: depth first strategy.
-* `oB` denotes the objective branching strategy. Three configurations are tested:
+* Three objective branching strategies are considered:
   + `N`: no objective branching is performed. This is the equivalent of skipping Step 4 of Algorithm 1. 
-  + `F`: full objective branching using super local upper bounds (see Algorithm 2). [LRN: Should we call it full OB?]
+  + `F`: full objective branching using super local upper bounds (see Algorithm 2). 
   + `C`: objective branching using a single cone, namely, the nadir point of the local upper bounds dominated by the lower bound set (see Section 4.3).
 
 This leads to 6 configurations: `B|N`, `B|F`, `B|C`, `D|N`, `D|F` and `D|C`. For an overview of more configurations such as different variable selection rules (Step 5 of the algorithm), the reader is referred to @Forget20a.
@@ -157,7 +157,7 @@ toLink <- function(inst) {
 limSec <- c(0, 30*60)  # computation time limits (exclude instances with max cpu < limSec[1] or  min cpu > limSec[2])
 abbrv <- function(str) {
   str_replace_all(str, 
-    c("breadth" = "B", "depth" = "D", "mof" = "F", "mfavg" = "A", "exact" = "E", 
+    c("breadth" = "B", "depth" = "D", "mof" = "F", "mfavg" = "A", "exact" = "F", 
       "cone" = "C", "none" = "N", "None" = "N", "spheredown" = "down", "sphereup" = "up"))
 }
 datAll <- read_csv("../statistics.csv") %>%   #"../convert/data/stat.csv"
@@ -215,9 +215,10 @@ datWin <-
   datAll %>% 
   group_by(instance) %>% 
   nest() %>% 
-  mutate(data = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
-  mutate(win = map(data, function(df) {df$algConfig})) %>% 
-  unnest(c(win, data)) 
+  mutate(winner = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
+  mutate(win = map(winner, function(df) {if_else(df$solved == 1, df$algConfig, "Unsolved")})) %>% 
+  select(-winner) %>% 
+  unnest(c(data, win)) 
 
 datNotStable <- read_csv("../convert/data/stat.csv", col_types = cols()) %>%
   filter(coef == "spheredown", rangemax == 1000, solved == 1) %>% #| coef == "sphereup"
@@ -311,31 +312,32 @@ scale_color_nodesel_varsel <- scale_color_manual(
   drop = F)
 
 scale_color_ob <- scale_color_manual(
-  values = setNames(pal[c(1,3,9,11)], c("breadth", "depth", "OSS")),
+  values = setNames(pal[c(1,3,9,11)], c("C", "F", "N", "OSS")),
   drop = F)
 
 scale_fill_ob <- scale_fill_manual(
-  values = setNames(pal[c(1,3,9,11)], c("breadth", "depth")),
+  values = setNames(pal[c(1,3,9,11)], c("C", "F", "N", "Unsolved")),
   drop = F)
 
-scale_color_nodesel <- scale_color_manual(
-  values = c("breadth" = "red", "depth" = "green"),
-  drop = F)
-
-scale_alpha_varsel <- scale_alpha_manual(
-  values = c("mof" = 1, "mfavg" = 0.75),
-  drop = F)
-
-scale_linetype_valsel <- scale_linetype_manual(
-  values = c("mof" = 1, "mfavg" = 2),
-  drop = F)
-  
 scale_linetype_ob <- scale_linetype_manual(
-  values = c("cone" = 1, "exact" = 2, "None" = 3, "C" = 1, "E" = 2, "N" = 3),
+  values = c("C" = 1, "F" = 2, "N" = 3),
   drop = F)
+
+# scale_color_nodesel <- scale_color_manual(
+#   values = c("breadth" = "red", "depth" = "green"),
+#   drop = F)
+
+# scale_alpha_varsel <- scale_alpha_manual(
+#   values = c("mof" = 1, "mfavg" = 0.75),
+#   drop = F)
+
+# scale_linetype_valsel <- scale_linetype_manual(
+#   values = c("mof" = 1, "mfavg" = 2),
+#   drop = F)
+  
 
 scale_linetype_nodesel_varsel <- scale_linetype_manual(
-  values = c("cone" = 1, "exact" = 2, "None" = 3, "C" = 1, "E" = 2, "N" = 3, "B" = 1, "D" = 2, "OSS" = 1),
+  values = c("B" = 1, "D" = 2, "OSS" = 1, "Unsolved" = 1),
   drop = F)
 ```
 
@@ -371,7 +373,7 @@ tabInput %>%
   kable_styling(full_width = T) 
 ```
 
-A total of `r nrow(datInput)` instances (see Table \@ref(tab:tabInput)) has been generated. Three problem classes are considered: the linear assignment problem (AP), the knapsack problem (KP) and the uncapacitated facility location problem (UFLP). The mathematical programming formulation for each problem is given in the appendix. The number of variables in each problem class has been increased until no algorithm configurations was able to compute an exact solution within a time limit of half an hour (1800 seconds).
+A total of `r nrow(datInput)` instances (see Table \@ref(tab:tabInput)) has been generated. Three problem classes are considered: the linear assignment problem (AP), the knapsack problem (KP) and the uncapacitated facility location problem (UFLP). The mathematical programming formulation for each problem is given in the appendix. The number of variables in each problem class has been increased until no algorithm configurations was able to compute an optimal solution within a time limit of half an hour (1800 seconds).
 
 The objective coefficients are generated in the range [1, 1000] on the lower part of a 3D sphere using the R package @gMOIP. Hence a high number of the coefficient vectors for the variables are non-dominated among each other (`r round(100 * tabInput %>% filter(pb == "AP") %>% pull(ratio))`% for AP and `r round(100 * tabInput %>% filter(pb == "KP") %>% pull(ratio))`% for KP). This way of generating the objective coefficients has been tested against other methods and seems to result in solutions with a high number of non-dominated points [@Forget20a] (implying hard instances). For UFLP instances the same generation method has been used. However, since two cost groups exists (see the appendix), a range of [1, 1000] has been used for generating the cost of assigning a customer to a service point and a range of [1, 100] for generating the cost for opening a service point. The objective coefficients are all integer.
 
@@ -395,7 +397,7 @@ tmp <- tmp %>% pull(strV)
 # datAll %>% group_by(algConfig, pb) %>% summarize(cpu = mean(tpstotal)) %>% arrange(pb, cpu) %>% kable()
 ```
 
-First, we rank the configurations with respect to mean cpu time for all instances, the sequence from best to worst becomes `r tmp` where the increase in percent compared to the best configuration is given in parentheses. Note that the mean cpu times calculated is in fact a lower bound due to the total run time limit. 
+First, we rank the configurations with respect to mean cpu time for all instances. The sequence from best to worst becomes `r tmp` where the increase in percent compared to the best configuration is given in parentheses. Note that the mean cpu times calculated is in fact a lower bound due to the total run time limit. 
 
 Second, a comparison of the different algorithm configurations given problem class can be seen in Figure \@ref(fig:perfPlotPct). Remark that we have increased the variable size for each problem class until the size becomes so big that some instances cannot be solved within the time limit. That is, the number of instances solved before the time limit are under 100%.   
 
@@ -442,14 +444,35 @@ Some observations based on Figure \@ref(fig:perfPlotPct) are:
 
 * In general full objective branching (`B|F` and `D|F`) performs poorly compared to the other configurations. This is especially evident for AP and UFLP. For KP full objective branching are still among the worst ones. 
 
-* For both KP and UFLP, the best objective branching configuration is using a single cone (`C`), while no objective branching (`N`) performs better for AP. 
+* For both KP and UFLP, the best objective branching configuration is using a single cone (`C`), while no objective branching (`N`) performs best for AP. 
 
-* In general breadth first strategies tend to perform better than depth first strategies. 
+* In general node selection using breadth first strategies tend to perform better than depth first strategies given the objective branching strategy. 
 
-These observations will be explored with more details in the next sections.
+These observations will be explored with more details in the next sections. 
+
+Finally, consider the winning algorithm configurations in Figure \@ref(fig:winConfigs). Note that for KP and UFLP, no objective branching is competitive for some of the smaller instances. Furthermore, in general there is not configuration that wins. That is, algorithms using different node selection and objective branching strategies during the solution procedure may be useful. 
+
+```{r winConfigs, fig.cap="Proportion of winning algorithm configurations."}
+res <- datWin %>% 
+  group_by(instance) %>%
+  # filter(n() == algConfigsN, min(solved) == 1) %>% 
+  group_by(pb, n) %>% 
+  mutate(count = n()) %>% 
+  group_by(pb, n, win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(pb, n, desc(pct)) %>% 
+  separate(win, into = c("nodeselVarsel","OB"), sep = "\\|", remove = F) %>% 
+  mutate(OB = replace_na(OB, "Unsolved"))
+ggplot(res, aes(x = factor(n), y = pct, fill = OB, linetype = nodeselVarsel)) + 
+  geom_col(color = "black") + 
+  geom_text(aes(label = round(pct, 2)), colour="white", size=2.5,
+              position = position_stack(vjust = .5)) +
+  scale_fill_ob + scale_linetype_nodesel_varsel +
+  facet_grid(cols = vars(pb), margins = F, scales = "free") +
+  ylab("% of instances") + xlab("n") +
+  theme_publish()
+```
 
 
-<!-- How can the performance of the objective branching be explained? -->
 # Objective branching: a closer look
 
 For taking a closer look at the different objective branching configurations we limit us to the set of instances which have been solved to optimality for all algorithm configurations. Detailed summary statistics are given in Table \@ref(tab:resTable). 
@@ -560,7 +583,7 @@ tmp <- datAll %>%
   group_by(instance) %>%
   filter(n() == algConfigsN) %>%
   ungroup()  %>% 
-  filter(OB == "E") %>% 
+  filter(OB == "F") %>% 
   # group_by(pb) %>% 
   summarise(avgnbpbOB = mean(avgnbpbOB)) %>% pull(avgnbpbOB)
 ```
@@ -594,7 +617,7 @@ datAll %>%
 tmp <- round(100*mean(dat$tpsLB/dat$tpstotal))
 ```
 
-To make exact branching competitive the cpu time for calculating the lower bound set need to be reduced. That is, computing the lower bound set faster than what is currently done using BenSolve. This would lead to large reductions in the overall computation time as most of the computational time is spent in computing the lower bound sets (approx. `r tmp`%). Some ideas for reducing the cpu time could be to:
+To make full branching competitive the cpu time for calculating the lower bound set need to be reduced. That is, computing the lower bound set faster than what is currently done using BenSolve. This would lead to large reductions in the overall computation time as most of the computational time is spent in computing the lower bound sets (approx. `r tmp`%). Some ideas for reducing the cpu time could be to:
 
 *	implement a way to warmstart the LP solver for each sub-problem,
 * introduce an updating procedure of the lower bound set, instead of a computation from scratch at each node,
@@ -606,16 +629,9 @@ Except for AP, objective branching using a single cone (`C`) are performing bett
 
 The case of the AP is different from KP and UFLP. This is not surprising as the constraint matrix of the AP is totally unimodular implying the extreme points of the the polytope defined by the constraints are integral. Hence, all the extreme points of the lower bound sets correspond to feasible solutions in the `N` configurations. This implies that in Step 5, the branching rule will exploit this and thus, always branch on the most often different variable. On the contrary, as new constraints are added in the `C` configurations, the extreme points are not necessarily integer and the branching rule will choose to branch on the most often fractional variable. This difference in the branching rule may have a significant impact and thus, explain why for AP `N` configurations are better.
 
-<!-- meaning these outcome vectors are potential non-dominated outcome vectors, leading to fast updates of the upper bound set. However, when the `F` and `C`-configurations are considered, additional constraints are added effectively destroying the totally unimodularity. This, in turn, implies that the upper bound set is not updated as often and in turn, the branching strategy chosen is different due to the non-integral extreme points of the lower bound set. This is also emphazied in Figure \@ref(fig:figTreeSize) where it can be seen that the tree size for AP is much lower if no objective branching is done. -->
 
-<!--[NF: change the paragraph to var sel rule]-->
 
-<!-- \texttt{E} and \texttt{C} -->
 
-<!-- In conclusion, it seems that how objective branching behave and whether it is efficient or not is very sensitive to the choices made in the other components of the branch and bound tree (variable selection, lower bound set, pre-processing...). The reader is refered to [report] to see more about that. -->
-
-<!-- [LRN: Plot for winning configurations -> `n` as x-axis and percentages of instances as y-axis. Have a color for the 6 configurations + another one for unsolved instances for all the configurations. Do a "stack plot", in the spirit of the plot called "Pct for each configuration given 10 bins" in Research question 3 from the old report] -->
-<!-- [extra observation: with such a plot, we will be able to see that the number of unsolved instances grows with the size of the instance as well] -->
 
 
 
@@ -623,7 +639,7 @@ The case of the AP is different from KP and UFLP. This is not surprising as the 
 
 # Node selection: breadth vs depth
 
-In Figure \@ref(fig:perfPlotPct), it can be seen that for the studied problems, breadth first strategy tends to perform better than depth first strategy for node selection. This observation is in contrast to the prevalent use of depth first in multi-objective branch and bound algorithms (LRN: Add references). 
+In Figure \@ref(fig:perfPlotPct), it can be seen that node selection using a breadth first strategy tends to perform better than a depth first strategy. This observation is in contrast to the prevalent use of depth first in multi-objective branch and bound algorithms (LRN: Add references). 
 
 ```{r perfPlotND, fig.cap="Smoothed curves of relative number of non-dominated points compared to relative cpu. "}
 instancesAllSolved <- datAll %>% 
@@ -668,7 +684,10 @@ ggplot(aes(x = pctCpu, y = pct, linetype = nodesel), data = dat1) +
   labs(linetype = "") +
   scale_linetype_nodesel_varsel + 
   theme_publish() + ylab("% of non-dominated points") + xlab("% of cpu time")
+```
 
+
+```{r}
 ggplot(aes(x = pctCpu, y = pct, linetype = nodesel), data = dat1) + 
   geom_smooth(color = "black", se = F, size = 0.5) + 
   facet_grid(rows = vars(pb)) +
@@ -679,9 +698,20 @@ ggplot(aes(x = pctCpu, y = pct, linetype = nodesel), data = dat1) +
   theme_publish() + ylab("% of non-dominated points") + xlab("% of cpu time")
 ```
 
-A possible explanation is that with a depth first strategy, the branch and bound algorithm tends to focus on specific parts of the objective space one by one. Using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier. This is confirmed if we take a look at \@ref(fig:perfPlotND) where all the instances solved to optimality with no objective branching (`N`) or using a cone (`C`) have been grouped based on node selection strategy. Observe that using a breath node selection strategy in general finds a approximation of the non-dominated set relatively faster. i.e. we obtain a better upper bound set. This also holds for absolute cpu times since a `B` node selection strategy in general performs better than a `D` node selection strategy (see \@ref(fig:perfPlotPct)).
+```{r}
+dat1 %>% 
+  group_by(nodesel, OB) %>% 
+  summarize(avg = mean(depth), std = sd(depth)) 
+# %>% 
+#   group_by(nodesel, OB) %>% 
+#   summarize(avg = mean(avg), std = sd(std)) 
+```
 
-[LRN: Group by problem class or not??]
+
+
+[LRN: Suggest just to use the first plot]
+
+A possible explanation is that with a depth first strategy, the branch and bound algorithm tends to focus on specific parts of the objective space one by one. Using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier. This is confirmed if we take a look at Figure \@ref(fig:perfPlotND) where all the instances solved to optimality with no objective branching (`N`) or using a cone (`C`) have been grouped based on node selection strategy. Observe that using a breath first strategy in general finds an approximation of the non-dominated set relatively faster, i.e. we obtain a better upper bound set. Moreover, a `B` node selection strategy in general finds an optimal solution better than a `D` node selection strategy (see Figure \@ref(fig:perfPlotPct)).
 
 
 
@@ -753,7 +783,7 @@ ggplotly(plt)
 
 
 
-The best configuration of our branch and bound framework will now be compared to an efficient Objective Space Search (OSS) algorithm from the litterature [ref PhD Tamby]. The purpose of this paper is, as stated earlier, to extend the concept of objective space branching from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case.  However, we do find it important to compare the branch and bound algorithm to an objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems. The reason for the comparison is to test whether it is possible to extract knowledge about when and why the branch and bound algorithm is competitive and when and why it is not. In addition, the long term goal is develop an over-all competitive algorithm based on branch and bound and thus, it is also interesting to see how far from this goal we are.
+The best configuration of our branch and bound framework will now be compared to an efficient *Objective Space Search (OSS)* algorithm from the litterature [ref PhD Tamby]. The purpose of this paper is, as stated earlier, to extend the concept of objective space branching from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case.  However, we do find it important to compare the branch and bound algorithm to an objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems. The reason for the comparison is to test whether it is possible to extract knowledge about when and why the branch and bound algorithm is competitive and when and why it is not. In addition, the long term goal is develop an over-all competitive algorithm based on branch and bound and thus, it is also interesting to see how far from this goal we are.
 
 The principle of the algorithm from [ref Tamby] is to explore sub-problems that are defined by the current set of local upper bounds, that itself evolve when new non-dominated points are found. Using this approach, the authors exploit a way to warmstart the MIP solver for each sub-problem explored as well as rules that discard sub-problems without even solving them, which both greatly improve the computational time. They show in their experiments that their algorithm performs better than some of the classical objective space search algorithm from the litterature.
 
@@ -784,7 +814,6 @@ ggplot(datAll %>%
   theme_publish() + #xlab("cpu") +
   scale_color_nodesel_varsel + scale_linetype_ob
 ```
-
 
 ```{r, fig.asp=1, layout="l-screen-inset", eval=FALSE}
 plotCPUFacet <- function() {
@@ -923,7 +952,6 @@ tabResults %>%
   scroll_box(width = "100%")
 ```
 
-
 ```{r, eval=FALSE}
 datAll %>% 
   group_by(instance) %>%
@@ -942,7 +970,7 @@ datAll %>%
   # coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
 ```
 
-## Detailed results for each instance
+# Detailed results for each instance
 
 Detailed results for each instance can be generated using `instance.Rmd`. The report is already generated for some of the instances (see links in the table with input statistics). Some instances that might be of interest:
 
