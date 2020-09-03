@@ -733,9 +733,10 @@ A possible explanation is that with a depth first strategy, the branch and bound
 dat1 <- datOSS %>% 
   mutate(algConfig = "OSS", 
          pb = str_replace(instance, "Forget20-(.*?)_.*", "\\1"),
-         tpstotal = cpu)
+         tpstotal = cpu, alg = "OSS")
 dat2 <- datAll %>% 
-  filter (OB == "C" | OB == "N", instance %in% dat1$instance)  
+  filter (OB == "C" | OB == "N", instance %in% dat1$instance) %>% 
+  mutate(alg = "BB")
 dat <- bind_rows(dat2, dat1) %>% 
   group_by(instance) %>% 
   mutate(n = first(n)) %>% 
@@ -751,14 +752,23 @@ dat <- bind_rows(dat2, dat1) %>%
   select(pb, algConfig, tpstotal, count, pct, total, n) %>% 
   separate(algConfig, into = c("nodeselVarsel", "OB"), sep = "\\|", remove = F) %>% 
   mutate(OB = replace_na(OB, "OSS"))
-
-tmp1 <- dat2 %>% filter(algConfig == "B|C")
-tmp <- inner_join(dat1, tmp1, by = "instance") %>% 
-  select(instance, n, pb.x, nbnodes, nbit, nbLB) %>% 
-  mutate(fct = nbLB/nbit) %>% 
-  group_by(pb.x) %>% 
-  summarise("nbLB/nbit" = mean(fct))
+datWinner <- dat2 %>% 
+  group_by(instance) %>% 
+  nest() %>% 
+  mutate(winner = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
+  select(-data) %>% 
+  unnest(c(winner))
+  
+tmp <- inner_join(dat1, datWinner, by = "instance") %>% 
+  select(instance, n, pb.x, nbnodes, nbit, nbLB, algConfig.y, alg.x, alg.y, tpstotal.x, tpstotal.y) %>% 
+  mutate(fct = nbLB/nbit, pctCpu = tpstotal.y/tpstotal.x, diff = tpstotal.y - tpstotal.x) #%>% 
+  # group_by(pb.x) %>% 
+  # summarise("nbLB/nbit" = mean(fct), pctCpu = mean(pctCpu)) 
 tmp %>% kable() %>% kable_styling()
+
+mean(tmp$fct)
+mean(tmp$pctCpu)
+mean(tmp$diff)
 ```
 
 
@@ -782,23 +792,39 @@ plt <- ggplot(dat, aes(y = tpstotal , x = n, color = algConfig)) +
 ggplotly(plt)
 ```
 
-The performance of the branch and bound algorithm compared to the Objective Space Search (OSS) algorithm is shown in Figure \@ref(fig:perfPlotPctOss). In general the OSS algorithm performs better that the branch and bound algorithm. This is expected since 
+```{r}
+dat2 <- dat2 %>% 
+  group_by(instance) %>% 
+  nest() %>% 
+  mutate(winner = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
+  select(-data) %>% 
+  unnest(c(winner)) %>% 
+  mutate(alg = "BB")
+dat <- bind_rows(dat2, dat1) 
+  
+```
+
+
+The performance of the branch and bound (B&B) algorithm compared to the Objective Space Search (OSS) algorithm is shown in Figure \@ref(fig:perfPlotPctOss). In general the OSS algorithm performs better that the B&B algorithm. This is expected since the B&B implementation does not [LRN: what do we miss] [or why are they better]. The purpose of this paper is, to extend the concept of objective space branching from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case. However, we do find it important to compare statistics from the branch and bound algorithm to statistics from the objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems. 
+
+
+[LRN: cpu time % higher]
+
+The reason for the comparison is to test whether it is possible to extract knowledge about when and why the branch and bound algorithm is competitive and when and why it is not. In addition, the long term goal is develop an over-all competitive algorithm based on branch and bound and thus, it is also interesting to see how far from this goal we are.
+
+
+[avg time in node vs avg time for mip]
+
+
+
+As it can be seen in Figure \@ref(fig:perfPlotPctOss), for KP, the OSS algorithm performs much better than the current best branch and bound configuration. It is the case as well for UFLP, but the gap is smaller. Regarding AP, the best branch and bound configurations seems to perform as good as the OSS algorithm. A possible explanation is that again, as constraints are added to the initial problem, the totally unimodularity of the constraint matrix is lost, which leads to harder problems (harder than a single-objective AP) for the MIP solver.  
 
 
 
 
-As it can be seen in Figure \@ref(fig:perfPlotPctOss), for KP, the OSS algorithm performs much better than the current best branch and bound configuration. It is the case as well for UFLP, but the gap is smaller. Regarding AP, the best branch and bound configurations seems to perform as good as the OSS algorithm. A possible explanation is that again, as constraints are added to the initial problem, the totally unimodularity of the constraint matrix is lost, which leads to harder problems (harder than a single-objective AP) for the MIP solver.
+<!-- The principle of the algorithm from [ref Tamby] is to explore sub-problems that are defined by the current set of local upper bounds, that itself evolve when new non-dominated points are found. Using this approach, the authors exploit a way to warmstart the MIP solver for each sub-problem explored as well as rules that discard sub-problems without even solving them, which both greatly improve the computational time. They show in their experiments that their algorithm performs better than some of the classical objective space search algorithm from the litterature. -->
 
-
-
-
-
-
-The best configuration of our branch and bound framework will now be compared to an efficient *Objective Space Search (OSS)* algorithm from the litterature [ref PhD Tamby]. The purpose of this paper is, as stated earlier, to extend the concept of objective space branching from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case.  However, we do find it important to compare the branch and bound algorithm to an objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems. The reason for the comparison is to test whether it is possible to extract knowledge about when and why the branch and bound algorithm is competitive and when and why it is not. In addition, the long term goal is develop an over-all competitive algorithm based on branch and bound and thus, it is also interesting to see how far from this goal we are.
-
-The principle of the algorithm from [ref Tamby] is to explore sub-problems that are defined by the current set of local upper bounds, that itself evolve when new non-dominated points are found. Using this approach, the authors exploit a way to warmstart the MIP solver for each sub-problem explored as well as rules that discard sub-problems without even solving them, which both greatly improve the computational time. They show in their experiments that their algorithm performs better than some of the classical objective space search algorithm from the litterature.
-
-As the LP solver in Bensolve is GLPK, the MIP solver that we will use for this algorithm is GLPK as well. Due to a technical constraint in the chosen programming language (Julia), the MIP solver could not be warmstarted. Hence, one should keep in mind that the cpu times for the objective space search algorithm are upper bounds on their actual cpu time. However, as the considered problems have good linear relaxations and a relatively small number of variables, the impact of warmstarting may be less significant here. Indeed, the problems will remain relatively easy for the MIP solver but, due to the large number of non-dominated points in the considered instances, the number of calls to the solver is expected to be high.
+<!-- As the LP solver in Bensolve is GLPK, the MIP solver that we will use for this algorithm is GLPK as well. Due to a technical constraint in the chosen programming language (Julia), the MIP solver could not be warmstarted. Hence, one should keep in mind that the cpu times for the objective space search algorithm are upper bounds on their actual cpu time. However, as the considered problems have good linear relaxations and a relatively small number of variables, the impact of warmstarting may be less significant here. Indeed, the problems will remain relatively easy for the MIP solver but, due to the large number of non-dominated points in the considered instances, the number of calls to the solver is expected to be high. -->
 
 
 
