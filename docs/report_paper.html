@@ -57,6 +57,7 @@
   
   <meta name="citation_reference" content="citation_title=Computational results (all instances);citation_publication_date=2020;citation_publisher=Aarhus University;citation_author=N. Forget;citation_author=L. R. Nielsen;citation_author=S. L Gadegaard" />
   <meta name="citation_reference" content="citation_title=GMOIP: Tools for 2D and 3D plots of single and multi-objective linear/integer programming models;citation_publication_date=2020;citation_author=Lars Relund Nielsen" />
+  <meta name="citation_reference" content="citation_title=Branch-and-bound for biobjective mixed-integer linear programming;citation_publication_date=2019;citation_author=Nathan Adelgren;citation_author=Akshay Gupte" />
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
@@ -2256,7 +2257,7 @@ table td, table th {  /* Table  */
 </ul></li>
 </ul>
 <p>This leads to 6 configurations: <code>B|N</code>, <code>B|F</code>, <code>B|C</code>, <code>D|N</code>, <code>D|F</code> and <code>D|C</code>. For an overview of more configurations such as different variable selection rules (Step 5 of the algorithm), the reader is referred to <span class="citation" data-cites="Forget20a">Forget, Nielsen, and Gadegaard (<a href="#ref-Forget20a" role="doc-biblioref">2020</a>)</span>.</p>
-<p>The Objective Space Search (OSS) algorithm of [LRN: Add ref PhD Tamby] was implemented. A short description of the algorithm is given in the appendix [LRN: create a short section]. As the LP solver in Bensolve is GLPK, the same MIP solver was used. Due to technical constraints in the chosen programming language (Julia), the MIP solver could not be warm started. Warm starting the MIP solver would lead to improved cpu times. However, note that the same holds for the branch and bound algorithm which also does not use warm starting when calculating the lower bound set in each node of the tree.</p>
+<p>The Objective Space Search (OSS) algorithm of <span class="citation" data-cites="Tamby">Tamby (<a href="#ref-Tamby" role="doc-biblioref">2018</a>)</span> was implemented. A short description of the algorithm is given in the appendix. As the LP solver in Bensolve is GLPK, the same MIP solver was used. Due to technical constraints in the chosen programming language (Julia), the MIP solver could not be warm started. Warm starting the MIP solver would lead to improved cpu times. However, note that the same holds for the branch and bound algorithm which also does not use warm starting when calculating the lower bound set in each node of the tree.</p>
 <p>All algorithms and configurations have been tested using a time limit of half an hour (1800 seconds).</p>
 <h1 id="test-instances">Test instances</h1>
 <div class="layout-chunk" data-layout="l-page">
@@ -3640,7 +3641,7 @@ Figure 3: Average branching tree size.
 <li>introduce an updating procedure of the lower bound set, instead of a computation from scratch at each node,</li>
 <li>use further pruning rules that discard sub-problems before calculating the lower bound set.</li>
 </ul>
-<p>Updating and pruning procedures may include using the local information available in the subproblems with respect to the region in the objective space defined by a branching node. In [AdelgreenGupte] it was shown that presolve techniques, contrary to the case of single-objective optimization, has a great effect deeper in the search tree. Hence, one could imagine that the solutions are more likely to be close in a specific part of the objective space and thus, by localizing the branch and bound, presolving the nodes or introducing cuts may have a significant impact.</p>
+<p>Updating and pruning procedures may include using the local information available in the subproblems with respect to the region in the objective space defined by a branching node. In <span class="citation" data-cites="Gupte19">Adelgren and Gupte (<a href="#ref-Gupte19" role="doc-biblioref">2019</a>)</span> it was shown that presolve techniques, contrary to the case of single-objective optimization, has a great effect deeper in the search tree. Hence, one could imagine that the solutions are more likely to be close in a specific part of the objective space and thus, by localizing the branch and bound, presolving the nodes or introducing cuts may have a significant impact.</p>
 <p>Except for AP, objective branching using a single cone (<code>C</code>) are performing better than the <code>N</code> configurations in both cpu time and number of tree nodes. That is, objective branching is competitive. A first explanation of the efficiency of <code>C</code> for KP and UFLP is that for a given node <span class="math inline">\(\eta\)</span>, the <code>C</code> configurations will focus on a specific part of the objective space (a cone defined by <span class="math inline">\(d^N(\eta)\)</span>) for the same number of sub-problems created (2, in the decision space). Thus, the lower bound sets tends to be less complex (some areas of the objective space are discarded before computation, while it is fully considered in the <code>N</code> version), which means possibly spending less time in the most expensive part of the branch and bound (computing the lower bound sets). Second, the way nodes are fathomed is highly influenced by the choice of objective branching strategy. Indeed, as it can be seen in Table <a href="#tab:resTable">2</a>, in the <code>C</code> configurations, the proportion of nodes fathomed by infeasibility tends to be much higher than for the <code>N</code> configurations. This is due to the fact that additional constraints added in the <code>C</code> configurations will make sub-problems more likely to be infeasible. Moreover, fathoming a node by infeasibility is faster than fathoming a node by optimality or by dominance. To fathom by dominance or optimality, having the lower bound set computed is required. On the contrary, testing the feasibility of the sub-problem is the first thing done when a node is being explored.</p>
 <p>The case of the AP is different from KP and UFLP. This is not surprising as the constraint matrix of the AP is totally unimodular implying the extreme points of the the polytope defined by the constraints are integral. Hence, all the extreme points of the lower bound sets correspond to feasible solutions in the <code>N</code> configurations. This implies that in Step 5, the branching rule will exploit this and thus, always branch on the most often different variable. On the contrary, as new constraints are added in the <code>C</code> configurations, the extreme points are not necessarily integer and the branching rule will choose to branch on the most often fractional variable. This difference in the branching rule may have a significant impact and thus, explain why for AP <code>N</code> configurations are better.</p>
 <h1 id="node-selection-breadth-vs-depth">Node selection: breadth vs depth</h1>
@@ -3671,7 +3672,7 @@ Figure 4: Smoothed curves of relative number of non-dominated points compared to
 </div>
 <p>[LRN: Suggest just to use the first plot]</p>
 <p>A possible explanation is that with a depth first strategy, the branch and bound algorithm tends to focus on specific parts of the objective space one by one. Using breadth first strategies offer a better coverage of all the objective space earlier and thus, yields better upper bound sets earlier. This is confirmed if we take a look at Figure <a href="#fig:perfPlotND">4</a> where all the instances solved to optimality with no objective branching (<code>N</code>) or using a cone (<code>C</code>) have been grouped based on node selection strategy. Observe that using a breath first strategy in general finds an approximation of the non-dominated set relatively faster, i.e. we obtain a better upper bound set. Moreover, a <code>B</code> node selection strategy in general finds an optimal solution better than a <code>D</code> node selection strategy (see Figure <a href="#fig:perfPlotPct">1</a>).</p>
-<p>[LRN: What is missing?]</p>
+<p>[LRN: What is missing?] [NF: Nothing I think.]</p>
 <!-- # How well does the tri-objective B&B algorithm perform compared to an objective space search algorithm? -->
 <h1 id="comparing-the-branch-and-bound-algorithm-with-an-objective-space-search-algorithm">Comparing the branch and bound algorithm with an objective space search algorithm</h1>
 <div class="layout-chunk" data-layout="l-page">
@@ -16196,7 +16197,7 @@ Figure 5: Performance profile: Number of instances in percent solved given cpu t
 <div class="layout-chunk" data-layout="l-page">
 
 </div>
-<p>The performance of the branch and bound (B&amp;B) algorithm compared to the Objective Space Search (OSS) algorithm is shown in Figure <a href="#fig:perfPlotPctOss">5</a>. In general the OSS algorithm performs better that the B&amp;B algorithm. This is expected since the B&amp;B implementation does not [LRN: what do we miss] [or why are they better]. The purpose of this paper is, to extend the concept of objective space branching from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case. However, we do find it important to compare statistics from the branch and bound algorithm to statistics from the objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems.</p>
+<p>The performance of the branch and bound (B&amp;B) algorithm compared to the Objective Space Search (OSS) algorithm is shown in Figure <a href="#fig:perfPlotPctOss">5</a>. In general the OSS algorithm performs better than the B&amp;B algorithm. This is expected since the OSS algorithm benefits from the power of single-objective MIP of solvers, i.e. of decades of research and knowledge, while the multi-objective branch and bound has not been investigated much yet, both by researchers in academia and in the commercial solvers. The purpose of this paper is, to extend the concept of objective space branching from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case. However, we do find it important to compare statistics from the branch and bound algorithm to statistics from the objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems.</p>
 <p>[LRN: cpu time % higher]</p>
 <p>The reason for the comparison is to test whether it is possible to extract knowledge about when and why the branch and bound algorithm is competitive and when and why it is not. In addition, the long term goal is develop an over-all competitive algorithm based on branch and bound and thus, it is also interesting to see how far from this goal we are.</p>
 <p>[avg time in node vs avg time for mip]</p>
@@ -16231,6 +16232,9 @@ Figure 5: Performance profile: Number of instances in percent solved given cpu t
 <li>Instances with highest variance in cpu time: <a href="instances/Forget20-AP_8_3_1-1000_spheredown_1_2.html">Forget20-AP_8_3_1-1000_spheredown_1_2</a>, <a href="instances/Forget20-AP_8_3_1-1000_spheredown_1_3.html">Forget20-AP_8_3_1-1000_spheredown_1_3</a>, <a href="instances/Forget20-UFLP_6_3_1-1000_1-100_spheredown_1_8.html">Forget20-UFLP_6_3_1-1000_1-100_spheredown_1_8</a></li>
 </ul>
 <div id="refs" class="references" role="doc-bibliography">
+<div id="ref-Gupte19">
+<p>Adelgren, Nathan, and Akshay Gupte. 2019. “Branch-and-Bound for Biobjective Mixed-Integer Linear Programming.” <a href="http://www.optimization-online.org/DB%7B\_%7DFILE/2016/10/5676.pdf">http://www.optimization-online.org/DB{\_}FILE/2016/10/5676.pdf</a>.</p>
+</div>
 <div id="ref-Forget20a">
 <p>Forget, N., L. R. Nielsen, and S. L Gadegaard. 2020. “Computational Results (All Instances).” Aarhus University. <a href="https://mcdmsociety.github.io/MOrepo-Forget20/report.html">https://mcdmsociety.github.io/MOrepo-Forget20/report.html</a>.</p>
 </div>
@@ -16239,6 +16243,9 @@ Figure 5: Performance profile: Number of instances in percent solved given cpu t
 </div>
 <div id="ref-gMOIP">
 <p>Relund Nielsen, Lars. 2020. <em>GMOIP: Tools for 2D and 3D Plots of Single and Multi-Objective Linear/Integer Programming Models</em>. <a href="https://github.com/relund/gMOIP/">https://github.com/relund/gMOIP/</a>.</p>
+</div>
+<div id="ref-Tamby">
+<p>Tamby, Satya. 2018. “Approches Génériques Pour La Résolution de Problèmes d’optimisation Discrète Multiobjectif.” PhD thesis, Université Paris-Dauphine.</p>
 </div>
 </div>
 <!--radix_placeholder_article_footer-->
@@ -16302,6 +16309,22 @@ Figure 5: Performance profile: Number of instances in percent solved given cpu t
   Url                      = {https://github.com/relund/gMOIP/}
 }
 
+@phdthesis{Tamby,
+  author       = {Satya Tamby},
+  title        = {Approches génériques pour la résolution de problèmes d’optimisation
+discrète multiobjectif},
+  school       = {Université Paris-Dauphine},
+  year         = 2018,
+  note         = {in French}
+}
+
+@Unpublished{Gupte19,
+  author = {Nathan Adelgren and Akshay Gupte},
+  title  = {Branch-and-bound for biobjective mixed-integer linear programming},
+  note   = {Submitted to INFORMS Journal on Computing},
+  url    = {http://www.optimization-online.org/DB{\_}FILE/2016/10/5676.pdf},
+  year = {2019}
+}
 </script>
 <!--/radix_placeholder_appendices-->
 <!--radix_placeholder_navigation_after_body-->
