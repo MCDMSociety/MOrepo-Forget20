@@ -641,7 +641,7 @@ The case of the AP is different from KP and UFLP. This is not surprising as the 
 
 # Node selection: breadth vs depth
 
-In Figure \@ref(fig:perfPlotPct), it can be seen that node selection using a breadth first strategy tends to perform better than a depth first strategy. This observation is in contrast to the prevalent use of depth first in multi-objective branch and bound algorithms (LRN: Add references). 
+In Figure \@ref(fig:perfPlotPct), it can be seen that node selection using a breadth first strategy tends to perform better than a depth first strategy. This observation is in contrast to the prevalent use of depth first in multi-objective branch and bound algorithms [@Przybylski17]. 
 
 ```{r perfPlotND, fig.cap="Smoothed curves of relative number of non-dominated points compared to relative cpu. "}
 instancesAllSolved <- datAll %>% 
