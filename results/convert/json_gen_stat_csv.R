@@ -84,13 +84,13 @@ dat <- read_csv("data/stat.csv", col_types = cols()) %>%
    slice(1) %>%
    rownames_to_column()
 
-datOSS <- read_csv("data/stat_OSS.csv", col_types = cols()) %>%
+datOSS <- read_csv("data/statOSS.csv", col_types = cols()) %>%
    arrange(instance) %>%
-   filter(solved == 1) %>%
+   # filter(solved == 1) %>%
    rownames_to_column()
 
 ## Check same number of solutions
-datJoin <- right_join(dat, datOSS, by = c("instance")) %>%
+datJoin <- right_join(dat, datOSS %>% filter(solved == 1), by = c("instance")) %>%
    filter(YN.x != YN.y) %>%
    mutate(errTxt = str_c("Error (", instance, "): YN not same size (B&B=", YN.x, " OSS=", YN.y,")"))
 cat(str_c(datJoin$errTxt, collapse = "\n"))
@@ -157,6 +157,63 @@ for (i in 1:lgd) {
 }
 
 message("\nFinished.\n")
+
+
+#### Cpu times nd points OSS ####
+
+message("Add lines to statistics_points_oss.csv:")
+
+# B&B instances
+csvFiles <- list.files("..", ".csv", full.names = T) %>%
+   str_subset("nd")
+dat <- NULL
+for (f in csvFiles) dat <- bind_rows(dat, read_csv(f))
+instancesBB <- unique(dat$instance)
+
+datOSS <- read_csv("../statistics_oss.csv") %>%
+   mutate(fName = str_c("data/UB_OSS/", instance, "_OSS_UB.txt"))
+dat <- NULL
+lgd <- nrow(datOSS)
+j <- 0
+for (i in 1:lgd) {
+   message("File ", i, "/", lgd, "): ", datOSS$instance[i], " | ", appendLF = F)
+   res <- read_csv(datOSS$fName[i])
+   algConfig <- "OSS"
+   instance <- datOSS$instance[i]
+   tpstotal <- datOSS$cpu[i]
+   dat <- bind_rows(dat,
+                    tibble(instance = instance,
+                           algConfig = algConfig,
+                           tpstotal = tpstotal,
+                           maxDepth = NA,
+                           resUB = list(as_tibble(res))))
+
+   if (object.size(dat) > 6000000 | i == lgd) {
+      dat <- dat %>%
+         group_by(instance, algConfig) %>%
+         mutate(relativeSolved =
+                   pmap(list(resUB, tpstotal, algConfig, maxDepth),
+                        function(df = ..1, cpuT = ..2, mth = ..3, depthM = ..4) {
+                           # if (nrow(df) > 1) {
+                           res <- tibble(mth = mth,
+                                         pct = c(nrow(df),  rep(nrow(df), nrow(df)), nrow(df)),
+                                         cpu = c(0, df$time, cpuT),
+                                         depth = NA,
+                                         rowname = 1:(nrow(df)+2))
+                           res <- res %>% mutate(pct = (rowname-1)/pct) %>% select(-rowname)
+                           res[nrow(res),"pct"] <- 1
+                           res %>% mutate(pctCpu = cpu/cpuT, pctDepth = NA)
+                        })) %>%
+         unnest(relativeSolved) %>%
+         select(-resUB, -mth)
+      write_csv(dat, str_c("../statistics_points_oss_", j, ".csv"))
+      j <- j + 1
+      dat <- NULL
+   }
+}
+
+message("\nFinished.\n")
+
 
 
 #### Clean and Finish ####
