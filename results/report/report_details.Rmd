@@ -1,0 +1,167 @@
+---
+title: "Detailed results for instances"
+description: |
+  This report contains links til detailed results for each instance.
+author:
+  - name: Nicolas Forget
+    url: http://pure.au.dk/portal/en/nforget@econ.au.dk
+    affiliation: CORAL, BSS, Aarhus University
+    affiliation_url: https://econ.au.dk/coral
+  - name: Lars Relund Nielsen
+    url: http://pure.au.dk/portal/en/larsrn@econ.au.dk
+    affiliation: CORAL, BSS, Aarhus University
+    affiliation_url: https://econ.au.dk/coral
+  - name: Sune Lauth Gadegaard
+    url: http://pure.au.dk/portal/en/sgadegaard@econ.au.dk
+    affiliation: CORAL, BSS, Aarhus University
+    affiliation_url: https://econ.au.dk/coral
+date: "`r Sys.Date()`"
+output:
+  distill::distill_article:
+    toc: true
+    toc_depth: 2
+citation_url: https://mcdmsociety.github.io/MOrepo-Forget20/report_details.html
+---
+
+<style type="text/css">
+table td, table th {  /* Table  */
+  font-size: 10px !important;
+}
+</style>
+
+```{r setup, include=FALSE}
+#' Function for loading missing packages that install them if not already installed.
+#'
+#' @param packages String vector with package names
+#'
+#' @return NULL (invisible)
+#' @export
+#'
+#' @examples loadPackages(c("MASS", "ggplot2", "tikzDevice"))
+loadPackages <- function(packages) {
+  newP <- packages[!(packages %in% installed.packages()[,"Package"])]
+  if(length(newP)) install.packages(newP, repos = "http://cran.rstudio.com/")
+  lapply(packages, library, character.only = TRUE)
+  invisible(NULL)
+}
+loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown", "ggplot2", "plotly", "DT", "RColorBrewer", "wesanderson", "kableExtra", "ggthemes"))
+
+if (isTRUE(getOption('knitr.in.progress'))) options(rgl.useNULL=TRUE)
+rgl::setupKnitr()
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning=FALSE, message=FALSE, include = TRUE, 
+  cache = TRUE, autodep = TRUE,
+  echo=FALSE,
+  out.width = "99%", fig.width = 8, fig.align = "center", fig.asp = 0.7,
+  layout="l-page"   #"l-screen-inset"
+)
+knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
+options(knitr.kable.NA = '')
+```
+
+Detailed results for each instance can be generated using `instance.Rmd` in the subfolder `results/report`. The report with detailed results and plots is already generated for some of the instances: 
+
+```{r}
+datAll <- read_csv("../statistics.csv")
+instanceFiles <- list.files("../../docs/instances", ".html", full.names = F)
+instances <- str_remove(instanceFiles, ".html")
+
+findInstances <- function(dat) {
+  instances <- NULL
+  dat <- dat %>% 
+    filter(solved == 1) %>% 
+    group_by(instance) %>%
+    summarise_at(vars(contains(c("YN", "total"))), list(mean = mean, sd = sd, max = max), na.rm = TRUE)
+  instances <- bind_rows(instances, 
+                         tibble(class = "lowND", 
+                                instance = dat %>% arrange(YN_max) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                       tibble(class = "highND", 
+                              instance = dat %>% arrange(desc(YN_max)) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highNDus", 
+                                instance = dat %>% arrange(desc(YN_max - YNs_max)) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highNDse", 
+                                instance = dat %>% arrange(desc(YNse_max)) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highNDusPct", 
+                                instance = dat %>% arrange(desc((YN_max - YNs_max)/YN_max)) %>% 
+                                  slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highNDsne", 
+                                instance = dat %>% arrange(desc(YNs_max - YNse_max)) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highSDcpu", 
+                                instance = dat %>% arrange(desc(tpstotal_sd)) %>% slice(1:2) %>% pull(instance)))
+}
+datSpecial <- bind_rows(
+  findInstances(datAll),
+  findInstances(datAll %>% filter(pb == "AP")),
+  findInstances(datAll %>% filter(pb == "UFLP")),
+  findInstances(datAll %>% filter(pb == "KP")),
+  findInstances(datAll %>% 
+    filter(coef == "spheredown", rangeC == "[1,1000]" | rangeC == "[1,1000]|[1,100]", varsel == "mof"))
+) %>% 
+  distinct() %>% 
+  arrange(class) 
+
+
+for (ins in datSpecial %>% filter(!(instance %in% instances)) %>% pull(instance)) {
+   reset <- FALSE
+   cat("File", ins, "\n")
+   try(rmarkdown::render("instance.Rmd", output_file = paste0(ins, ".html"),
+                     output_dir = "../../docs/instances", quiet = T, envir = new.env(),
+          params=list(new_title=paste("Results for instance", ins) , currentInstance = ins) ))
+}
+```
+
+
+```{r, echo=FALSE}
+toLink <- function(inst) {
+  if (length(inst) == 0) return("")
+  links <- str_c('../../docs/instances/', inst, '.html')
+  url <- str_c('instances/', inst, '.html')
+  if_else(file.exists(links), str_c('<a href="', url, '">', inst, '</a>'), inst)
+}
+
+
+datInput <- datAll %>% 
+  distinct(instance, .keep_all = TRUE) %>% 
+  select(instance, pb, n, p, coef, ratioNDcoef) %>% 
+  filter(instance %in% instances) %>% 
+  mutate(instance = toLink(instance))
+
+DT::datatable(
+  datInput,
+  escape = F,
+  options = list(scrollX = T),
+  caption = "Instances with detailed results and plots generated. A link is given in the instance column."
+)
+```
+
+Some instances that might be of interest:
+
+  * Instances with a low number of non-dominated points: `r toLink(datSpecial %>% filter(class = "lowND") %>% pull(instance))`
+  * Instances with a high number of non-dominated points: `r toLink(datSpecial %>% filter(class = "highND") %>% pull(instance))`
+  * Instances with a high number of unsupported non-dominated points: `r toLink(datSpecial %>% filter(class = "highNDus") %>% pull(instance))`
+  * Instances with a high number of supported extreme non-dominated points: `r toLink(datSpecial %>% filter(class = "highNDse") %>% pull(instance))`
+  * Instances with a high unsupported non-dominated point percentage: `r toLink(datSpecial %>% filter(class = "highNDusPct") %>% pull(instance))`
+  * Instances with a high number of supported non-extreme non-dominated points: `r toLink(datSpecial %>% filter(class = "highNDsne") %>% pull(instance))`
+  * Instances with highest variance in cpu time: `r toLink(datSpecial %>% filter(class = "highSDcpu") %>% pull(instance))`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
