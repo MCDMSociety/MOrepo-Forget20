@@ -21,10 +21,10 @@ output:
     toc: true
     toc_depth: 2
 bibliography: references.bib
-citation_url: https://mcdmsociety.github.io/MOrepo-Forget20/report_lb_up_set.html
+citation_url: https://mcdmsociety.github.io/MOrepo-Forget20/report_interactive.html
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding,
-  output_dir = "../docs") })
+  output_dir = "../../docs") })
 ---
 
 ```{r, include = FALSE}
@@ -65,10 +65,11 @@ library("scales")
 show_col(mypal)
 ```
 
+Interactive plots that can be rotated and zoomed with the mouse.
 
-## Figure 3 
+## Figure 3b
 
-```{r Fig3 in Forget20, echo=FALSE}
+```{r}
 ubSet <- matrix( c(1,1,1), ncol = 3, byrow = TRUE)
 row.names(ubSet) <- paste0("z", 1)
 lim <- c(0,7)  # bounding box for problem
@@ -101,20 +102,17 @@ view <- matrix( c(-0.640044808387756, -0.205455526709557, 0.740358412265778, 0, 
 
 lim <- c(lim[1]-0.05,lim[2]+0.05)
 ## First plot
-ini3D(argsPlot3d = list(xlim = lim, ylim = lim, zlim = lim))
-# plotRectangle3D(m,M)
-plotPoints3D(N, addText = "coord", argsPlot3d = list(type="p", col = "black", size = 8))
-plotPoints3D(U, addText = "coord", argsPlot3d = list(type="p", col = mypal[3], size = 8), argsText3d = list(col = "blue", adj = c(1,1)))
-plotPlane3D(c(1,1,1), point = c(2,2,2), argsLines = list(col = mypal[2], lines = 50), useLines = T, useShade = F)
-plotPlane3D(c(1,1,1), point = c(2,2,2), argsPlanes3d = list(alpha = 0.7, col = mypal[8]))
-plotCones3D(U[1:3,], drawPoint = F, argsPolygon3d = list(alpha =0.3, color = mypal[1]), rectangle = F, direction = -1, drawLines = F)
-finalize3D(argsAxes3d = list(edges = "bbox", box = F))
-loadView(v = view, clear = FALSE, zoom = 0.7)
-rglwidget()
-```
+# ini3D(argsPlot3d = list(xlim = lim, ylim = lim, zlim = lim))
+# # plotRectangle3D(m,M)
+# plotPoints3D(N, addText = "coord", argsPlot3d = list(type="p", col = "black", size = 8))
+# plotPoints3D(U, addText = "coord", argsPlot3d = list(type="p", col = mypal[3], size = 8), argsText3d = list(col = "blue", adj = c(1,1)))
+# plotPlane3D(c(1,1,1), point = c(2,2,2), argsLines = list(col = mypal[2], lines = 50), useLines = T, useShade = F)
+# plotPlane3D(c(1,1,1), point = c(2,2,2), argsPlanes3d = list(alpha = 0.7, col = mypal[8]))
+# plotCones3D(U[1:3,], drawPoint = F, argsPolygon3d = list(alpha =0.3, color = mypal[1]), rectangle = F, direction = -1, drawLines = F)
+# finalize3D(argsAxes3d = list(edges = "bbox", box = F))
+# loadView(v = view, clear = FALSE, zoom = 0.7)
+# rglwidget()
 
-
-```{r Fig3b in Forget20, echo=FALSE}
 ## all relevant points for drawing search areas
 vtx <- matrix(c(
   1,1,4,
@@ -152,32 +150,40 @@ vtx <- vtx %>% set_colnames(c("x", "y", "z")) %>% as_tibble() %>% arrange(x,y,z)
 # plotPoints3D(vtx, addText = "coord")
 # print(vtx, n=100)
 
-## Second plot
-ini3D(clear = FALSE, argsPlot3d = list(xlim = lim, ylim = lim, zlim = lim))
-plotPoints3D(N, addText = "coord", argsPlot3d = list(type="p", col = "black", size = 8))
-plotPoints3D(U, addText = "coord", argsPlot3d = list(type="p", col = mypal[7], size = 8), argsText3d = list(col = "blue", adj = c(1,1)))
-# plotCones3D(c(1,1,1), argsPolygon3d = list(alpha = 0.9, color = mypal[4]))
-plotPlane3D(c(1,1,1), point = c(2,2,2), argsPlanes3d = list(alpha = 0.3, col = mypal[8]))
 
-args <- list(color = mypal[9], alpha = 0.7)
+ini3D(argsPlot3d = list(xlim = lim, ylim = lim, zlim = lim))
+# Points
+plotPoints3D(N, argsPlot3d = list(type="p", col = "black", size = 10))
+plotPoints3D(U, argsPlot3d = list(type="p", col = mypal[8], size = 10), argsText3d = list(col = "blue", adj = c(1,1)))
+# plotCones3D(c(1,1,1), argsPolygon3d = list(alpha = 0.9, color = mypal[4]))
+# Plane
+plotPlane3D(c(1,1,1), point = c(2,2,2), argsPlanes3d = list(alpha = 0.75, col = mypal[2]))
+plotPlane3D(c(1,1,1), point = c(2,2,2), argsLines = list(col = "black", lines = 100, alpha = 0.75), useLines = T, useShade = F)
+# Overlapping areas
+args <- list(color = mypal[5], alpha = 0.9)
 plotHull3D(vtx[c(19:24,26:27),], drawPolygons = T, argsPolygon3d = args)
 vtx <- vtx %>% arrange(y,x,z)
 plotHull3D(vtx[c(19:24,26:27),], drawPolygons = T, argsPolygon3d = args)
 vtx <- vtx %>% arrange(z,y,x)
 plotHull3D(vtx[c(19:24,26:27),], drawPolygons = T, argsPolygon3d = args)
-
-args <- list(color = mypal[4], alpha = 0.2)
+# Non-overlapping areas
+args <- list(color = mypal[3], alpha = 0.4)
 plotHull3D(vtx[c(10,11,12,13,19,20,24,25,27,28),] , drawPolygons = T, argsPolygon3d = args)
 vtx <- vtx %>% arrange(y,x,z)
 plotHull3D(vtx[c(10,11,12,13,19,20,24,25,27,28),] , drawPolygons = T, argsPolygon3d = args)
 vtx <- vtx %>% arrange(y,z,x)
 plotHull3D(vtx[c(10,11,12,13,19,20,24,25,27,28),] , drawPolygons = T, argsPolygon3d = args)
-finalize3D(argsAxes3d = list(edges = "bbox", box = F))
-loadView(v = view, clear = FALSE, zoom = 0.7)
+finalize3D(argsAxes3d = list(edges = c("x", "y", "z"), box = F, labels=FALSE, tick=FALSE))
+# finalize3D(argsAxes3d = list(edges = "bbox"))
+#axes3d(edges=c("x", "y", "z"), col='black', box=FALSE, labels=FALSE, tick=FALSE)
+#rgl.bbox(xlab = "", ylab = "", zlab = "")
+view <- matrix( c(-0.601261854171753, -0.375613540410995, 0.705264508724213, 0, 0.79587709903717, -0.36011865735054, 0.48671817779541, 0, 0.071161076426506, 0.853949129581451, 0.515467822551727, 0, 0, 0, 0, 1), nc = 4)
+loadView(v = view, clear = F, zoom = 0.8)
 rglwidget()
 # saveView(print=TRUE)
-# rgl.snapshot("test.png")  # if want to save it
 ```
+
+
 
 
 
@@ -199,10 +205,10 @@ M <- rgl::par3d()$bbox
 lub <- rbind(lub, c(M[2],M[4],M[6])-0.01)
 llb <- c(M[1],M[3],M[5])+ 0.01
 # plotPoints3D(pts)
-plotCones3D(pts[pts$nd,c("z1","z2","z3")], argsPolygon3d = list(alpha = 1, color = mypal[1]), drawPoint = T, rectangle = T)
-plotCones3D(lub[2,], direction = -1, argsPolygon3d = list(alpha = 0.4, color = mypal[7]), drawPoint = F)
+plotCones3D(pts[pts$nd,c("z1","z2","z3")], argsPolygon3d = list(alpha = 1, color = mypal[8]), drawPoint = T, rectangle = T, argsPlot3d = list(size = 10))
+plotCones3D(lub[2,], direction = -1, argsPolygon3d = list(alpha = 0.4, color = mypal[1]), drawPoint = F)
 # plotHull3D(unique(pts))
-plotPlane3D(c(1,1,1), point = c(3,3,3), argsPlanes3d = list(alpha = 0.4, col = mypal[7]))
+plotPlane3D(c(1,1,1), point = c(3,3,3), argsPlanes3d = list(alpha = 0.6, col = mypal[7]))
 root <- currentSubscene3d()
 newSubscene3d(
   "inherit",
@@ -212,12 +218,14 @@ newSubscene3d(
   copyBBoxDeco = F,
   parent = root
 )
-plotCones3D(llb, argsPolygon3d = list(alpha = 0.4, color = mypal[4]), drawPoint = F)
+plotCones3D(llb, argsPolygon3d = list(alpha = 0.75, color = mypal[3]), drawPoint = F)
 # plotHull3D(unique(pts))
 clipplanes3d(1, 1, 1, -9)
 useSubscene3d(root)
-axes3d()
-view <- matrix( c(0.79169362783432, -0.33077397942543, -0.51362407207489, 0, -0.610913217067719, -0.432060807943344, -0.663406670093536, 0, -0.00247915089130402, 0.838994562625885, -0.544134020805359, 0, 0, 0, 0, 1), nc = 4)
+# axes3d()
+finalize3D(argsAxes3d = list(edges = "bbox"), argsTitle3d = list(xlab = "", ylab = "", zlab = ""))
+# saveView(print = T)
+view <- matrix( c(0.710081100463867, -0.417695313692093, -0.566847920417786, 0, -0.695306360721588, -0.288975149393082, -0.658059477806091, 0, 0.111063443124294, 0.861408114433289, -0.495621830224991, 0, 0, 0, 0, 1), nc = 4)
 loadView(v = view, clear = FALSE, zoom = 0.7)
 rglwidget()
 ```
@@ -229,8 +237,9 @@ ini3D(clear = T, argsPlot3d = list(xlim = c(min(pts$z1)-2,max(pts$z1)+10),
                         ylim = c(min(pts$z2)-2,max(pts$z2)+10), 
                         zlim = c(min(pts$z3)-2,max(pts$z3)+10)))
 # plotPoints3D(pts)
-plotPlane3D(c(1,1,1), point = c(3,3,3), argsPlanes3d = list(alpha = 0.8, col = mypal[7]))
-plotCones3D(lub[1,], direction = -1, argsPolygon3d = list(alpha = 1, color = mypal[4]), drawPoint = T)
+plotPlane3D(c(1,1,1), point = c(3,3,3), argsPlanes3d = list(alpha = 0.6, col = mypal[7]))
+plotCones3D(lub, direction = -1, argsPolygon3d = list(alpha = 1, color = mypal[1]), drawPoint = T)
+plotmath3d(lub-1, text = expression(y^1, y^2), cex = 1.2, font = 3)
 root <- currentSubscene3d()
 newSubscene3d(
   "inherit",
@@ -240,181 +249,43 @@ newSubscene3d(
   copyBBoxDeco = F,
   parent = root
 )
-plotCones3D(pts[pts$nd,c("z1","z2","z3")], argsPolygon3d = list(alpha = 1, color = mypal[1]), drawPoint = T, drawLines = F)
+plotCones3D(llb, argsPolygon3d = list(alpha = 0.75, color = mypal[3]), drawPoint = F)
 # plotHull3D(unique(pts))
-# clipplanes3d(-1, -1, -1, 9)
+clipplanes3d(1, 1, 1, -9)
+newSubscene3d(
+  "inherit",
+  "inherit",
+  "inherit",
+  copyShapes = T,
+  copyBBoxDeco = F,
+  parent = root
+)
+plotCones3D(pts[pts$nd,c("z1","z2","z3")], argsPolygon3d = list(alpha = 1, color = mypal[8]), drawPoint = T, drawLines = T, argsPlot3d = list(size = 10))
+clipplanes3d(-1, -1, -1, 9)
 useSubscene3d(root)
-axes3d()
+# axes3d()
+finalize3D(argsAxes3d = list(edges = "bbox"))
+view <- matrix( c(0.860876560211182, -0.30657571554184, -0.406083613634109, 0, -0.448700070381165, -0.081096462905407, -0.889995634555817, 0, 0.239919260144234, 0.948385238647461, -0.207374647259712, 0, 0, 0, 0, 1), nc = 4)
 loadView(v = view, clear = FALSE, zoom = 0.7)
 rglwidget()
 ```
 
 
-<!-- ## An illustrative example -->
-
-<!-- We consider a multidimensional knapsack problem (where all numbers are positive) -->
-
-
-```{r knapsack, eval=FALSE}
-genKnapsack <- function(n, m, p, rngA, rngB, rngC) {
-  A <- matrix(sample(rngA, n*m, replace = T), m, n)
-  b <- sample(rngB, m, replace = T)
-  C <- t(genNDSet(p, 2*n)[,1:p])
-  C <- C[, sample(1:ncol(C), n)]
-  return(list(A = A, b = b, C = C))
-}
-kp <- genKnapsack(n = 10, m = 2, p = 3, rngA = 1:10, rngB = 5:15, rngC = 1:20)
-kp
-pts <- binaryPoints(kp$A, kp$b) 
-pts <- criterionPoints(pts[, 1:ncol(kp$A), drop = F], -kp$C, crit = "min")
-ini3D(T, argsPlot3d = list(xlim = c(min(pts$z1)-2,max(pts$z1)+10),  # open new window otherwise may crash 
-                        ylim = c(min(pts$z2)-2,max(pts$z2)+10), 
-                        zlim = c(min(pts$z3)-2,max(pts$z3)+10)))
-plotHull3D(pts[pts$nd,c("z1","z2","z3")],
-                       drawPoints = F,
-                       drawLines = TRUE,
-                       drawPolygons = TRUE,
-                       addRays = T,
-                       useRGLBBox = T,
-                       direction = 1,
-                       drawBBoxHull = TRUE)
-plotCones3D(pts[pts$nd,c("z1","z2","z3")], argsPolygon3d = list(alpha = 1, color = mypal[1]), drawPoint = F)
-plotPlane3D(c(1,1,1), point = c(2,2,2), argsPlanes3d = list(alpha = 0.3, col = mypal[8]))
-plotPoints3D(pts[pts$se, c("z1","z2","z3")], argsPlot3d = list(col = "red"), addText = "coord")
-plotPoints3D(pts[pts$sne, c("z1","z2","z3")], argsPlot3d = list(col = "blue"), addText = "coord")
-plotPoints3D(pts[pts$nd & pts$us, c("z1","z2","z3")], argsPlot3d = list(col = "green"), addText = "coord")
-plotPoints3D(pts[!pts$nd, c("z1","z2","z3")], argsPlot3d = list(col = "black"))
-finalize3D()
-```
-
-
-
-```{r rgl testing, include=FALSE, eval=FALSE}
-library(rgl)
-pts<-matrix(c(1,0,0,1,2,1,1,3,2,4,1,4), ncol = 3, byrow = TRUE)
-x <- pts[,1]
-y <- pts[,2]
-z <- pts[,3]
-z1 <- predict(lm(z ~ x + y))
-pts <- cbind(x, y, z1)
-
-filename <- tempfile(fileext = ".png")
-filename <- "test.png"
-png(filename = filename)
-plot(1, 1, pch = 16, cex = 10, axes=FALSE, xlab="", ylab="")
-dev.off()
-
-open3d()
-poly <- polygon3d(pts, plot = FALSE)
-poly$texcoords <- rbind(x, y)*5
-shade3d(poly, col = "white", specular = "black",
-texture = filename)
-decorate3d()
-
-x0 <- seq(min(x), max(x), by = 0.1)
-y0 <- seq(min(y), max(y), by = 0.1)
-xy <- expand.grid(x0, y0)
-xy <- xy[sp::point.in.polygon(xy[,1], xy[,2], x, y) > 0,]
-xyz <- cbind(xy, predict(lm(z ~ x + y), newdata = data.frame(x=xy[,1], y=xy[,2])))
 
 
 
 
 
 
-mesh <- as.mesh3d(pts, triangles = FALSE, col = "red")
-shade3d(mesh)
-wire3d(mesh)
-dot3d(mesh)
-persp3d(x, y, z, front = "lines", back = "lines",
-        lit = FALSE, add = TRUE)
-
-pch3d
-
-x0 <- seq(min(pts[,1]), max(pts[,1]), by = 0.1)
-y0 <- seq(min(pts[,2]), max(pts[,2]), by = 0.1)
-xy <- expand.grid(x0, y0)
-xy <- xy[sp::point.in.polygon(xy[,1], xy[,2], pts[,1], pts[,2]) > 0,]
-xyz <- cbind(xy, predict(lm(z ~ x + y), newdata = data.frame(x=xy[,1], y=xy[,2])))
-
-open3d()
-polygon3d(pts, col = "white", polygon_offset = 1)
-points3d(xyz)
-finalize3D()
-
-
-
-library(rgl)
-pts <- data.frame(x = c(1,0,0,0.4), y = c(0,1,0,0.3), z = c(0,0,1,0.3))
-x <- pts[,1]
-y <- pts[,2]
-z <- pts[,3]
-
-filename <- tempfile(fileext = ".png")
-png(filename = filename)
-plot(1, 1, pch = 16, cex = 10, axes=FALSE, xlab="", ylab="")
-dev.off()
-
-open3d()
-poly <- polygon3d(pts, plot = FALSE)
-poly$texcoords <- rbind(x, y)*5
-shade3d(poly, col = "white", specular = "black",
-        texture = filename)
-decorate3d()
-
-x0 <- seq(min(x), max(x), by = 0.01)
-y0 <- seq(min(y), max(y), by = 0.01)
-xy <- expand.grid(x0, y0)
-xy <- xy[sp::point.in.polygon(xy[,1], xy[,2], x, y) > 0,]
-xyz <- cbind(xy, predict(lm(z ~ x + y), newdata = data.frame(x=xy[,1], y=xy[,2])))
-
-open3d()
-polygon3d(pts, col = "white", polygon_offset = 2)
-# points3d(xyz)
-persp3d(list(xyz[,1], xyz[,2], xyz[,3]), back = 'line', front = 'line', add = TRUE)
-# persp3d(x = xyz[,1], y = xyz[,2], z = xyz[,3], back = 'line', front = 'line', add = TRUE)
 
 
 
 
-```
 
 
-```{r How to add lines, eval=FALSE}
-library(rgl)
 
-# A plane using lines
-plot3d(pts, xlim = c(-1,5), ylim = c(-1,5), zlim = c(-1,10), type = 'n')
-normal <- c(1,1,1)
-offset <- -3
-lines <- 100
-limits <- rgl::par3d()$bbox
-m <- c(limits[1], limits[3], limits[5])
-M <- c(limits[2], limits[4], limits[6])
-# do a mesh
-x <- seq(m[1], M[1], length.out = lines)
-y <- seq(m[2], M[2], length.out = lines)
-f <- function(x,y){-(normal[1]/normal[3])*x - (normal[2]/normal[3])*y - offset/normal[3]}
-z <- outer(x,y,f)
-z[z < m[3] | z > M[3]] <- NA
-persp3d(x, y, z, back = 'lines', front = 'lines', add = TRUE)
 
-# A polygon using lines
-lines <- 50
-plot3d(pts, xlim = c(-1,2), ylim = c(-1,2), zlim = c(-1,2), type = 'n')
-pts <- data.frame(x = c(1,0,0,0.4), y = c(0,1,0,0.3), z = c(0,0,1,0.3))
-polygon3d(pts, col = "white", polygon_offset = 1)
-#' pts <- data.frame(x = c(1,0,0), y = c(0,1,0), z = c(0,0,1))
-x <- pts[,1]
-y <- pts[,2]
-z <- pts[,3]
-x0 <- seq(min(pts$x), max(pts$x), length.out = lines)
-y0 <- seq(min(pts$y), max(pts$y), length.out = lines)
-xy <- expand.grid(x0, y0)
-xy[sp::point.in.polygon(xy[,1], xy[,2], pts$x, pts$y) <= 0,] <- NA
-z0 <- predict(lm(z ~ x + y), newdata = data.frame(x=xy[,1], y=xy[,2]))
-persp3d(x0, y0, z0, back = 'lines', front = 'lines', add = TRUE)
-```
+
 
 
 
