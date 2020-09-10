@@ -21,6 +21,9 @@ output:
     toc: true
     toc_depth: 2
 citation_url: https://mcdmsociety.github.io/MOrepo-Forget20/report_details.html
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding,
+  output_dir = "../../docs") })
 ---
 
 <style type="text/css">
@@ -63,7 +66,8 @@ options(knitr.kable.NA = '')
 ```
 
 Detailed results for each instance can be generated using `instance.Rmd` in the subfolder `results/report`. The report with detailed results and plots is already generated for some of the instances: 
-
+ 
+ 
 ```{r}
 datAll <- read_csv("../statistics.csv")
 instanceFiles <- list.files("../../docs/instances", ".html", full.names = F)
