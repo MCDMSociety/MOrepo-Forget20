@@ -373,7 +373,7 @@ The objective coefficients are generated in the range [1, 1000] on the lower par
 
 For the AP the constraints are fixed given the problem size. The same holds for the UFLP when assuming the number of facilities equals the number of customers. For KP instances, the integer coefficients of the constraint are generated randomly in the range [1,15]. The right-hand side is set equal to half of the sum of the coefficients on the right hand side, rounded down if not integer. For KP three different constraints are generated for each variable size and objective coefficients.
 
-All instances are public available at Multi-Objective Optimization Repository (MOrepo) [@MOrepo] in a sub-repository [@MOrepo-Forget20]. Moreover the repository also contains further instances used for preliminary testing. An overview of all the results are given in [@Forget20a]. The non-dominated sets for each instance is available together with detailed results and plots of some of the instances [LRN: Add doc with this to repo].     
+All instances are public available at Multi-Objective Optimization Repository (MOrepo) [@MOrepo] in a sub-repository [@MOrepo-Forget20]. Moreover the repository also contains further instances used for preliminary testing. An overview of all the results are given in [@Forget20a]. The non-dominated sets for each instance is available together with detailed results and plots of some of the instances @MOrepo-Forget20-Details.     
 
 
 
