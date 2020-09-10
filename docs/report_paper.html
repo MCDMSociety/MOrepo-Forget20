@@ -58,6 +58,7 @@
   <meta name="citation_reference" content="citation_title=Branch-and-bound for biobjective mixed-integer linear programming;citation_publication_date=2019;citation_author=Nathan Adelgren;citation_author=Akshay Gupte" />
   <meta name="citation_reference" content="citation_title=Computational results (all instances);citation_publication_date=2020;citation_publisher=Aarhus University;citation_author=N. Forget;citation_author=L. R. Nielsen;citation_author=S. L Gadegaard" />
   <meta name="citation_reference" content="citation_title=Instances and results for tri-objective branch and bound (morepo-forget20);citation_publication_date=2020;citation_author=N. Forget;citation_author=L. R. Nielsen;citation_author=S. L. Gadegaard" />
+  <meta name="citation_reference" content="citation_title=Detailed results for instances (morepo-forget20);citation_publication_date=2020;citation_author=N. Forget;citation_author=L. R. Nielsen;citation_author=S. L. Gadegaard" />
   <meta name="citation_reference" content="citation_title=Multi-objective optimization repository (morepo);citation_publication_date=2017;citation_author=L. R. Nielsen" />
   <meta name="citation_reference" content="citation_title=Multi-objective branch and bound;citation_publication_date=2017;citation_volume=260;citation_doi=10.1016/j.ejor.2017.01.032;citation_author=A. Przybylski;citation_author=X. Gandibleux" />
   <meta name="citation_reference" content="citation_title=GMOIP: Tools for 2D and 3D plots of single and multi-objective linear/integer programming models;citation_publication_date=2020;citation_author=Lars Relund Nielsen" />
@@ -2328,7 +2329,7 @@ UFLP
 <p>A total of 290 instances (see Table <a href="#tab:tabInput">1</a>) has been generated. Three problem classes are considered: the linear assignment problem (AP), the knapsack problem (KP) and the uncapacitated facility location problem (UFLP). The mathematical programming formulation for each problem is given in the appendix. The number of variables in each problem class has been increased until no algorithm configurations was able to compute an optimal solution within a time limit of half an hour (1800 seconds).</p>
 <p>The objective coefficients are generated in the range [1, 1000] on the lower part of a 3D sphere using the R package <span class="citation" data-cites="gMOIP">Relund Nielsen (<a href="#ref-gMOIP" role="doc-biblioref">2020</a>)</span>. Hence a high number of the coefficient vectors for the variables are non-dominated among each other (91% for AP and 96% for KP). This way of generating the objective coefficients has been tested against other methods and seems to result in optimal solutions with a high number of non-dominated points <span class="citation" data-cites="Forget20a">(Forget, Nielsen, and Gadegaard <a href="#ref-Forget20a" role="doc-biblioref">2020</a><a href="#ref-Forget20a" role="doc-biblioref">a</a>)</span> (implying hard instances). For UFLP instances the same generation method has been used. However, since two cost groups exists (see the appendix), a range of [1, 1000] has been used for generating the cost of assigning a customer to a service point and a range of [1, 100] for generating the cost for opening a service point. The objective coefficients are all integer.</p>
 <p>For the AP the constraints are fixed given the problem size. The same holds for the UFLP when assuming the number of facilities equals the number of customers. For KP instances, the integer coefficients of the constraint are generated randomly in the range [1,15]. The right-hand side is set equal to half of the sum of the coefficients on the right hand side, rounded down if not integer. For KP three different constraints are generated for each variable size and objective coefficients.</p>
-<p>All instances are public available at Multi-Objective Optimization Repository (MOrepo) <span class="citation" data-cites="MOrepo">(Nielsen <a href="#ref-MOrepo" role="doc-biblioref">2017</a>)</span> in a sub-repository <span class="citation" data-cites="MOrepo-Forget20">(Forget, Nielsen, and Gadegaard <a href="#ref-MOrepo-Forget20" role="doc-biblioref">2020</a><a href="#ref-MOrepo-Forget20" role="doc-biblioref">b</a>)</span>. Moreover the repository also contains further instances used for preliminary testing. An overview of all the results are given in <span class="citation" data-cites="Forget20a">(Forget, Nielsen, and Gadegaard <a href="#ref-Forget20a" role="doc-biblioref">2020</a><a href="#ref-Forget20a" role="doc-biblioref">a</a>)</span>. The non-dominated sets for each instance is available together with detailed results and plots of some of the instances [LRN: Add doc with this to repo].</p>
+<p>All instances are public available at Multi-Objective Optimization Repository (MOrepo) <span class="citation" data-cites="MOrepo">(Nielsen <a href="#ref-MOrepo" role="doc-biblioref">2017</a>)</span> in a sub-repository <span class="citation" data-cites="MOrepo-Forget20">(Forget, Nielsen, and Gadegaard <a href="#ref-MOrepo-Forget20" role="doc-biblioref">2020</a><a href="#ref-MOrepo-Forget20" role="doc-biblioref">c</a>)</span>. Moreover the repository also contains further instances used for preliminary testing. An overview of all the results are given in <span class="citation" data-cites="Forget20a">(Forget, Nielsen, and Gadegaard <a href="#ref-Forget20a" role="doc-biblioref">2020</a><a href="#ref-Forget20a" role="doc-biblioref">a</a>)</span>. The non-dominated sets for each instance is available together with detailed results and plots of some of the instances <span class="citation" data-cites="MOrepo-Forget20-Details">Forget, Nielsen, and Gadegaard (<a href="#ref-MOrepo-Forget20-Details" role="doc-biblioref">2020</a><a href="#ref-MOrepo-Forget20-Details" role="doc-biblioref">b</a>)</span>.</p>
 <h1 id="performance-of-the-different-algorithm-configurations">Performance of the different algorithm configurations</h1>
 <div class="layout-chunk" data-layout="l-page">
 
@@ -3714,8 +3715,11 @@ Figure 5: Performance profile: Number of instances in percent solved given cpu t
 <div id="ref-Forget20a">
 <p>Forget, N., L. R. Nielsen, and S. L Gadegaard. 2020a. “Computational Results (All Instances).” Aarhus University. <a href="https://mcdmsociety.github.io/MOrepo-Forget20/report.html">https://mcdmsociety.github.io/MOrepo-Forget20/report.html</a>.</p>
 </div>
+<div id="ref-MOrepo-Forget20-Details">
+<p>Forget, N., L. R. Nielsen, and S. L. Gadegaard. 2020b. “Detailed Results for Instances (Morepo-Forget20).” 2020. <a href="https://mcdmsociety.github.io/MOrepo-Forget20/report_details.html">https://mcdmsociety.github.io/MOrepo-Forget20/report_details.html</a>.</p>
+</div>
 <div id="ref-MOrepo-Forget20">
-<p>Forget, N., L. R. Nielsen, and S. L. Gadegaard. 2020b. “Instances and Results for Tri-Objective Branch and Bound (Morepo-Forget20).” 2020. <a href="https://github.com/MCDMSociety/MOrepo-Forget20">https://github.com/MCDMSociety/MOrepo-Forget20</a>.</p>
+<p>———. 2020c. “Instances and Results for Tri-Objective Branch and Bound (Morepo-Forget20).” 2020. <a href="https://github.com/MCDMSociety/MOrepo-Forget20">https://github.com/MCDMSociety/MOrepo-Forget20</a>.</p>
 </div>
 <div id="ref-Bensolve">
 <p>Lohne, A., and B. Weibing. n.d. “Bensolve.” <a href="http://www.bensolve.org/">http://www.bensolve.org/</a>.</p>
@@ -3791,6 +3795,20 @@ Figure 5: Performance profile: Number of instances in percent solved given cpu t
   Title                    = {Instances and Results for Tri-Objective Branch and Bound (MOrepo-Forget20)},
   Author                   = {N. Forget and L. R. Nielsen and S. L. Gadegaard},
   Url                      = {https://github.com/MCDMSociety/MOrepo-Forget20},
+  Year                     = {2020}
+}
+
+@Electronic{MOrepo-Forget20-Details,
+  Title                    = {Detailed results for instances (MOrepo-Forget20)},
+  Author                   = {N. Forget and L. R. Nielsen and S. L. Gadegaard},
+  Url                      = {https://mcdmsociety.github.io/MOrepo-Forget20/report_details.html},
+  Year                     = {2020}
+}
+
+@Electronic{MOrepo-Forget20-Interactive,
+  Title                    = {Examples of lower and upper bound sets (MOrepo-Forget20)},
+  Author                   = {N. Forget and L. R. Nielsen and S. L. Gadegaard},
+  Url                      = {https://mcdmsociety.github.io/MOrepo-Forget20/report_interactive.html},
   Year                     = {2020}
 }
 
