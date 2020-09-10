@@ -393,7 +393,7 @@ rglwidget()
 
 fName <- "fig_ob_pt_3d.png"
 if (isFALSE(getOption('knitr.in.progress'))) {
-  rgl.snapshot(fName) 
+  snapshot3d(fName) 
   file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
 }
 ```
@@ -447,7 +447,7 @@ loadView(v = view, clear = FALSE, zoom = 0.7)
 rglwidget()
 fName <- "fig_ob_cicle_3d_1.png"
 if (isFALSE(getOption('knitr.in.progress'))) {
-  rgl.snapshot(fName) 
+  snapshot3d(fName) 
   file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
 }
 ```
@@ -464,17 +464,17 @@ plotPlane3D(c(1,1,1), point = c(3,3,3), argsPlanes3d = list(alpha = 0.6, col = m
 plotCones3D(lub, direction = -1, argsPolygon3d = list(alpha = 1, color = mypal[1]), drawPoint = T)
 plotmath3d(lub-1, text = expression(y^1, y^2), cex = 1.2, font = 3)
 root <- currentSubscene3d()
-newSubscene3d(
-  "inherit",
-  "inherit",
-  "inherit",
-  copyShapes = T,
-  copyBBoxDeco = F,
-  parent = root
-)
-plotCones3D(llb, argsPolygon3d = list(alpha = 0.75, color = mypal[3]), drawPoint = F)
+# newSubscene3d(
+#   "inherit",
+#   "inherit",
+#   "inherit",
+#   copyShapes = T,
+#   copyBBoxDeco = F,
+#   parent = root
+# )
+# plotCones3D(llb, argsPolygon3d = list(alpha = 0.75, color = mypal[3]), drawPoint = F)
 # plotHull3D(unique(pts))
-clipplanes3d(1, 1, 1, -9)
+# clipplanes3d(1, 1, 1, -9)
 newSubscene3d(
   "inherit",
   "inherit",
@@ -487,13 +487,13 @@ plotCones3D(pts[pts$nd,c("z1","z2","z3")], argsPolygon3d = list(alpha = 1, color
 clipplanes3d(-1, -1, -1, 9)
 useSubscene3d(root)
 # axes3d()
-finalize3D(argsAxes3d = list(edges = "bbox"))
+finalize3D(argsAxes3d = list(edges = "bbox"), argsTitle3d = list(xlab = "", ylab = "", zlab = ""))
 view <- matrix( c(0.860876560211182, -0.30657571554184, -0.406083613634109, 0, -0.448700070381165, -0.081096462905407, -0.889995634555817, 0, 0.239919260144234, 0.948385238647461, -0.207374647259712, 0, 0, 0, 0, 1), nc = 4)
 loadView(v = view, clear = FALSE, zoom = 0.7)
 rglwidget()
 fName <- "fig_ob_cicle_3d_2.png"
 if (isFALSE(getOption('knitr.in.progress'))) {
-  rgl.snapshot(fName) 
+  snapshot3d(fName) 
   file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
 }
 ```
