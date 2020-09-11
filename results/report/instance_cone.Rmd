@@ -1,0 +1,228 @@
+---
+title: "Comparing breath and depth for an instance"
+author: "Nicolas Forget, Lars Relund Nielsen, Sune Lauth Gadegaard"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    df_print: paged
+    number_sections: false
+    toc: yes
+    theme: cosmo
+    keep_md: false
+    self_contained: true
+editor_options: 
+  chunk_output_cls: console
+  chunk_output_type: console
+params:
+  new_title: 'Results for instance '
+  currentInstance: 'Forget20-AP_6_3_1-1000_spheredown_1_2'
+---
+ 
+```{r setup, include=FALSE}
+#' Function for loading missing packages that install them if not already installed.
+#'
+#' @param packages String vector with package names
+#'
+#' @return NULL (invisible)
+#' @export
+#'
+#' @examples loadPackages(c("MASS", "ggplot2", "tikzDevice"))
+loadPackages <- function(packages) {
+  newP <- packages[!(packages %in% installed.packages()[,"Package"])]
+  if(length(newP)) install.packages(newP, repos = "http://cran.rstudio.com/")
+  lapply(packages, library, character.only = TRUE)
+  invisible(NULL)
+}
+loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown", "fs"))
+if (interactive()) setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+if (isTRUE(getOption('knitr.in.progress'))) options(rgl.useNULL=TRUE)
+rgl::setupKnitr()
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning=FALSE, message=FALSE, include = TRUE, 
+  # cache = TRUE, autodep = TRUE, 
+  echo=FALSE,
+  rows.print = 12,
+  out.width = "99%", 
+  fig.width = 8, fig.align = "center", fig.asp = 0.62
+)
+# knit_hooks$set(webgl = hook_webgl, rgl = hook_rgl)
+```
+ 
+ 
+```{r}
+datAll <- read_csv("../statistics.csv")
+findInstances <- function(dat) {
+  instances <- NULL
+  dat <- dat %>% 
+    filter(solved == 1) %>% 
+    group_by(instance) %>%
+    summarise_at(vars(contains(c("YN", "total"))), list(mean = mean, sd = sd, max = max), na.rm = TRUE)
+  instances <- bind_rows(instances, 
+                         tibble(class = "lowND", 
+                                instance = dat %>% arrange(YN_max) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                       tibble(class = "highND", 
+                              instance = dat %>% arrange(desc(YN_max)) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highNDus", 
+                                instance = dat %>% arrange(desc(YN_max - YNs_max)) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highNDse", 
+                                instance = dat %>% arrange(desc(YNse_max)) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highNDusPct", 
+                                instance = dat %>% arrange(desc((YN_max - YNs_max)/YN_max)) %>% 
+                                  slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highNDsne", 
+                                instance = dat %>% arrange(desc(YNs_max - YNse_max)) %>% slice(1:2) %>% pull(instance)))
+  instances <- bind_rows(instances, 
+                         tibble(class = "highSDcpu", 
+                                instance = dat %>% arrange(desc(tpstotal_sd)) %>% slice(1:2) %>% pull(instance)))
+}
+datSpecial <- findInstances(datAll %>% 
+   filter(coef == "spheredown", 
+        rangeC == "[1,1000]" | rangeC == "[1,1000]|[1,100]", 
+        varsel == "mof",
+        pb == "KP" | pb == "UFLP")) %>% 
+  distinct() %>% 
+   # filter(class == "highSDcpu") %>% 
+  arrange(class) 
+inst <- datSpecial$instance[1]
+```
+
+
+```{r read data}
+jsonFiles <- list.files("..", str_c(inst, "_.*.json"), full.names = T)
+instFile <- list.files("../..", str_c(inst,".raw"), full.names = T, recursive = T)
+datStat <- read_csv("../statistics.csv") %>% 
+  dplyr::filter(instance == inst, varsel == "mof", OB == "cone")
+```
+
+We consider instance `r inst`.
+
+```{r}
+id <- 1
+if (any(datStat$solved)) id <- which(datStat$solved)[1]
+mth <- paste0(datStat$nodesel[id], "_", datStat$varsel[id], "_", tolower(datStat$OB[id]))
+fileN <- grep(str_c(inst, "_", mth, "_result.json"), jsonFiles, value = T)
+if (!file.exists(fileN)) stop("File ", fileN, " cannot be found!")
+lstRes <- jsonlite::fromJSON(fileN)
+pts <- lstRes$points
+view <- matrix( c(0.982128262519836, 0.179020717740059, -0.0581022650003433, 0, -0.0678737983107567, 0.0489457845687866, -0.996492624282837, 0, -0.17554897069931, 0.982626855373383, 0.0602218806743622, 0, 0, 0, 0, 1), nc = 4)
+# loadView(v = view, zoom = 0.75)
+# ini3D(argsPlot3d = list(xlim = c(min(pts[,1])-2,max(pts[,1])+2),
+#     ylim = c(min(pts[,2])-2,max(pts[,2])+2),
+#     zlim = c(min(pts[,3])-2,max(pts[,3])+2)))
+# if (nrow(pts) < 20) plotCones3D(pts[,1:3], rectangle = T, drawPoint = F, argsPolygon3d = list(alpha = 1, color = "lightblue"), drawLines = F)
+# plotPoints3D(pts[pts$type == "se",1:3], argsPlot3d = list(col = "red"))
+# plotPoints3D(pts[pts$type == "sne",1:3], argsPlot3d = list(col = "green"))
+# plotPoints3D(pts[pts$type == "us",1:3], argsPlot3d = list(col = "blue"))
+# plotHull3D(pts[,1:3], addRays = TRUE, argsPolygon3d = list(alpha = 0.25, color = "red"), useRGLBBox = TRUE)
+# finalize3D(argsAxes3d = list(edges = "bbox"))
+# rglwidget()
+# str <- ""
+# if (!any(datStat$solved)) str <- str_c("Solution for algorithm configuration ", mth, ".")
+```
+
+<!-- The nondominated set (`r nrow(pts)` points) is depicted using <span style="color:red">red</span> for supported extreme points, <span style="color:green">green</span> for supported non-extreme points and <span style="color:blue">blue</span> for unsupported points. The convex hull of the nondominated set is depicted by the light red surface and the dominance cones in lightblue. -->
+
+```{r}
+# Add UB results
+res <- NULL
+for (i in 1:nrow(datStat)) {
+  mth <- paste0(datStat$nodesel[i], "_", datStat$varsel[i], "_", tolower(datStat$OB[i]))
+  fileN <- grep(str_c(inst, "_", mth, "_result.json"), jsonFiles, value = T)
+  if (!file.exists(fileN)) stop("File ", fileN, " cannot be found!")
+  lstRes <- jsonlite::fromJSON(fileN)
+  res[[i]] <- lstRes$misc$outputStat$yNStat
+}
+datStat <- datStat %>%
+  mutate(resUB = res) %>%
+  mutate(relativeSolved =
+    pmap(list(resUB, tpstotal, str_c(nodesel, "_", varsel, "_", tolower(OB))),
+         function(df = ..1, cpuT = ..2, mth = ..3) {
+            # if (nrow(df) > 1) {
+               res <- tibble(mth = mth, pct = c(nrow(df), rep(nrow(df), nrow(df)), nrow(df)), cpu = c(0, df$time, cpuT), rowname = 1:(nrow(df)+2))
+               res <- res %>% mutate(pct = (rowname-1)/pct) %>% select(-rowname)
+               res[nrow(res),"pct"] <- 1
+               # res <- res %>% arrange(pct, cpu)
+            # } else {
+               # res <- tibble(mth = mth, pct = c(1, cpu = c(df$time, cpuT), rowname = 1:2)
+            # }
+            res %>% mutate(pctCpu = cpu/cpuT)
+          }))
+```
+
+Animation of breadth and depth configuration (using cone OB):
+
+```{r slider}  
+# out.height=1000
+dat <- datStat %>% filter(rank(tpstotal, ties.method="random")==1 | rank(tpstotal, ties.method="random")==n())
+#%>% group_by(nodesel) 
+# dat <- bind_rows(top_n(dat, 1, tpstotal), top_n(dat, -1, tpstotal))   
+ptsLst <- vector("list", nrow(dat))
+for (i in 1:nrow(dat)) {
+  ptsLst[[i]]$pts <- dat$resUB[[i]]
+  ptsLst[[i]]$mth <- paste0(dat$nodesel[i], "_", tolower(dat$OB[i]))
+  ptsLst[[i]]$cpu <- dat$tpstotal[i]
+ }
+loadView(v = view, zoom = 0.75)
+limits <- lapply(ptsLst, function(x) {
+   tmp <- rbind(apply(x$pts[,c('z1', 'z2', 'z3')], 2, min),
+         apply(x$pts[,c('z1', 'z2', 'z3')], 2, max))
+})
+limits <- limits %>% reduce(rbind)
+limits <- rbind(apply(limits, 2, min),
+      apply(limits, 2, max))
+steps <- 1000
+stepLgt <- max(sapply(ptsLst, function(x) {x$cpu}))/steps #  max(max(sapply(ptsLst, function(x) {max(x[,'time'])})))/steps
+limits[1,] <- limits[1,] - 2
+limits[2,] <- limits[2,] + 2
+res <- vector("list", length(ptsLst))
+mfrow3d(ceiling(length(ptsLst)/2), 2, sharedMouse = T)
+for (s in 1:length(ptsLst)) {
+   next3d()
+   ini3D(argsPlot3d = list(
+      xlim = c(limits[1,'z1'], limits[2,'z1']),
+      ylim = c(limits[1,'z2'], limits[2,'z2']),
+      zlim = c(limits[1,'z3'], limits[2,'z3'])),
+      clear = F
+   )
+   axes3d()
+   title3d(main = ptsLst[[s]]$mth)
+   emptyId <- min(rgl.ids()$id)
+   pltCones <- nrow(ptsLst[[s]]$pts) < 20
+   lst <- as.vector(rep(emptyId, steps+1), "list")
+   for (j in 1:nrow(ptsLst[[s]]$pts)) {
+      i <- min(ceiling(ptsLst[[s]]$pts$time[j]/stepLgt), steps)
+      if (pltCones) {
+         ids <- plotCones3D(ptsLst[[s]]$pts[j, 1:3], rectangle = T, drawPoint = T, argsPolygon3d = list(alpha = 1, color = "blue"), drawLines = T)
+      } else ids <- plotPoints3D(ptsLst[[s]]$pts[j, 1:3])
+      if (any(lst[[i]] == emptyId)) lst[[i]] <- ids else lst[[i]] <- c(lst[[i]], ids)
+   }
+   names(lst) <- paste0("cone", 1:length(lst))
+   i <- max(1, min(ceiling(ptsLst[[s]]$cpu/stepLgt), steps))
+   # lst[[i]] <- plotHull3D(ptsLst[[s]]$pts[,1:3], addRays = T, argsPolygon3d = list(alpha = 0.25, color = "red"), useRGLBBox = TRUE)$ids
+   # res[[s]]$lst <- lst
+   res[[s]] <- subsetControl(subsets = lst, accumulate = T, subscenes = subsceneInfo()$id)
+}
+rglwidget() %>%
+playwidget(res,
+   start = 0, stop = steps, interval = 0.05, rate = 33, loop = F,
+   components = c("Play", "Slower", "Faster", "Reset", "Slider"))
+```
+
+```{r, include=FALSE}
+rgl.close()
+```
+
+<br/>
+
+
+
+ 
+ 

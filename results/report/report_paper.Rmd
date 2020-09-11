@@ -376,7 +376,7 @@ The objective coefficients are generated in the range [1, 1000] on the lower par
 
 For the AP the constraints are fixed given the problem size. The same holds for the UFLP when assuming the number of facilities equals the number of customers. For the KP instances however, the integer coefficients of the constraint are generated randomly in the range [1,15]. The right-hand side is set equal to half of the sum of the coefficients on the right hand side, rounded down. For the KP, three different constraints are generated for each variable size and objective coefficients.
 
-All instances are publicly available at Multi-Objective Optimization Repository (MOrepo) [@MOrepo] in a sub-repository [@MOrepo-Forget20]. Moreover the repository also contains further instances used for preliminary testing (only the hardest instances are kept in this paper). An overview of all the results is given in [@Forget20a]. The non-dominated sets for each instance are available together with detailed results and plots of some of the instances [LRN: Add doc with this to repo].     
+All instances are publicly available at Multi-Objective Optimization Repository (MOrepo) [@MOrepo] in a sub-repository [@MOrepo-Forget20]. Moreover the repository also contains further instances used for preliminary testing (only the hardest instances are kept in this paper). An overview of all the results is given in [@Forget20a]. The non-dominated sets for each instance are available together with detailed results and plots of some of the instances @MOrepo-Forget20-Details.
 
 
 
@@ -777,12 +777,14 @@ datWinner <- dat2 %>%
   
 tmp <- inner_join(dat1, datWinner, by = "instance") %>% 
   select(instance, n, pb.x, nbnodes, nbit, nbLB, algConfig.y, alg.x, alg.y, tpstotal.x, tpstotal.y) %>% 
-  mutate(fct = nbLB/nbit, pctCpu = 100 * (tpstotal.y/tpstotal.x - 1), diff = tpstotal.y - tpstotal.x, fct1 = nbnodes/nbit) #%>% 
+  mutate(fct = nbLB/nbit, pctCpu = 100 * (tpstotal.y/tpstotal.x - 1), diff = tpstotal.y - tpstotal.x, fct1 = nbnodes/nbit, 
+         stat1 = (tpstotal.x/nbit)/(tpstotal.y/nbnodes), stat2 = (tpstotal.y/nbnodes)/((tpstotal.x/nbit)/16)) #%>% 
   # group_by(pb.x) %>% 
   # summarise("nbLB/nbit" = mean(fct), pctCpu = mean(pctCpu)) 
 # tmp %>% kable() %>% kable_styling()
 
 mean(tmp$fct1)
+mean(tmp$stat1)
 # mean(tmp$fct)
 # mean(tmp$pctCpu)
 # mean(tmp$diff)
@@ -823,10 +825,11 @@ dat <- bind_rows(dat2, dat1)
 
 The performance of the branch and bound (B&B) algorithm compared to the Objective Space Search (OSS) algorithm is shown in Figure \@ref(fig:perfPlotPctOss). In general the OSS algorithm performs better than the B&B algorithm (on average `r round(mean(tmp$diff))` seconds faster). For the KP, the OSS algorithm performs much better than the current best branch and bound configuration. It is the case as well for UFLP, but the gap is smaller. Regarding AP, the gap is even smaller. A possible explanation is that again, as constraints are added to the initial problem, the totally unimodularity of the constraint matrix is lost, which leads to harder problems (harder than a single-objective AP) for the MIP solver, while the branch and bound without objective branching benefits from this property.
 
-It is to be expected that the OSS performs better since the OSS algorithm benefits from the power of single-objective MIP of solvers which has been improved over decades. The purpose of this paper is, to extend the concept of B&B from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case. However, we do find it important to compare statistics from the branch and bound algorithm to statistics from the objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems. 
+It is to be expected that the OSS algorithm performs better since it benefits from the power of single-objective MIP solvers which has been improved over decades. The purpose of this paper is, to extend the concept of B&B from the bi-objective case to the tri-objective case and to investigate the behavior of such an algorithm. Thus, the scope is not to create an algorithm that outperforms all other algorithms for the tri-objective case. However, we do find it important to compare statistics from the branch and bound algorithm to statistics from the objective space search algorithm, as these are known to perform well on tri-objective combinatorial problems. 
 
-Note that the B&B algorithm only maintains a single branching tree in contrast to the OSS algorithm that create a new branching tree for each MIP solved. Hence if the average computation in each node of the B&B algorithm can be reduced then B&B may be competitive with OSS. On average the number of nodes in the branching tree compared to the number of MIPs solved are a factor of approx. `r round(mean(tmp$fct1))` times larger. That is, processing a node in the brancing tree should on average be approx.`r round(mean(tmp$fct1))` times lower for the B&B algorithm to be competitive.
-In this implementation, processing a node takes currently [stat1] times less cpu time than solving a MIP, which means that in order to be competitive, processing a node should take [stat2] times less time than it does now. We believe that closing this gap is possible with further research in pruning nodes and finding lower bound sets faster (i.e. processing nodes faster) or by leading extensive experiments on alternative node and variable selection rules (i.e. reducing the size of the tree and thus, decreasing this factor of `r round(mean(tmp$fct1))`). Also, the branch and bound algorithm uses no cut-generation which are heavily used by the single objective MIP solvers. Thus, generating cuts, and effectively extending the branch and bound to a branch and cut could lead to reduced tree sizes.
+Note that the B&B algorithm only maintains a single branching tree in contrast to the OSS algorithm that create a new branching tree for each MIP solved. Hence if the average computation in each node of the B&B algorithm can be reduced then B&B may be competitive with OSS. On average the number of nodes in the branching tree compared to the number of MIPs solved are a factor of approx. `r round(mean(tmp$fct1))` times larger. That is, processing a node in the branching tree should on average be approx. `r round(mean(tmp$fct1))` times lower for the B&B algorithm to be competitive. Processing a node is currently a factor of `r round(mean(tmp$stat1), 1)` times lower for the B&B algorithm, which means that in order to be competitive, processing a node should take `r round(mean(tmp$stat2), 1)` times less time than it does now. 
+
+We believe that closing this gap is possible with further research in pruning nodes and finding lower bound sets faster (i.e. processing nodes faster) or by considering alternative node and variable selection rules (i.e. reducing the size of the tree and thus, decreasing this factor of `r round(mean(tmp$fct1))`). Also, the branch and bound algorithm uses no cut-generation which are heavily used by the single objective MIP solvers. Thus, generating cuts, and effectively extending the branch and bound to a branch and cut could lead to reduced tree sizes.
 
 <!--
 [to LRN: see piece of text just above for meaning of stat1 and stat2]

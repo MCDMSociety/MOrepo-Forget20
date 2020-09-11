@@ -1,7 +1,7 @@
 ---
 title: "Detailed results for instances"
 description: |
-  This report contains links til detailed results for each instance.
+  This report contains links to detailed results for each instance.
 author:
   - name: Nicolas Forget
     url: http://pure.au.dk/portal/en/nforget@econ.au.dk
@@ -21,6 +21,9 @@ output:
     toc: true
     toc_depth: 2
 citation_url: https://mcdmsociety.github.io/MOrepo-Forget20/report_details.html
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding,
+  output_dir = "../../docs") })
 ---
 
 <style type="text/css">
@@ -46,6 +49,7 @@ loadPackages <- function(packages) {
 }
 loadPackages(c("tidyverse", "knitr", "rgl", "gMOIP", "rmarkdown", "ggplot2", "plotly", "DT", "RColorBrewer", "wesanderson", "kableExtra", "ggthemes"))
 
+if (interactive()) setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 if (isTRUE(getOption('knitr.in.progress'))) options(rgl.useNULL=TRUE)
 rgl::setupKnitr()
 knitr::opts_chunk$set(
@@ -62,7 +66,7 @@ options(knitr.kable.NA = '')
 ```
 
 Detailed results for each instance can be generated using `instance.Rmd` in the subfolder `results/report`. The report with detailed results and plots is already generated for some of the instances: 
-
+ 
 ```{r}
 datAll <- read_csv("../statistics.csv")
 instanceFiles <- list.files("../../docs/instances", ".html", full.names = F)
@@ -144,13 +148,16 @@ DT::datatable(
 
 Some instances that might be of interest:
 
-  * Instances with a low number of non-dominated points: `r toLink(datSpecial %>% filter(class = "lowND") %>% pull(instance))`
-  * Instances with a high number of non-dominated points: `r toLink(datSpecial %>% filter(class = "highND") %>% pull(instance))`
-  * Instances with a high number of unsupported non-dominated points: `r toLink(datSpecial %>% filter(class = "highNDus") %>% pull(instance))`
-  * Instances with a high number of supported extreme non-dominated points: `r toLink(datSpecial %>% filter(class = "highNDse") %>% pull(instance))`
-  * Instances with a high unsupported non-dominated point percentage: `r toLink(datSpecial %>% filter(class = "highNDusPct") %>% pull(instance))`
-  * Instances with a high number of supported non-extreme non-dominated points: `r toLink(datSpecial %>% filter(class = "highNDsne") %>% pull(instance))`
-  * Instances with highest variance in cpu time: `r toLink(datSpecial %>% filter(class = "highSDcpu") %>% pull(instance))`
+  * Instances with a low number of non-dominated points: `r toLink(datSpecial %>% filter(class == "lowND") %>% pull(instance))`
+  * Instances with a high number of non-dominated points: `r toLink(datSpecial %>% filter(class == "highND") %>% pull(instance))`
+  * Instances with a high number of unsupported non-dominated points: `r toLink(datSpecial %>% filter(class == "highNDus") %>% pull(instance))`
+  * Instances with a high number of supported extreme non-dominated points: `r toLink(datSpecial %>% filter(class == "highNDse") %>% pull(instance))`
+  * Instances with a high unsupported non-dominated point percentage: `r toLink(datSpecial %>% filter(class == "highNDusPct") %>% pull(instance))`
+  * Instances with highest variance in cpu time: `r toLink(datSpecial %>% filter(class == "highSDcpu") %>% pull(instance))`
+  * Instances with a high number of supported non-extreme non-dominated points: `r toLink(datSpecial %>% filter(class == "highNDsne") %>% pull(instance))`
+ 
+  
+
 
 
 
