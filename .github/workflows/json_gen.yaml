@@ -6,8 +6,8 @@ on:
       - .github/workflows/json_gen.yaml
       - results/convert/*.R
       - results/*.json
-  schedule:
-    - cron: '0 */3 * * *'
+  # schedule:
+  #   - cron: '0 */3 * * *'
 
 jobs:
   render:
