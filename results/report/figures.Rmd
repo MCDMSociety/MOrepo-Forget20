@@ -47,6 +47,11 @@ library(ggsci)
 library(tidyverse)
 library(tikzDevice)
 library(magrittr)
+library(RColorBrewer)
+library(wesanderson)
+library(kableExtra)
+library(ggthemes)
+library(rmarkdown)
 rgl::par3d("family" = "serif")
 pathOverLeaf <- "C:/Users/au15463/Dropbox/Apps/Overleaf/MT_paper_objective_branching"
 ```
@@ -59,6 +64,203 @@ mypal <- pal_simpsons()(9)
 library("scales")
 show_col(mypal)
 ```
+
+```{r load instance results, include=FALSE}
+toLink <- function(inst) {
+  if (length(inst) == 0) return("")
+  links <- str_c('../../docs/instances/', inst, '.html')
+  url <- str_c('instances/', inst, '.html')
+  if_else(file.exists(links), str_c('<a href="', url, '">', inst, '</a>'), inst)
+}
+
+limSec <- c(0, 30*60)  # computation time limits (exclude instances with max cpu < limSec[1] or  min cpu > limSec[2])
+abbrv <- function(str) {
+  str_replace_all(str, 
+    c("breadth" = "B", "depth" = "D", "mof" = "F", "mfavg" = "A", "exact" = "F", 
+      "cone" = "C", "none" = "N", "None" = "N", "spheredown" = "down", "sphereup" = "up"))
+}
+datAll <- read_csv("../statistics.csv") %>%   #"../convert/data/stat.csv"
+  filter(coef == "spheredown", rangeC == "[1,1000]" | rangeC == "[1,1000]|[1,100]", varsel == "mof") %>% #| coef == "sphereup"
+  mutate(YNsRatio = YNs/YN, 
+         YNusRatio = 1-YNs/YN, 
+         YNsneRatio = (YNs-YNse)/YN,
+         algConfig = tolower(str_c(nodesel, varsel, OB, sep="|")),
+         nodeselVarsel = tolower(str_c(nodesel, sep="|")),   #nodeselVarsel = tolower(str_c(nodesel, varsel, sep="|")),
+         resultName = str_c(instance, algConfig, sep="_")) %>% 
+  mutate(algConfig = tolower(str_c(nodesel, OB, sep="|")))
+  # group_by(instance) %>% 
+  # mutate(minCpu = min(tpstotal), maxCpu = max(tpstotal)) %>% 
+  # mutate(unsolvedAllConfigs = if_else(maxCpu < limSec[1] | minCpu >= limSec[2], T, F))
+algConfigsN <- length(unique(datAll$algConfig))
+
+# tmp <- datAll %>% 
+#   group_by(instance) %>% 
+#   summarise(minCpu = min(tpstotal), maxCpu = max(tpstotal)) %>% 
+#   filter(maxCpu < limSec[1] | minCpu > limSec[2]) %>% 
+#   pull(instance)
+
+tmp <- datAll %>% 
+  group_by(pb, n, coef) %>% 
+  mutate(allUnsolved = 1 - max(solved)) %>% 
+  ungroup() %>% 
+  filter(allUnsolved == 1) %>% 
+  pull(instance)
+
+datAll <- datAll %>% 
+  filter(!(instance %in% tmp)) %>%
+  mutate(solved = if_else(tpstotal >= limSec[2] | solved == 0, 0, 1)) %>% 
+  # group_by(instance) %>% 
+  # filter(n() == algConfigsN) %>% 
+  # ungroup() %>% 
+  mutate(tpstotal = if_else(tpstotal >= limSec[2], limSec[2], tpstotal),
+         algConfig = abbrv(algConfig),
+         coef = abbrv(coef),
+         nodeselVarsel = abbrv(nodeselVarsel),
+         OB = abbrv(OB))
+# View(datAll %>% group_by(instance) %>% summarise(ctr = n()))
+algConfigs <- unique(datAll$algConfig)
+nodeselVarselConfigs <- unique(datAll$nodeselVarsel)
+datNotSolved <- datAll %>% filter(solved == 0) 
+datSolved <- datAll %>% filter(solved == 1)
+datInput <- datAll %>% 
+  group_by(instance) %>%
+  mutate(unsolved = 1-max(solved)) %>%
+  ungroup() %>%
+  distinct(instance, .keep_all = TRUE) %>% 
+  select(instance, pb, n, p, coef, contains("range"), ratioNDcoef, unsolved)
+# instances with all configs run
+
+datWin <- 
+  datAll %>% 
+  group_by(instance) %>% 
+  nest() %>% 
+  mutate(winner = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
+  mutate(win = map(winner, function(df) {if_else(df$solved == 1, df$algConfig, "Unsolved")})) %>% 
+  select(-winner) %>% 
+  unnest(c(data, win)) 
+
+datNotStable <- read_csv("../convert/data/stat.csv", col_types = cols()) %>%
+  filter(coef == "spheredown", rangemax == 1000, solved == 1) %>% #| coef == "sphereup"
+  group_by(instance) %>%
+  distinct(YN) %>%
+  summarise(ctr = n()) %>%
+  dplyr::filter(ctr > 1)
+if (nrow(datNotStable) > 0) stop("Instabilities found!")
+
+datObNC <- datAll %>% filter(OB == "N" | OB == "C")
+
+tmp <- tibble(algConfig = datAll %>% pull(algConfig) %>% unique()) %>% separate(algConfig, c("nodeselVarsel", "OB"), remove = F, sep = "\\|")
+datAllJoined <- datAll %>% 
+  group_by(instance) %>% 
+  nest() %>% 
+  mutate(missing = map(data, function(df) full_join(df, tmp, by = c("algConfig", "nodeselVarsel", "OB")) %>% mutate(pb = df$pb[1]))) %>% 
+  select(-data) %>% 
+  unnest(missing) %>% 
+  replace_na(list(tpstotal = 1800)) 
+
+datOSS <- read_csv("../statistics_oss.csv") 
+```
+
+```{r Define theme and color scales, include=FALSE}
+theme_publish <- function() {
+  library(grid)
+  library(ggthemes)
+  return(theme_foundation(base_size = 10) +
+    theme(
+      # plot.title = element_text(face = "bold", size = rel(1.2), hjust = 0.5),
+      text = element_text(face = "plain"),
+      # panel.background = element_rect(colour = NA),
+      panel.spacing = unit(0.5, "cm"),
+      plot.background = element_blank(),
+      # panel.border = element_rect(colour = NA),
+      axis.title = element_text(face = "plain",size = rel(1)),
+      # axis.title.y = element_text(angle=90,vjust =2),
+      # axis.title.x = element_text(vjust = -0.2),
+      axis.text = element_text(),
+      axis.line = element_line(colour="black"),
+      axis.ticks = element_line(),
+      panel.grid.major = element_line(colour="#f0f0f0"),
+      panel.grid.minor = element_blank(),
+      legend.key = element_rect(colour = NA),
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      # legend.key.size = unit(0.2, "cm"),
+      legend.key.height = unit(0.2, "cm"), 
+      legend.key.width = unit(0.75, "cm"),
+      # legend.margin = unit(0, "cm"),
+      legend.title = element_blank(), #element_text(face="italic"),
+      # plot.margin=unit(c(10,5,5,5),"mm"),
+      # strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+      # strip.text = element_text(face="bold"),
+    )
+  )
+}
+
+
+# scale_fill_Publication <- function(...){
+#       library(scales)
+#       discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+# 
+# }
+# 
+# scale_colour_Publication <- function(...){
+#       library(scales)
+#       discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+# 
+# }
+
+
+
+# display.brewer.pal(n = 11, name = "RdYlBu")
+pal <- brewer.pal(n = 11, name = "RdYlBu")
+# algConfigs <- algConfigs[c(2,5, 3,6, 1,4, 8,11, 9,12, 7,10)]
+palAlgConfigs <- wes_palette("Zissou1", algConfigsN, type = "continuous")
+palAlgConfigs <- c(brewer.pal(n =  algConfigsN/2, name = "Reds"), brewer.pal(n =  algConfigsN/2, name = "Blues"))
+# display.brewer.pal(n = 9, name = "Blues")
+# brewer.pal(n = 6, name = "Greens")
+
+scale_color_algConfig <- scale_color_manual(
+  values = setNames(palAlgConfigs, algConfigs),
+  drop = F)
+scale_fill_algConfig <- scale_fill_manual(
+  values = setNames(palAlgConfigs, algConfigs),
+  drop = F)
+
+scale_color_nodesel_varsel <- scale_color_manual(
+  values = setNames(pal[c(1,3,9,11)], nodeselVarselConfigs),
+  drop = F)
+
+scale_color_ob <- scale_color_manual(
+  values = setNames(pal[c(1,3,9,11)], c("C", "F", "N", "OSS")),
+  drop = F)
+
+scale_fill_ob <- scale_fill_manual(
+  values = setNames(pal[c(1,3,9,11)], c("C", "F", "N", "Unsolved")),
+  drop = F)
+
+scale_linetype_ob <- scale_linetype_manual(
+  values = c("C" = 1, "F" = 2, "N" = 3),
+  drop = F)
+
+# scale_color_nodesel <- scale_color_manual(
+#   values = c("breadth" = "red", "depth" = "green"),
+#   drop = F)
+
+# scale_alpha_varsel <- scale_alpha_manual(
+#   values = c("mof" = 1, "mfavg" = 0.75),
+#   drop = F)
+
+# scale_linetype_valsel <- scale_linetype_manual(
+#   values = c("mof" = 1, "mfavg" = 2),
+#   drop = F)
+  
+
+scale_linetype_nodesel_varsel <- scale_linetype_manual(
+  values = c("B" = 1, "D" = 2, "OSS" = 3, "Unsolved" = 1),
+  drop = F)
+```
+
+
 
 ## Figure 1
 
@@ -133,7 +335,7 @@ p
   
 fName <- "fig_lb_ub_2d.tex"
 if (isFALSE(getOption('knitr.in.progress'))) {
-  tikz(file = fName, standAlone=F)
+  tikz(file = fName, standAlone=F, width = 7, height = 5)
   p
   dev.off()
   file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
@@ -162,7 +364,7 @@ ob <-
 ptsOB <- geom_point(aes(x = z1, y = z2), data = ob, shape = 21, size = 5, color = mypal[5])
 ptsOBText <- geom_text(aes(x = z1, y = z2), data = ob, label = c("$y^1$", "$y^2$", "$y^3$"), nudge_y = 0.5)
 conesOB <- plotCones2D(ob, drawPlot = F, m = bBox$m, M = bBox$M, drawLines = T, direction = -1,
-                     drawPoint = F, argsGeom_polygon = list(fill = NA, alpha = 0.5), argsGeom_path = list(linetype = 3, size = 0.5))
+                     drawPoint = F, argsGeom_polygon = list(fill = NA, alpha = 0.5), argsGeom_path = list(linetype = 3, size = 0.9))
 conesLB <- plotHull2D(lb, drawPoints = F, addRays = T, m = bBox$m, M = bBox$M, drawPlot = F, drawLines = F,
                    argsGeom_polygon = list(fill = mypal[2], alpha = 0.5)) 
 ptsUB <- geom_point(aes(x = z1, y = z2, shape = "rou"), data = ub, show.legend = T) 
@@ -204,7 +406,7 @@ p <- layO + conesLUB + conesLB + conesOB + ptsUB + ptsOB + ptsLUB + ptsOBText +
 p  
 fName <- "fig_ob_2d.tex"
 if (isFALSE(getOption('knitr.in.progress'))) {
-  tikz(file = fName, standAlone=F)
+  tikz(file = fName, standAlone=F, width = 7, height = 5)
   p
   dev.off()
   file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
@@ -499,6 +701,205 @@ if (isFALSE(getOption('knitr.in.progress'))) {
 ```
 
 
+# Figure 5
+
+```{r}
+tmp <- datAll %>%
+  group_by(algConfig, pb) %>%
+  arrange(tpstotal) %>%
+  mutate(count = row_number(), total = n()) %>% 
+  group_by(pb) %>% 
+  mutate(total = max(total)) %>% 
+  group_by(pb, algConfig, tpstotal) %>% 
+  arrange(pb, algConfig, tpstotal, count) %>% 
+  filter(tpstotal < 1800 | row_number() == 1) %>% 
+  mutate(pct = count/total) %>% 
+  select(pb, algConfig, tpstotal, count, pct, total, OB, nodeselVarsel)
+```
+
+```{r perfPlotPct, fig.asp=1, fig.cap="Performance profile: Number of instances in percent solved given cpu time. An instance is considered as unsolved if the cpu time exceed 1800 seconds (time limit)."}
+p <- ggplot(tmp) +
+  # geom_step(aes(x=tpstotal, y=count, color = nodeselVarsel, linetype = OB)) +
+  geom_step(aes(y=pct, x=tpstotal, color = OB, linetype = nodeselVarsel), alpha = 0.75) +
+  # geom_point(aes(y=..y.., x=tpstotal, color = OB, linetype = nodeselVarsel), stat="ecdf", size = 1) +
+  facet_grid(rows = vars(pb)) +
+  # ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  labs(color = "nS:", linetype = "oB:") +
+  scale_color_ob + scale_linetype_nodesel_varsel +
+  xlab("cpu (seconds)") + ylab("\\%") +
+  theme_publish() +
+  coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797))
+p
+fName <- "fig_pref_pct.tex"
+if (isFALSE(getOption('knitr.in.progress'))) {
+  tikz(file = fName, standAlone=F)
+  p
+  dev.off()
+  file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
+}
+```
+
+
+# Figure 6
+
+```{r winConfigs, fig.cap="Proportion of winning algorithm configurations."}
+res <- datWin %>% 
+  group_by(instance) %>%
+  # filter(n() == algConfigsN, min(solved) == 1) %>% 
+  group_by(pb, n) %>% 
+  mutate(count = n()) %>% 
+  group_by(pb, n, win) %>% summarize(pct = n()/mean(count)) %>% 
+  arrange(pb, n, desc(pct)) %>% 
+  separate(win, into = c("nodeselVarsel","OB"), sep = "\\|", remove = F) %>% 
+  mutate(OB = replace_na(OB, "Unsolved"))
+p <- ggplot(res, aes(x = factor(n), y = pct, fill = OB, linetype = nodeselVarsel)) + 
+  geom_col(color = "black") + 
+  geom_text(aes(label = round(pct, 2)), colour="white", size=2.5,
+              position = position_stack(vjust = .5)) +
+  scale_fill_ob + scale_linetype_nodesel_varsel +
+  facet_grid(cols = vars(pb), margins = F, scales = "free") +
+  ylab("\\% of instances") + xlab("n") +
+  theme_publish()
+p
+fName <- "fig_win.tex"
+if (isFALSE(getOption('knitr.in.progress'))) {
+  tikz(file = fName, standAlone=F, width = 7, height = 5)
+  p
+  dev.off()
+  file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
+}
+```
+
+
+# Figure 7
+
+```{r, eval=FALSE}
+p <- datAll %>% 
+  group_by(instance) %>%
+  filter(n() == algConfigsN, min(solved) == 1) %>%
+  ungroup() %>% 
+  group_by(pb, OB, nodeselVarsel) %>% 
+  summarise(node = mean(nbnodes)) %>% 
+  group_by(pb) %>% 
+  arrange(node) %>% 
+  ggplot(aes(x = pb, y = node, fill = OB, linetype = nodeselVarsel)) + 
+  geom_col(position = "dodge2", color = "black") +
+  # geom_line(alpha = 0.75) +
+  # geom_point(alpha = 0.75) +
+  facet_grid(cols = vars(pb), scales = "free") + 
+  # ggtitle(str_c("Average branching tree size.")) +
+  labs(color = "oB:", linetype = "nS:") +
+  scale_fill_ob + scale_linetype_nodesel_varsel +
+  theme_publish() + theme() +
+  xlab("problem class") + ylab("tree size")  
+p
+fName <- "fig_btree.tex"
+if (isFALSE(getOption('knitr.in.progress'))) {
+  tikz(file = fName, standAlone=F, width = 7, height = 5)
+  p
+  dev.off()
+  file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
+}
+```
+
+
+# Figure 8
+
+```{r perfPlotND, fig.cap="Smoothed curves of relative number of non-dominated points compared to relative cpu."}
+instancesNCSolved <- datAll %>%
+  filter(OB == "C" | OB == "N") %>% 
+  group_by(instance) %>%
+  filter(min(solved) == 1) %>% 
+  pull(instance)
+
+csvFiles <- list.files("..", ".csv", full.names = T) %>% 
+  str_subset("nd")
+dat <- NULL
+for (f in csvFiles) dat <- bind_rows(dat, read_csv(f))
+dat <- dat %>% mutate(algConfig = abbrv(algConfig))
+dat1 <- dat %>% 
+  separate(algConfig, into = c("nodesel", "varsel", "OB"), sep = "_", remove = F) %>%
+  mutate(pb = str_replace(instance, "^Forget20-(.*?)_.*$", "\\1")) %>% 
+  filter(instance %in% instancesNCSolved, varsel == "F", OB == "N" | OB =="C") 
+
+csvFiles <- list.files("..", ".csv", full.names = T) %>% 
+  str_subset("points_oss")
+dat <- NULL
+for (f in csvFiles) dat <- bind_rows(dat, read_csv(f))
+dat1 <- bind_rows(dat1, dat) %>% 
+  mutate(nodesel = replace_na(nodesel, "OSS")) %>% 
+  filter(instance %in% instancesNCSolved)
+
+p <- ggplot(aes(x = pctCpu, y = pct, linetype = nodesel), data = dat1) + 
+  geom_smooth(color = "black", se = F, size = 0.5) + 
+  # facet_grid(rows = vars(pb)) +
+  coord_cartesian(expand = FALSE, ylim = c(0, 1), xlim = c(0, 1)) +
+  # ggtitle(str_c("Number of instances solved within a given cpu time")) +
+  # labs(linetype = "") +
+  scale_linetype_nodesel_varsel +
+  theme_publish() + ylab("\\% of non-dominated points") + xlab("\\% of cpu time")
+p
+fName <- "fig_pref_nd.tex"
+if (isFALSE(getOption('knitr.in.progress'))) {
+  tikz(file = fName, standAlone=F, width = 7, height = 5)
+  p
+  dev.off()
+  file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
+}
+```
+
+
+# Figure 9
+
+```{r}
+dat1 <- datOSS %>% 
+  mutate(algConfig = "OSS", 
+         pb = str_replace(instance, "Forget20-(.*?)_.*", "\\1"),
+         tpstotal = cpu, alg = "OSS")
+dat2 <- datAll %>% 
+  filter (OB == "C" | OB == "N", instance %in% dat1$instance) %>% 
+  mutate(alg = "BB")
+dat <- bind_rows(dat2, dat1) %>% 
+  group_by(instance) %>% 
+  mutate(n = first(n)) %>% 
+  group_by(algConfig, pb) %>%
+  arrange(tpstotal) %>%
+  mutate(count = row_number(), total = n()) %>% 
+  group_by(pb) %>% 
+  mutate(total = max(total)) %>% 
+  group_by(pb, algConfig, tpstotal) %>% 
+  arrange(pb, algConfig, tpstotal, count) %>% 
+  filter(tpstotal < 1800 | row_number() == 1) %>% 
+  mutate(pct = count/total) %>% 
+  select(pb, algConfig, tpstotal, count, pct, total, n) %>% 
+  separate(algConfig, into = c("nodeselVarsel", "OB"), sep = "\\|", remove = F) %>% 
+  mutate(OB = replace_na(OB, "OSS"))
+
+datWinner <- dat2 %>% 
+  group_by(instance) %>% 
+  nest() %>% 
+  mutate(winner = map(data, function(df) {df %>% arrange(tpstotal) %>% slice(1)})) %>% 
+  select(-data) %>% 
+  unnest(c(winner))
+```
+
+
+```{r perfPlotPctOss, fig.asp=1.2, fig.cap="Performance profile: Number of instances in percent solved given cpu time. An instance is considered as unsolved if the cpu time exceed 1800 seconds (time limit)."}
+p <- ggplot(dat) +
+  geom_step(aes(y=pct, x=tpstotal, color = OB, linetype = nodeselVarsel), alpha = 0.75) + 
+  facet_grid(rows = vars(pb)) +
+  scale_color_ob + scale_linetype_nodesel_varsel +
+  theme_publish() + xlab("cpu (seconds)") + ylab("\\%") + 
+  coord_cartesian(expand = FALSE, ylim = c(0, NA), xlim = c(-10, 1797)) 
+p
+fName <- "fig_pref_oss.tex"
+if (isFALSE(getOption('knitr.in.progress'))) {
+  tikz(file = fName, standAlone=F)
+  p
+  dev.off()
+  file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
+}
+```
 
 
 
@@ -509,11 +910,193 @@ if (isFALSE(getOption('knitr.in.progress'))) {
 
 
 
+# Table 1
+
+```{r}
+options(knitr.table.format = "latex")
+
+tabInput %>% 
+  select(-range, -ratio) %>% 
+  group_by(pb) %>% 
+  kable(digits = c(0,0,1), 
+        align = c("l", "l", "c"),
+        escape = F,
+        col.names = c("", str_c("$n$", footnote_marker_alphabet(1)), str_c("\\#", footnote_marker_alphabet(2))),
+        caption = "Instances used.",
+        booktabs = T,
+        label = "input") %>% 
+  add_footnote(label = c("Number of variables.", "Number of instances for each variable size")) 
+```
 
 
 
+# Table 2
+
+```{r}
+dat <- datAll %>% 
+  group_by(instance) %>%
+  filter(n() == algConfigsN, min(solved) == 1) %>%
+  ungroup() 
+winSeq <- unique(dat$algConfig)
+getResGroup <- function(dat, ...) {
+  # winSeq <- dat %>% 
+  #   group_by(algConfig) %>% 
+  #   summarize(cpu = mean(tpstotal)) %>% 
+  #   mutate(pct = cpu/min(cpu), strV = str_c(algConfig, " (", round((pct-1) * 100), "%)")) %>% 
+  #   arrange(cpu) %>% pull(algConfig)
+  cols = c("cpu", "cpuLB", "nodes", "prune")  # columns for each group
+  colN <- purrr::flatten_chr(map(cols, function(x) str_c(x, winSeq, sep = "_")))
+  idx <- {
+    lgd <- length(winSeq)
+    idx <- NULL
+    for (i in 1:length(winSeq))
+      for (j in 1:length(cols))
+        idx <- c(idx, i + (j-1)*lgd)
+    idx
+  }
+  colN <- colN[idx]
+  
+  datYN <- dat %>% 
+    group_by(instance, ...) %>% 
+    summarise(YN = max(YN), YNse = max(YNse), YNs = max(YNs)) %>% 
+    group_by(...) %>% 
+    summarise(YN = mean(YN), YNse = mean(YNse), YNs = mean(YNs)) 
+
+  datResults <- dat %>% 
+    group_by(..., algConfig) %>% 
+    summarise(ct = n(), cpu = mean(tpstotal), cpuMax = max(tpstotal), cpuMin = min(tpstotal), 
+              nodes = mean(nbnodes), nInf = mean(pctinfeas), nOpt = mean(pctopt), nDom = mean(pctdomi),
+              dptLeaf = mean(avgdepthT), dptMinLeaf = mean(mindepthT), dptMaxLeaf = mean(maxdepthT),
+              solved = min(solved), cpuLB = 1000*mean(tpsLB/nbLB)) %>% 
+    full_join(datYN) %>% 
+    mutate(cpu = if_else(cpu == min(cpu), str_c(round(cpu, 1), "!"), str_c(round(cpu, 1))),
+           cpuLB = if_else(cpuLB == min(cpuLB), str_c(round(cpuLB, 1), "!"), str_c(round(cpuLB, 1))),
+           nodes = if_else(nodes == min(nodes), str_c(round(nodes, 0), "!"), str_c(round(nodes, 0)))) %>% 
+    ungroup() %>% 
+    mutate(cpu = if_else(solved == 1, 
+                         str_c(cpu, " [", round(cpuMin,1), ",", round(cpuMax,1), "]"), 
+                         str_c(cpu, "*", " [", round(cpuMin,1), ",", round(cpuMax,1), "]")),
+           YN = str_c(round(YN), " (", round(100*YNse/YN), "/", round(100*(YNs-YNse)/YN), "/", round(100*(YN-YNs)/YN), ")"),
+           nodes = str_c(nodes, " [", round(dptMinLeaf), ",", round(dptLeaf), ",", round(dptMaxLeaf), "]"),
+           prune = str_c("[", round(nInf), ",", round(nOpt), ",", round(nDom), "]")
+           ) %>%
+    select(-solved, -cpuMin, -cpuMax, -dptMinLeaf, -dptMaxLeaf, -dptLeaf, -nInf, -nOpt, -nDom) %>%
+    pivot_wider(names_from = c(algConfig), values_from = c(cpu, cpuLB, nodes, prune)) %>%
+    select(..., ct, YN, !!colN)
+  return(datResults)
+}
+datResRows <- getResGroup(dat, pb, n)
+tabResults <- NULL
+for (p in unique(datResRows$pb)) {
+  dat1 <- datResRows %>% filter(pb == p)
+  dat2 <- getResGroup(dat, pb) %>% filter(pb == p)
+  tabResults  <- bind_rows(tabResults, dat1, dat2)
+}
+
+colsN = c("cpu", "cpuLB", "nodes", "prune")
+tabResults <- tabResults %>% 
+  mutate_at(vars(contains(c("cpu", "cpuLB", "nodes"))), ~cell_spec(., format = "latex", bold = if_else(str_detect(., fixed("!")), T, F))) %>% 
+  mutate_if(is.character, str_replace_all, pattern = "!", replacement = "")
+# digits <- c(0,0,0,rep(c(1,0,0),algConfigsN))
+
+tab1 <- tabResults[,1:16] %>% 
+  select(-pb) %>% 
+  kable(format = "latex",
+    # digits = digits, 
+    align = rep("c", 16),
+    escape = F,
+    label = "results1",
+    # table.envir = NULL,
+    booktabs = T,
+    col.names = c(str_c("$n$", footnote_marker_alphabet(1)), 
+                  str_c("\\#", footnote_marker_alphabet(2)), 
+                  str_c("$|\\YN|$", footnote_marker_alphabet(3)),  
+                  str_c(rep(colsN, 3),  
+                        c(footnote_marker_alphabet(4),
+                          footnote_marker_alphabet(5),
+                          footnote_marker_alphabet(6),
+                          footnote_marker_alphabet(7)))),
+    caption = "Detailed results for all instances which have been solved to optimality for breath configurations. The winner among the configurations for a column has been highlighted in bold. Summary statistics for each problem class is given."
+    ) %>% 
+  
+  add_footnote(label = c("Number of variables.", 
+                         "Number of instances.", 
+                         "Avg. number of non-dominated points (supported extreme, supported non-extreme and unsupported in percent).",
+                         "Avg. cpu time (seconds). Square brackets contains the range.",
+                         "Avg. cpu time (miliseconds) used to find the LB set per node where LB set found.",
+                         "Avg. number of nodes in the branching tree. Square brackets contains the min, avg. and max depth of leaf nodes.",
+                         "Percentages of leaf nodes pruned by infisibility, optimality and dominance."
+                         )
+               ) %>% 
+  kable_styling(latex_options = "scale_down") %>% 
+  add_header_above(c(" " = 3, "\\\\texttt{B|C}" = 4, "\\\\texttt{B|F}" = 4, "\\\\texttt{B|N}" = 4), escape = F) %>% 
+  pack_rows("AP", min(which(tabResults$pb == "AP")), max(which(tabResults$pb == "AP"))) %>% 
+  pack_rows("KP", min(which(tabResults$pb == "KP")), max(which(tabResults$pb == "KP"))) %>% 
+  pack_rows("UFLP", min(which(tabResults$pb == "UFLP")), max(which(tabResults$pb == "UFLP"))) %>% 
+  row_spec(c(max(which(tabResults$pb == "AP")), 
+             max(which(tabResults$pb == "KP")), 
+             max(which(tabResults$pb == "UFLP"))), bold = T) %>% 
+  row_spec(c(max(which(tabResults$pb == "AP")),
+             max(which(tabResults$pb == "AP"))-1,
+             max(which(tabResults$pb == "KP")),
+             max(which(tabResults$pb == "UFLP"))-1, 
+             max(which(tabResults$pb == "KP"))-1),  hline_after = T) 
 
 
+tab2 <- tabResults[,c(1:4, 17:ncol(tabResults))] %>% 
+  select(-pb) %>% 
+  kable(format = "latex",
+    # digits = digits, 
+    align = rep("c", 16),
+    escape = F,
+    label = "results2",
+    # table.envir = NULL,
+    booktabs = T,
+    col.names = c(str_c("$n$", footnote_marker_alphabet(1)), 
+                  str_c("\\#", footnote_marker_alphabet(2)), 
+                  str_c("$|\\YN|$", footnote_marker_alphabet(3)),  
+                  str_c(rep(colsN, 3),  
+                        c(footnote_marker_alphabet(4),
+                          footnote_marker_alphabet(5),
+                          footnote_marker_alphabet(6),
+                          footnote_marker_alphabet(7)))),
+    caption = "Detailed results for all instances which have been solved to optimality for depth configurations. The winner among the configurations for a column has been highlighted in bold. Summary statistics for each problem class is given."
+    ) %>% 
+  add_footnote(label = c("Number of variables.", 
+                         "Number of instances.", 
+                         "Avg. number of non-dominated points (supported extreme, supported non-extreme and unsupported in percent).",
+                         "Avg. cpu time (seconds). Square brackets contains the range.",
+                         "Avg. cpu time (miliseconds) used to find the LB set per node where LB set found.",
+                         "Avg. number of nodes in the branching tree. Square brackets contains the min, avg. and max depth of leaf nodes.",
+                         "Percentages of leaf nodes pruned by infisibility, optimality and dominance."
+                         )
+               ) %>% 
+  kable_styling(latex_options = "scale_down") %>% 
+  add_header_above(c(" " = 3, "\\\\texttt{D|C}" = 4, "\\\\texttt{D|F}" = 4, "\\\\texttt{D|N}" = 4), escape = F) %>% 
+  pack_rows("AP", min(which(tabResults$pb == "AP")), max(which(tabResults$pb == "AP"))) %>% 
+  pack_rows("KP", min(which(tabResults$pb == "KP")), max(which(tabResults$pb == "KP"))) %>% 
+  pack_rows("UFLP", min(which(tabResults$pb == "UFLP")), max(which(tabResults$pb == "UFLP"))) %>% 
+  row_spec(c(max(which(tabResults$pb == "AP")), 
+             max(which(tabResults$pb == "KP")), 
+             max(which(tabResults$pb == "UFLP"))), bold = T) %>% 
+  row_spec(c(max(which(tabResults$pb == "AP")),
+             max(which(tabResults$pb == "AP"))-1,
+             max(which(tabResults$pb == "KP")),
+             max(which(tabResults$pb == "UFLP"))-1, 
+             max(which(tabResults$pb == "KP"))-1),  hline_after = T) 
+
+if (isFALSE(getOption('knitr.in.progress'))) {
+  fName <- "tab_results1.tex"
+  tab1 %>% save_kable(file = fName, )
+  file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
+  fName <- "tab_results2.tex"
+  tab2 %>% save_kable(file = fName, )
+  file.copy(fName, str_c(pathOverLeaf, "/", fName), overwrite = T)
+}
+
+
+  
+```
 
 
 
