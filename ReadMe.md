@@ -2,7 +2,7 @@
 
 The paper consider instances for tri-objective combinatorial (binary) optimization
 problems. Problem classes considered are Knapsack (KP), Assignment (AP), Facility Location (FLP)
-and IP (general problems with a mixture of constraints and binary variables). [Other problem classes?]
+and IP (general problems with a mixture of constraints and binary variables).
 
 
 ## Test instances
