@@ -20,7 +20,7 @@ The following objects are masked from ‘package:base’:
 
     date, intersect, setdiff, union
 
-[1] "2021-06-02 18:24:47 UTC"
+[1] "2021-06-02 21:27:06 UTC"
 
 ── Column specification ────────────────────────────────────────────────────────────────────────────
 cols(
@@ -48,7 +48,7 @@ Delete json files that don't have a corresponding instance:
 Create json files with classification of points:
 
 
-Duration: 0.261475086212158s
+Duration: 0.267016172409058s
 
 Instance: Forget20-AP_11_3_1-10_2box_1_1
 File 1/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_1_result_breadth_mfavg_cone.json
@@ -68,7 +68,7 @@ Validate the file against schema ... ok.
 File 8/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_1_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 8.84267497062683s
+Duration: 8.65790200233459s
 
 Instance: Forget20-AP_11_3_1-10_2box_1_10
 File 9/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_10_result_breadth_mfavg_cone.json
@@ -88,7 +88,7 @@ Validate the file against schema ... ok.
 File 16/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_10_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 16.3910880088806s
+Duration: 15.6986360549927s
 
 Instance: Forget20-AP_11_3_1-10_2box_1_2
 File 17/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_2_result_breadth_mfavg_cone.json
@@ -108,7 +108,7 @@ Validate the file against schema ... ok.
 File 24/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_2_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 28.045795917511s
+Duration: 25.7350261211395s
 
 Instance: Forget20-AP_11_3_1-10_2box_1_3
 File 25/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_3_result_breadth_mfavg_cone.json
@@ -128,7 +128,7 @@ Validate the file against schema ... ok.
 File 32/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_3_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 39.2646360397339s
+Duration: 34.7442309856415s
 
 Instance: Forget20-AP_11_3_1-10_2box_1_4
 File 33/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_4_result_breadth_mfavg_cone.json
@@ -148,7 +148,7 @@ Validate the file against schema ... ok.
 File 40/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_4_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 49.7789258956909s
+Duration: 43.3739612102509s
 
 Instance: Forget20-AP_11_3_1-10_2box_1_5
 File 41/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_5_result_breadth_mfavg_cone.json
@@ -168,7 +168,7 @@ Validate the file against schema ... ok.
 File 48/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_5_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 55.7996599674225s
+Duration: 48.8121449947357s
 
 Instance: Forget20-AP_11_3_1-10_2box_1_6
 File 49/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_6_result_breadth_mfavg_cone.json
@@ -188,7 +188,7 @@ Validate the file against schema ... ok.
 File 56/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_6_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 64.0332050323486s (~1.07 minutes)
+Duration: 57.2362041473389s
 
 Instance: Forget20-AP_11_3_1-10_2box_1_7
 File 57/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_7_result_breadth_mfavg_cone.json
@@ -208,7 +208,7 @@ Validate the file against schema ... ok.
 File 64/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_7_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 73.6257970333099s (~1.23 minutes)
+Duration: 64.6328301429749s (~1.08 minutes)
 
 Instance: Forget20-AP_11_3_1-10_2box_1_8
 File 65/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_8_result_breadth_mfavg_cone.json
@@ -228,7 +228,7 @@ Validate the file against schema ... ok.
 File 72/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_8_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 84.3869330883026s (~1.41 minutes)
+Duration: 73.0215280056s (~1.22 minutes)
 
 Instance: Forget20-AP_11_3_1-10_2box_1_9
 File 73/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_9_result_breadth_mfavg_cone.json
@@ -248,7 +248,7 @@ Validate the file against schema ... ok.
 File 80/26419 | Results written to Forget20-AP_11_3_1-10_2box_1_9_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 94.207083940506s (~1.57 minutes)
+Duration: 81.3493490219116s (~1.36 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_1
 File 81/26419 | Results written to Forget20-AP_11_3_1-10_random_1_1_result_breadth_mfavg_cone.json
@@ -268,7 +268,7 @@ Validate the file against schema ... ok.
 File 88/26419 | Results written to Forget20-AP_11_3_1-10_random_1_1_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 99.5424199104309s (~1.66 minutes)
+Duration: 86.2557020187378s (~1.44 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_10
 File 89/26419 | Results written to Forget20-AP_11_3_1-10_random_1_10_result_breadth_mfavg_cone.json
@@ -288,7 +288,7 @@ Validate the file against schema ... ok.
 File 96/26419 | Results written to Forget20-AP_11_3_1-10_random_1_10_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 104.670100927353s (~1.74 minutes)
+Duration: 92.327810049057s (~1.54 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_2
 File 97/26419 | Results written to Forget20-AP_11_3_1-10_random_1_2_result_breadth_mfavg_cone.json
@@ -308,7 +308,7 @@ Validate the file against schema ... ok.
 File 104/26419 | Results written to Forget20-AP_11_3_1-10_random_1_2_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 110.504060029984s (~1.84 minutes)
+Duration: 97.8093891143799s (~1.63 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_3
 File 105/26419 | Results written to Forget20-AP_11_3_1-10_random_1_3_result_breadth_mfavg_cone.json
@@ -328,7 +328,7 @@ Validate the file against schema ... ok.
 File 112/26419 | Results written to Forget20-AP_11_3_1-10_random_1_3_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 116.451466083527s (~1.94 minutes)
+Duration: 103.017035007477s (~1.72 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_4
 File 113/26419 | Results written to Forget20-AP_11_3_1-10_random_1_4_result_breadth_mfavg_cone.json
@@ -348,7 +348,7 @@ Validate the file against schema ... ok.
 File 120/26419 | Results written to Forget20-AP_11_3_1-10_random_1_4_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 121.402407884598s (~2.02 minutes)
+Duration: 107.717380046844s (~1.8 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_5
 File 121/26419 | Results written to Forget20-AP_11_3_1-10_random_1_5_result_breadth_mfavg_cone.json
@@ -368,7 +368,7 @@ Validate the file against schema ... ok.
 File 128/26419 | Results written to Forget20-AP_11_3_1-10_random_1_5_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 126.985569953918s (~2.12 minutes)
+Duration: 112.871877193451s (~1.88 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_6
 File 129/26419 | Results written to Forget20-AP_11_3_1-10_random_1_6_result_breadth_mfavg_cone.json
@@ -388,7 +388,7 @@ Validate the file against schema ... ok.
 File 136/26419 | Results written to Forget20-AP_11_3_1-10_random_1_6_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 130.792757034302s (~2.18 minutes)
+Duration: 116.595983028412s (~1.94 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_7
 File 137/26419 | Results written to Forget20-AP_11_3_1-10_random_1_7_result_breadth_mfavg_cone.json
@@ -408,7 +408,7 @@ Validate the file against schema ... ok.
 File 144/26419 | Results written to Forget20-AP_11_3_1-10_random_1_7_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 135.732933044434s (~2.26 minutes)
+Duration: 121.184579133987s (~2.02 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_8
 File 145/26419 | Results written to Forget20-AP_11_3_1-10_random_1_8_result_breadth_mfavg_cone.json
@@ -428,7 +428,7 @@ Validate the file against schema ... ok.
 File 152/26419 | Results written to Forget20-AP_11_3_1-10_random_1_8_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 139.513505935669s (~2.33 minutes)
+Duration: 125.782560110092s (~2.1 minutes)
 
 Instance: Forget20-AP_11_3_1-10_random_1_9
 File 153/26419 | Results written to Forget20-AP_11_3_1-10_random_1_9_result_breadth_mfavg_cone.json
@@ -448,7 +448,7 @@ Validate the file against schema ... ok.
 File 160/26419 | Results written to Forget20-AP_11_3_1-10_random_1_9_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 142.563461065292s (~2.38 minutes)
+Duration: 128.604912042618s (~2.14 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_1
 File 161/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_1_result_breadth_mfavg_cone.json
@@ -468,7 +468,7 @@ Validate the file against schema ... ok.
 File 168/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_1_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 185.686887025833s (~3.09 minutes)
+Duration: 165.976202011108s (~2.77 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_10
 File 169/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_10_result_breadth_mfavg_cone.json
@@ -488,7 +488,7 @@ Validate the file against schema ... ok.
 File 176/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_10_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 211.908396959305s (~3.53 minutes)
+Duration: 187.966588973999s (~3.13 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_2
 File 177/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_2_result_breadth_mfavg_cone.json
@@ -508,7 +508,7 @@ Validate the file against schema ... ok.
 File 184/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_2_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 235.287811040878s (~3.92 minutes)
+Duration: 208.263697147369s (~3.47 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_3
 File 185/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_3_result_breadth_mfavg_cone.json
@@ -528,7 +528,7 @@ Validate the file against schema ... ok.
 File 192/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_3_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 279.591510057449s (~4.66 minutes)
+Duration: 244.664937019348s (~4.08 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_4
 File 193/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_4_result_breadth_mfavg_cone.json
@@ -548,7 +548,7 @@ Validate the file against schema ... ok.
 File 200/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_4_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 311.016278982162s (~5.18 minutes)
+Duration: 273.031551122665s (~4.55 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_5
 File 201/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_5_result_breadth_mfavg_cone.json
@@ -568,7 +568,7 @@ Validate the file against schema ... ok.
 File 208/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_5_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 387.259983062744s (~6.45 minutes)
+Duration: 338.166460037231s (~5.64 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_6
 File 209/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_6_result_breadth_mfavg_cone.json
@@ -588,7 +588,7 @@ Validate the file against schema ... ok.
 File 216/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_6_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 417.821090936661s (~6.96 minutes)
+Duration: 368.763230085373s (~6.15 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_7
 File 217/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_7_result_breadth_mfavg_cone.json
@@ -608,7 +608,7 @@ Validate the file against schema ... ok.
 File 224/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_7_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 444.001231908798s (~7.4 minutes)
+Duration: 393.383975982666s (~6.56 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_8
 File 225/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_8_result_breadth_mfavg_cone.json
@@ -628,7 +628,7 @@ Validate the file against schema ... ok.
 File 232/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_8_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 460.379401922226s (~7.67 minutes)
+Duration: 409.582749128342s (~6.83 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_2box_1_9
 File 233/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_9_result_breadth_mfavg_cone.json
@@ -648,7 +648,7 @@ Validate the file against schema ... ok.
 File 240/26419 | Results written to Forget20-AP_11_3_1-1000_2box_1_9_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 509.131500005722s (~8.49 minutes)
+Duration: 454.553531169891s (~7.58 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_1
 File 241/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_1_result_breadth_mfavg_cone.json
@@ -668,7 +668,7 @@ Validate the file against schema ... ok.
 File 248/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_1_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 515.577600002289s (~8.59 minutes)
+Duration: 460.931416988373s (~7.68 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_10
 File 249/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_10_result_breadth_mfavg_cone.json
@@ -688,7 +688,7 @@ Validate the file against schema ... ok.
 File 256/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_10_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 521.142819881439s (~8.69 minutes)
+Duration: 466.015365123749s (~7.77 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_2
 File 257/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_2_result_breadth_mfavg_cone.json
@@ -708,7 +708,7 @@ Validate the file against schema ... ok.
 File 264/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_2_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 527.866441965103s (~8.8 minutes)
+Duration: 472.580762147903s (~7.88 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_3
 File 265/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_3_result_breadth_mfavg_cone.json
@@ -728,7 +728,7 @@ Validate the file against schema ... ok.
 File 272/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_3_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 535.989651918411s (~8.93 minutes)
+Duration: 480.393177032471s (~8.01 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_4
 File 273/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_4_result_breadth_mfavg_cone.json
@@ -748,7 +748,7 @@ Validate the file against schema ... ok.
 File 280/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_4_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 541.213290929794s (~9.02 minutes)
+Duration: 485.089398145676s (~8.08 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_5
 File 281/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_5_result_breadth_mfavg_cone.json
@@ -768,7 +768,7 @@ Validate the file against schema ... ok.
 File 288/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_5_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 549.876655101776s (~9.16 minutes)
+Duration: 493.875399112701s (~8.23 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_6
 File 289/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_6_result_breadth_mfavg_cone.json
@@ -788,7 +788,7 @@ Validate the file against schema ... ok.
 File 296/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_6_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 556.161304950714s (~9.27 minutes)
+Duration: 499.804077148438s (~8.33 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_7
 File 297/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_7_result_breadth_mfavg_cone.json
@@ -808,7 +808,7 @@ Validate the file against schema ... ok.
 File 304/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_7_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 561.032470941544s (~9.35 minutes)
+Duration: 504.537536144257s (~8.41 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_8
 File 305/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_8_result_breadth_mfavg_cone.json
@@ -828,7 +828,7 @@ Validate the file against schema ... ok.
 File 312/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_8_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 566.69816493988s (~9.44 minutes)
+Duration: 509.692914009094s (~8.49 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_random_1_9
 File 313/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_9_result_breadth_mfavg_cone.json
@@ -848,7 +848,7 @@ Validate the file against schema ... ok.
 File 320/26419 | Results written to Forget20-AP_11_3_1-1000_random_1_9_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 571.817857027054s (~9.53 minutes)
+Duration: 515.956305980682s (~8.6 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_spheredown_1_1
 File 321/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_1_result_breadth_mfavg_cone.json
@@ -868,7 +868,7 @@ Validate the file against schema ... ok.
 File 328/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_1_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 907.412883043289s (~15.12 minutes)
+Duration: 802.301606178284s (~13.37 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_spheredown_1_10
 File 329/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_10_result_breadth_mfavg_cone.json
@@ -888,7 +888,7 @@ Validate the file against schema ... ok.
 File 336/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_10_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 1093.18094611168s (~18.22 minutes)
+Duration: 976.124809980393s (~16.27 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_spheredown_1_2
 File 337/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_2_result_breadth_mfavg_cone.json
@@ -908,7 +908,7 @@ Validate the file against schema ... ok.
 File 344/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_2_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 1279.02660393715s (~21.32 minutes)
+Duration: 1162.05555319786s (~19.37 minutes)
 
 Instance: Forget20-AP_11_3_1-1000_spheredown_1_3
 File 345/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_3_result_breadth_mfavg_cone.json
@@ -928,7 +928,27 @@ Validate the file against schema ... ok.
 File 352/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_3_result_depth_mof_none.json
 Validate the file against schema ... ok.
 
-Duration: 1819.70253205299s (~30.33 minutes)
+Duration: 1742.79221510887s (~29.05 minutes)
+
+Instance: Forget20-AP_11_3_1-1000_spheredown_1_4
+File 353/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_4_result_breadth_mfavg_cone.json
+Validate the file against schema ... ok.
+File 354/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_4_result_breadth_mfavg_none.json
+Validate the file against schema ... ok.
+File 355/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_4_result_breadth_mof_cone.json
+Validate the file against schema ... ok.
+File 356/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_4_result_breadth_mof_none.json
+Validate the file against schema ... ok.
+File 357/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_4_result_depth_mfavg_cone.json
+Validate the file against schema ... ok.
+File 358/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_4_result_depth_mfavg_none.json
+Validate the file against schema ... ok.
+File 359/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_4_result_depth_mof_cone.json
+Validate the file against schema ... ok.
+File 360/26419 | Results written to Forget20-AP_11_3_1-1000_spheredown_1_4_result_depth_mof_none.json
+Validate the file against schema ... ok.
+
+Duration: 2114.46283912659s (~35.24 minutes)
 
 
 Stop script. Max time obtained.
