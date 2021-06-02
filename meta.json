@@ -1,24 +1,35 @@
 {
    "contributionName": "Forget20",
-   "maintainer" : "Lars Relund <junk@relund.dk>",
+   "maintainer": "Lars Relund <junk@relund.dk>",
+   "rawDesc": "A structured text file with numbers (see ReadMe)",
    "instanceGroups": [
       {
          "subfolder": "AP",
          "class": "Assignment",
-         "objectives": 2,
-         "tags": [ "ap", "assignmentProblem", "bi-AP"],
+         "objectives": 3,
+         "tags": [ "ap", "assignmentProblem", "tri-AP"],
          "format": [ "raw" ],
-         "desc": "Instances for the bi-objective assignment problem.",
+         "desc": "Instances for the tri-objective assignment problem.",
          "creator" : "Nicolas Forget <nforget@econ.au.dk>"
       },
       {
-         "subfolder": "MMAP",
-         "class": "Assignment",
-         "objectives": 2,
-         "tags": [ "bi-MMAP", "MMAP", "multi-modal" ],
+         "subfolder": "KP",
+         "class": "Knapsack",
+         "objectives": 3,
+         "tags": [ "kp", "knapsackProblem", "tri-KP"],
          "format": [ "raw" ],
-         "desc": "Instances for the bi-objective multi-modal assignment problem.",
+         "desc": "Instances for the tri-objective knapsack problem.",
+         "creator" : "Nicolas Forget <nforget@econ.au.dk>"
+      },
+      {
+         "subfolder": "UFLP",
+         "class": "Facility Location (uncapacitated)",
+         "objectives": 3,
+         "tags": [ "uflp", "uncapacitatedFacilityLocationProblem", "tri-UFLP"],
+         "format": [ "raw" ],
+         "desc": "Instances for the tri-objective uncapacitated facility location problem.",
          "creator" : "Nicolas Forget <nforget@econ.au.dk>"
       }
-   ]
+   ],
+   "resultContributions": ["Forget20", "dfsa"]
 }

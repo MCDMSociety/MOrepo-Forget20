@@ -1,16 +1,15 @@
 # Tri-objective combinatorial optimization problems
 
 The paper consider instances for tri-objective combinatorial (binary) optimization
-problems. Problem classes considered are Knapsack (KP), Assignment (AP), Facility Location (FLP)
-and IP (general problems with a mixture of constraints and binary variables).
+problems. Problem classes considered are Knapsack (KP), Assignment (AP) and Uncapacitated Facility Location (UFLP).
 
 
 ## Test instances
 
 Instances are named `Forget20_[problemClass]_[n]_[p]_[rangeOfCosts]_[costGenerationMethod]_[constaintId]_[id].raw` where 
 
-   - `problemClass` is either KP (knapsack problem), AP (assignment problem), FLP (facility
-      location problem) or IP (integer problem with binary variables).
+   - `problemClass` is either KP (knapsack problem), AP (assignment problem) or UFLP (uncapacitated facility
+      location problem).
    - `n` is the size of the problem. 
    - `p` is the number of objectives.
    - `rangeOfCosts`: Objective coefficient range e.g. 1-1000.
@@ -22,7 +21,7 @@ Instances are named `Forget20_[problemClass]_[n]_[p]_[rangeOfCosts]_[costGenerat
 
 ### Raw format description 
 
-All instance files are given in raw format. An example for a knapsack problem is:
+All instance files are given in raw format (a text file). An example for a knapsack problem is:
 
 ```
 15 1 3 15 45
