@@ -24,7 +24,7 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@master
       - name: Install XQuartz on macOS
         if: runner.os == 'macOS'
-        run: brew cask install xquartz
+        run: brew install --cask xquartz
       - name: Install packages
         run: Rscript -e "install.packages('rmarkdown')"
       - name: Run R script main_report.R
