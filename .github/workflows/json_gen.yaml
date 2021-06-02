@@ -26,6 +26,14 @@ jobs:
           RGL_USE_NULL: TRUE
       - name: Run R script json_gen.R
         run: Rscript results/convert/json_gen.R
+      - name: Commit results
+        run: |
+          git config user.email "junk@relund.dk"
+          git config user.name "Lars Relund"
+          git add .
+          git commit --allow-empty -am 'gHA build: ${{github.run_number}}' || echo "No changes to commit"
+          git pull --rebase
+          git push https://${{github.actor}}:${{secrets.token}}@github.com/${{github.repository}}.git HEAD:${{ github.ref }} || echo "No changes to commit"
       - name: Run R script json_gen_stat_csv.R
         run: Rscript results/convert/json_gen_stat_csv.R
       - name: Commit results
