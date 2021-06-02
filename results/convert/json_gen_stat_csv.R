@@ -23,7 +23,7 @@ now()
 
 #### Branch and bound results ####
 message("Add lines to statistics.csv:")
-resJsonFiles <- list.files("..", ".json", full.names = T)
+resJsonFiles <- list.files("..", ".json", full.names = T, recursive = TRUE)
 dat <- NULL
 for (i in 1:length(resJsonFiles)) {
    message("File: ", resJsonFiles[i], " | ", appendLF = F)
@@ -106,7 +106,7 @@ write_csv(datOSS, "../statistics_oss.csv")
 #### Cpu times nd points ####
 
 message("Add lines to statistics_nd_points.csv:")
-resJsonFiles <- list.files("..", ".json", full.names = T) %>%
+resJsonFiles <- list.files("..", ".json", full.names = T, recursive = T) %>%
    str_subset("spheredown") %>%
    str_subset("mof") %>%
    str_subset("1-1000")
