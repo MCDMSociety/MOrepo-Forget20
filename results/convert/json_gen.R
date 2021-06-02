@@ -76,7 +76,7 @@ fNameUB <- function(instance, nodesel, varsel, ob) {
 fNameJson <- function(instance, nodesel, varsel, ob) {
    instance <- str_remove(instance, ".raw")
    mth <- paste0(nodesel, "_", varsel, "_", tolower(ob))
-   str_c("../", instance, "_", mth, "_result.json")
+   str_c("../", instance, "_result_", mth, ".json")
 }
 
 
