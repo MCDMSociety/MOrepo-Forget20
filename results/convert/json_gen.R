@@ -205,8 +205,10 @@ for (iName in unique(dat$instance)) {
          misc = misc
       ))
       #' Move the file
+      subFolderName <- paste0("../", sub("(.*)-(.*?)_(.*)", "\\2", iName))
+      dir_create(subFolderName)
       jsonF <- grep(".json", dir_ls(), value = T)
-      file_move(jsonF, paste0("../",jsonF))
+      file_move(jsonF, subFolderName)
    }
 }
 
