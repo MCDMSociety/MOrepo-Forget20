@@ -37,8 +37,8 @@ datJson <- read_csv("../statistics.csv")
 
 ### Check if output consistent
 # Remove all json files that don't have an instance
-resJsonFiles <- list.files("..", ".json", full.names = F)
-resJsonFiles <- tibble(fName = resJsonFiles, instance = str_replace(fName, "(^.*)_.+?_.+?_.+?_result.json$", "\\1")) %>% rownames_to_column()
+resJsonFiles <- list.files("..", ".json", full.names = F, recursive = T)
+resJsonFiles <- tibble(fName = resJsonFiles, instance = str_replace(fName, "(.*)/(.*)_result_.*.json$", "\\2")) %>% rownames_to_column()
 inst <- tibble(instance = instances)
 tmp <- inner_join(resJsonFiles, inst) %>% pull(rowname)
 inst <- resJsonFiles %>%  filter(!(rowname %in% tmp)) %>% pull(fName)
@@ -48,7 +48,7 @@ print(inst)
 unlink(inst)
 
 # Remove all json files that don't have results
-resJsonFiles <- list.files("..", ".json", full.names = F) %>% str_remove("_result.json")
+resJsonFiles <- list.files("..", ".json", full.names = F, recursive = T) %>% str_remove("_result") %>% str_remove(".json") %>% str_remove(".*/")
 statFiles <- dat %>% mutate(fileN = str_c(instance, "_", nodesel, "_", varsel, "_", tolower(OB))) %>% pull(fileN)
 if (length(resJsonFiles[!(resJsonFiles %in% statFiles)]) > 0) {
    files <- str_c("../", resJsonFiles[!(resJsonFiles %in% statFiles)], "_result.json")
@@ -73,10 +73,10 @@ fNameUB <- function(instance, nodesel, varsel, ob) {
       str_replace_all(c("breadth" = "b", "depth" = "d", "none" = "-2", "cone" = "1", "exact" = "2"))
    str_c("data/details/UBrun/", instance, "_", mth, "_UB.csv")
 }
-fNameJson <- function(instance, nodesel, varsel, ob) {
+fNameJson <- function(instance, nodesel, varsel, ob, pb) {
    instance <- str_remove(instance, ".raw")
    mth <- paste0(nodesel, "_", varsel, "_", tolower(ob))
-   str_c("../", instance, "_result_", mth, ".json")
+   str_c("../", pb, "/", instance, "_result_", mth, ".json")
 }
 
 
@@ -155,11 +155,12 @@ for (iName in unique(dat$instance)) {
    message("\nDuration: ", diff,"\n")
    if (diff > 60*30) {message("\nStop script. Max time obtained."); break}
 
+   pb <- sub("(.*)-(.*?)_(.*)", "\\2", iName)
    message("Instance: ", iName)
    for (i in 1:nrow(tmp)) {
       message("File ", tmp$rowname[i], "/", nrow(dat), " | ", appendLF = F)
       fileNYN <- fNameYN(iName)
-      fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
+      fileNJson <- fNameJson(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i], pb)
       fileNUB <- fNameUB(iName, tmp$nodesel[i], tmp$varsel[i], tmp$OB[i])
       if (ErrorCheckConfig(iName, tmp, fileNYN)) next
       if (!regenerate & ResultsAlreadyGen(fileNJson)) next
