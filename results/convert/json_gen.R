@@ -153,7 +153,7 @@ for (iName in unique(dat$instance)) {
 
    diff <- as.duration(now() - start_time)
    message("\nDuration: ", diff,"\n")
-   if (diff > 60*30) {message("\nStop script. Max time obtained."); break}
+   #if (diff > 60*30) {message("\nStop script. Max time obtained."); break}
 
    pb <- sub("(.*)-(.*?)_(.*)", "\\2", iName)
    message("Instance: ", iName)
