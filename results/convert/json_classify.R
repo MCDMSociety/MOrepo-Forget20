@@ -36,7 +36,7 @@ library(tidyverse)
 library(lubridate)
 library(fs)
 options(width = 100)
-setwd("./results/convert")
+try(setwd("./results/convert"))
 source("functions.R")
 
 #' Get all instances

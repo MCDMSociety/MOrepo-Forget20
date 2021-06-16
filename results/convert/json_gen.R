@@ -1,7 +1,7 @@
 ### Script for converting result output to json format
 
 options(width = 100, nwarnings = 10000)
-setwd("./results/convert")
+try(setwd("./results/convert"))
 logF <- file("json_gen.log", open = "wt")
 sink(logF, type = "message")
 sink(logF, split = T, type = "output")
