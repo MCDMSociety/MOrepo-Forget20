@@ -23,7 +23,7 @@
       },
       {
          "subfolder": "UFLP",
-         "class": "Facility Location (uncapacitated)",
+         "class": "Facility Location",
          "objectives": 3,
          "tags": [ "uflp", "uncapacitatedFacilityLocationProblem", "tri-UFLP"],
          "format": [ "raw" ],
