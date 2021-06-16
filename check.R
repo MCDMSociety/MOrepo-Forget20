@@ -8,7 +8,7 @@
 # remotes::install_github("MCDMSociety/MOrepo/misc/R/MOrepoTools")
 #
 library(MOrepoTools)
-checkContribution()
+checkContribution(validateResults = F)
 
 
 
