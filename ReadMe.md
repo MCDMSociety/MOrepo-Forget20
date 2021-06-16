@@ -3,6 +3,7 @@
 The paper consider instances for tri-objective combinatorial (binary) optimization
 problems. Problem classes considered are Knapsack (KP), Assignment (AP) and Uncapacitated Facility Location (UFLP).
 
+The paper can be seen at [Optimization Online](http://www.optimization-online.org/DB_FILE/2020/12/8158.pdf).
 
 ## Test instances
 
