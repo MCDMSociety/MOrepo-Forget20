@@ -1,9 +1,6 @@
 # Tri-objective combinatorial optimization problems
 
-The paper consider instances for tri-objective combinatorial (binary) optimization
-problems. Problem classes considered are Knapsack (KP), Assignment (AP) and Uncapacitated Facility Location (UFLP).
-
-The paper can be seen at [Optimization Online](http://www.optimization-online.org/DB_FILE/2020/12/8158.pdf).
+Instances and results for the paper Forget, N., S. Gadegaard, K. Klamroth, et al. (2022). “Branch-and-bound and objective branching with three or more objectives”. In: Computers and Operations Research 148, p. 106012. DOI: [10.1016/j.cor.2022.106012](https://doi.org/10.1016/j.cor.2022.106012). The paper consider instances for tri-objective combinatorial (binary) optimization problems. Problem classes considered are Knapsack (KP), Assignment (AP) and Uncapacitated Facility Location (UFLP). An earlier working paper can be seen at [Optimization Online](http://www.optimization-online.org/DB_FILE/2020/12/8158.pdf).
 
 ## Test instances
 
